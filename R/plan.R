@@ -35,5 +35,3 @@ the_plan <-
   
 
 )
-
-make(the_plan, lock_envir = FALSE, memory_strategy = "preclean")
