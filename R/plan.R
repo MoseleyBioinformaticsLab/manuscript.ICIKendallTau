@@ -23,8 +23,10 @@ the_plan <-
    negative_low_pearson = compare_negative_pearson(x, y2, where_na, low_indices = TRUE),
    
    realistic_sample = create_sample(n = 1000),
+   realistic_neg_sample = sort(realistic_sample, decreasing = TRUE),
    realistic_na = create_random_na(),
    realistic_positive_kt = compare_positive_kt(realistic_sample, realistic_sample, realistic_na),
+   realistic_negative_kt = compare_negative_kt(realistic_sample, realistic_neg_sample, realistic_na),
    
    target_name = target(
      command = {
