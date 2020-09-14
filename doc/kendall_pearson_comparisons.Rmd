@@ -40,7 +40,7 @@ pearson_df = data.frame(positive = positive_pearson, negative = negative_pearson
   dplyr::filter(!is.na(positive), !is.na(negative))
 ```
 
-```{r plot_pearson, dev='png', dpi=300}
+```{r plot_pearson, dev='CairoPNG', dpi=300}
 ggplot(pearson_df, aes(x = positive, y = negative)) + geom_point()
 ```
 
@@ -67,7 +67,7 @@ kt_df = data.frame(positive = positive_kt, negative = negative_kt) %>%
   dplyr::filter(!is.na(positive), !is.na(negative))
 ```
 
-```{r plot_kt, dev='png', dpi = 300}
+```{r plot_kt, dev='CairoPNG', dpi = 300}
 ggplot(kt_df, aes(x = positive, y = negative)) + geom_point()
 ```
 
