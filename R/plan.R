@@ -28,8 +28,8 @@ the_plan <-
    realistic_positive_kt = compare_positive_kt(realistic_sample, realistic_sample, realistic_na),
    realistic_negative_kt = compare_negative_kt(realistic_sample, realistic_neg_sample, realistic_na),
    
-   realistic_positive_pearson = compare_positive_pearson(realistic_sample, realistic_sample, where_na),
-   realistic_negative_pearson = compare_negative_pearson(realistic_sample, realistic_neg_sample, where_na),
+   realistic_positive_pearson = compare_positive_pearson(realistic_sample, realistic_sample, realistic_na),
+   realistic_negative_pearson = compare_negative_pearson(realistic_sample, realistic_neg_sample, realistic_na),
    
    target_name = target(
      command = {
