@@ -34,14 +34,16 @@ Pearson correlations used the "locally-it-weighted" function, Kendall-tau were c
 ```{r pearson}
 loadd(positive_pearson)
 loadd(negative_pearson)
-
-pearson_df = data.frame(positive = positive_pearson, negative = negative_pearson) %>%
-  dplyr::mutate(diff = positive - -1 * negative) %>%
-  dplyr::filter(!is.na(positive), !is.na(negative))
+negative_pearson0 = negative_pearson
+negative_pearson0[is.na(negative_pearson0)] = 0
+positive_pearson0 = positive_pearson
+positive_pearson0[is.na(positive_pearson0)] = 0
+pearson_df = data.frame(positive = positive_pearson, positive0 = positive_pearson0, negative = negative_pearson, negative0 = negative_pearson0) %>%
+  dplyr::mutate(diff = positive - -1 * negative)
 ```
 
 ```{r plot_pearson, dev='CairoPNG', dpi=300}
-ggplot(pearson_df, aes(x = positive, y = negative)) + geom_point()
+ggplot(pearson_df, aes(x = positive0, y = negative0)) + geom_point()
 ```
 
 ```{r plot_pearson2}
@@ -55,6 +57,36 @@ dplyr::group_by(pearson_long_df, type) %>%
   dplyr::summarise(mean = (mean(correlation, na.rm = TRUE))) %>%
   knitr::kable()
 ```
+
+#### Replace Low Samples Only
+
+```{r pearson_low}
+loadd(positive_low_pearson)
+loadd(negative_low_pearson)
+negative_pearson0 = negative_low_pearson
+negative_pearson0[is.na(negative_pearson0)] = 0
+positive_pearson0 = positive_low_pearson
+positive_pearson0[is.na(positive_pearson0)] = 0
+low_pearson_df = data.frame(positive = positive_low_pearson, positive0 = positive_pearson0, negative = negative_low_pearson, negative0 = negative_pearson0) %>%
+  dplyr::mutate(diff = positive - -1 * negative)
+```
+
+```{r plot_pearson_low, dev='CairoPNG', dpi=300}
+ggplot(low_pearson_df, aes(x = positive0, y = negative0)) + geom_point()
+```
+
+```{r plot_pearson2_low}
+low_pearson_long_df = tidyr::pivot_longer(low_pearson_df, -diff, names_to = "type", values_to = "correlation")
+ggplot(low_pearson_long_df, aes(x = correlation)) + geom_histogram(bins = 100) + 
+  facet_wrap(~ type, ncol = 1)
+```
+
+```{r summary_pearson}
+dplyr::group_by(low_pearson_long_df, type) %>%
+  dplyr::summarise(mean = (mean(correlation, na.rm = TRUE))) %>%
+  knitr::kable()
+```
+
 
 ### Kendall-tau
 
@@ -79,6 +111,64 @@ ggplot(kt_long_df, aes(x = correlation)) + geom_histogram(bins = 100) +
 
 ```{r summary_kt}
 dplyr::group_by(kt_long_df, type) %>%
+  dplyr::summarise(mean = (mean(correlation, na.rm = TRUE))) %>%
+  knitr::kable()
+```
+
+#### Replace Low Entries Only
+
+```{r kendall_low}
+loadd(positive_low_kt)
+loadd(negative_low_kt)
+
+low_kt_df = data.frame(positive = positive_low_kt, negative = negative_low_kt) %>%
+  dplyr::mutate(diff = positive - -1 * negative) %>%
+  dplyr::filter(!is.na(positive), !is.na(negative))
+```
+
+```{r plot_kt_low, dev='CairoPNG', dpi = 300}
+ggplot(low_kt_df, aes(x = positive, y = negative)) + geom_point()
+```
+
+```{r plot_kt2_low}
+low_kt_long_df = tidyr::pivot_longer(low_kt_df, -diff, names_to = "type", values_to = "correlation")
+ggplot(low_kt_long_df, aes(x = correlation)) + geom_histogram(bins = 100) + 
+  facet_wrap(~ type, ncol = 1)
+```
+
+```{r summary_kt_low}
+dplyr::group_by(low_kt_long_df, type) %>%
+  dplyr::summarise(mean = (mean(correlation, na.rm = TRUE))) %>%
+  knitr::kable()
+```
+
+Weird, that didn't quite work like we expected.
+
+What about the *more realistic samples?*
+
+#### Realistic Samples
+
+```{r kendall_real}
+loadd(realistic_positive_kt)
+loadd(realistic_negative_kt)
+
+real_kt_df = data.frame(positive = realistic_positive_kt, negative = realistic_negative_kt) %>%
+  dplyr::mutate(diff = positive - -1 * negative) %>%
+  dplyr::filter(!is.na(positive), !is.na(negative))
+```
+
+```{r plot_kt_real, dev='CairoPNG', dpi = 300}
+ggplot(real_kt_df, aes(x = positive, y = negative)) + geom_point()
+```
+
+```{r plot_kt2_real}
+real_kt_long_df = tidyr::pivot_longer(real_kt_df, -diff, names_to = "type", values_to = "correlation")
+ggplot(real_kt_long_df, aes(x = correlation)) + geom_histogram(bins = 100) + 
+  facet_wrap(~ type, ncol = 1, scales = "free")
+```
+
+```{r summary_kt_real}
+dplyr::group_by(real_kt_long_df, type) %>%
   dplyr::summarise(mean = (mean(correlation, na.rm = TRUE))) %>%
   knitr::kable()
 ```
