@@ -46,7 +46,7 @@ the_plan <-
    select_row_fraction = target(
       select_function(transcript_pca, transcript_data, fraction = frac_value),
       transform = cross(
-         frac_value = !!(seq(0.01, 0.9, 0.01)),
+         frac_value = !!(c(seq(0.01, 0.05, 0.01), seq(0.1, 0.9, 0.05))),
          select_function = !!select_functions
       )
    ),
