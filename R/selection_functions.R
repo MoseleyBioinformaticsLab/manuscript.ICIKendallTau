@@ -41,7 +41,7 @@ pca_select = function(pca_data, matrix_data, fraction){
        frac = fraction)
 }
 
-select_random = function(in_data, fraction){
+select_random = function(matrix_data, fraction){
   n_item = round(fraction * nrow(matrix_data))
   use_rows = sample(nrow(matrix_data), n_item)
   list(data = matrix_data[use_rows, ],
