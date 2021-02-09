@@ -59,11 +59,6 @@ the_plan <-
       transform = map(select_nonrandom_fraction)
    ),
    
-   compare_nonrandom = target(
-      compare_fractional_correlation(run_nonrandom_fraction, reference_cor),
-      transform = map(run_nonrandom_fraction)
-   ),
-   
    select_random_fraction = target(
       select_random(transcript_data, fraction = frac_value),
       transform = map(frac_value = !!fractions)
@@ -74,11 +69,16 @@ the_plan <-
       transform = map(select_random_fraction)
    ),
    
-   compare_random = target(
-      compare_fractional_correlation(run_random_fraction, reference_cor),
-      transform = map(run_random_fraction)
-   ),
-   
+   # compare_nonrandom = target(
+   #    compare_fractional_correlation(run_nonrandom_fraction, reference_cor),
+   #    transform = map(run_nonrandom_fraction)
+   # ),
+   # 
+   # compare_random = target(
+   #    compare_fractional_correlation(run_random_fraction, reference_cor),
+   #    transform = map(run_random_fraction)
+   # ),
+   # 
    improve_runtime = target(
       command = {
          rmarkdown::render(knitr_in("doc/improve_runtime.Rmd"))
