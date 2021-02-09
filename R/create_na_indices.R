@@ -20,7 +20,6 @@ create_na_indices <- function(x = 20) {
 }
 
 create_random_na = function(x = 500, n_by = 10, nrep = 5, xloc = seq(1, 500), yloc = seq(1001, 1500)) {
-  set.seed(1234)
   n_na = seq(1, x, by = n_by)
   where_na = vector("list", length = (length(n_na)^2 * nrep^2))
   save_loc = 1

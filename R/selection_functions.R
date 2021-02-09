@@ -41,6 +41,14 @@ pca_select = function(pca_data, matrix_data, fraction){
        frac = fraction)
 }
 
+select_random = function(in_data, fraction){
+  n_item = round(fraction * nrow(matrix_data))
+  use_rows = sample(nrow(matrix_data), n_item)
+  list(data = matrix_data[use_rows, ],
+       type = "random",
+       frac = fraction)
+}
+
 run_fractional_correlation = function(in_data){
   cor = visqc_ici_kendallt(t(in_data$data))
   cor$type = in_data$type

@@ -1,4 +1,7 @@
 select_functions = rlang::syms(c("var_select", "pca_select"))
+#reference_cor = readRDS(here::here("data/recount_adeno_cor.rds"))
+fractions = (c(seq(0.01, 0.05, 0.01), seq(0.1, 0.9, 0.05)))
+set.seed(1234)
 
 the_plan <-
   drake_plan(
@@ -40,20 +43,40 @@ the_plan <-
      }
    ),
    
-   transcript_data = readRDS(here::here("data/recount_adeno_scaled_counts.rds")),
+   transcript_data = readRDS(here::here("data/recount_adeno_counts.rds")),
    transcript_pca = prcomp(t(log1p(transcript_data)), center = TRUE, scale. = FALSE),
    
-   select_row_fraction = target(
+   select_nonrandom_fraction = target(
       select_function(transcript_pca, transcript_data, fraction = frac_value),
       transform = cross(
-         frac_value = !!(c(seq(0.01, 0.05, 0.01), seq(0.1, 0.9, 0.05))),
+         frac_value = !!fractions[c(10, 14)],
          select_function = !!select_functions
       )
    ),
    
-   run_row_fraction = target(
-      run_fractional_correlation(select_row_fraction),
-      transform = map(select_row_fraction)
+   run_nonrandom_fraction = target(
+      run_fractional_correlation(select_nonrandom_fraction),
+      transform = map(select_nonrandom_fraction)
+   ),
+   
+   compare_nonrandom = target(
+      compare_fractional_correlation(run_nonrandom_fraction, reference_cor),
+      transform = map(run_nonrandom_fraction)
+   ),
+   
+   select_random_fraction = target(
+      select_random(transcript_data, fraction = frac_value),
+      transform = map(frac_value = !!fractions)
+   ),
+   
+   run_random_fraction = target(
+      run_fractional_correlation(select_random_fraction),
+      transform = map(select_random_fraction)
+   ),
+   
+   compare_random = target(
+      compare_fractional_correlation(run_random_fraction, reference_cor),
+      transform = map(run_random_fraction)
    ),
    
    improve_runtime = target(
