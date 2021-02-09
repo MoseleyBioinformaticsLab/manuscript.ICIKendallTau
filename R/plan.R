@@ -54,10 +54,9 @@ the_plan <-
       )
    ),
    
-   run_fraction = target(
-      run_fractional_correlation(select_fraction),
-      transform = map(select_fraction = c(select_nonrandom_fraction,
-                                          select_random_fraction))
+   run_nonrandom = target(
+      run_fractional_correlation(select_nonrandom_fraction),
+      transform = map(select_nonrandom_fraction)
    ),
    
    select_random_fraction = target(
@@ -65,11 +64,11 @@ the_plan <-
       transform = map(frac_value = !!fractions)
    ),
    
-   # run_random_fraction = target(
-   #    run_fractional_correlation(select_random_fraction),
-   #    transform = map(select_random_fraction)
-   # ),
-   # 
+   run_random = target(
+      run_fractional_correlation(select_random_fraction),
+      transform = map(select_random_fraction)
+   ),
+   
    # compare_nonrandom = target(
    #    compare_fractional_correlation(run_nonrandom_fraction, reference_cor),
    #    transform = map(run_nonrandom_fraction)
