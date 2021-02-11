@@ -45,12 +45,50 @@ In this manuscript we propose new definitions of concordant and discordant rank 
 We examine the effect of missing values on simulated data, comparing our information-content-informed Kendall-tau (ICI-Kt) method with other simple methods of handling the missing values, namely removing them or imputing them to zero.
 Finally, we examine the ability to recapitulate ICI-Kt correlation values calculated on a large feature -omics data set using feature subsets, which is useful as the run time of large feature data sets can become prohibitive.
 
+## Methods
 
-## Motivation
+### Implementation Details
+
+A reference implementation where the various concordant and discordant pair definitions are written as simple logical tests in R was produced to allow further exploration of methods for speeding up the calculation.
+In practice, it is possible to replace the missing values with a value that is smaller than all of the values in the two sets of values under consideration, and then do simple tests of signs to define concordant and discordant pairs (see the definitions of concordant and discordant pairs in Results).
+The special cases for ties can then be tested and counted and included or rejected depending on whether the "local" or "global" correlation definition are desired.
+
+C++ and R code implementations are in the src/kendallc.cpp and R/kendalltau.R files of the visualizationQualityControl R package, hosted at https://github.com/MoseleyBioinformaticsLab/visualizationQualityControl.
+The version of the code used in this manuscript is available on figshare.
+
+### Multiprocessing
+
+When a large number of samples need to be compared, it may be useful to split the comparisons across compute clusters.
+The *furrr* R package makes the definition of compute clusters easy.
+For a large matrix computation, we first define the sample - sample comparisons to be performed, and then check how many instances of compute are available (defined by a previous call to *furrr*), split the comparisons into a list that can be easily distributed using *furrr::future_map*.
+
+### Subsampling of Features
+
+In addition to using the full set of features to calculate sample - sample correlations, it is possible to select subsamples of the features and only use them to calculate correlations.
+Three methods were implemented: 1 - random selections; 2 - top set of features by variance; 3 - top set of features by variance of principal components.
+
+For (1), random selection, feature subsamples of 1 - 5%, and then in 5% increments to 90% were taken using the *sample* R function.
+For (2), selection by variance, feature variances across samples were calculated, and then the features ranked by their variances.
+For (3), selection by variance of the principal components.
+Using the full data set, PCA decomposition was performed, and the variance contribution of each PC calculated.
+The percent variance was used to define the number of features with high loadings on that PC to take to make up the total subsample, with each PC contributing relatively less and less features.
+Both the feature variance and PC variance subsample methods were run with subsamples of 30% and 50% of the features.
+
+In all subsamples, the sample - sample correlation differences to those generated with the full feature set were compared, and the median and standard deviation of all of the correlation differences calculated to evaluate the performance of the subsampling.
+
+
+### Computing Environment
+
+All calculations were run on desktop machines with Intel i7-4930K CPUs clocked at 3.4GHz, with 12 cores, and 64GB of RAM.
+The *drake* package was used to manage calculation dependencies, with each correlation of samples using internal multiprocessing via the *furrr* and *future* packages.
+
+## Results
+
+### Definition of Concordant and Discordant Pairs
 
 In the simplest form, the Kendall-tau correlation can be defined as:
 
-$$\tau = \frac{ | pairs_{concordant}  | - | pairs_{discordant}  |}{\binom{n}{2}}$$
+$$\tau = \frac{ | pairs_{concordant}  | - | pairs_{discordant}  |}{\left | pairs_{concordant} \right | + \left | pairs_{discordant} \right |}$$
 In this case a **pair** are any two $x$ and $y$ points from two different samples, consisting of $(x_i, x_j)$ and $(y_i, y_j)$.
 A concordant pair has the following classical definition:
 
@@ -84,3 +122,53 @@ Information content informed discordant pair definitions:
   * $!x_i \& x_j$ and $y_i > y_j$
   * $x_i \& !x_j$ and $!y_i \& y_j$
   * $!x_i \& x_j$ and $y_i \& !y_j$
+
+### Considering Ties
+
+Tied values contribute to neither of the concordant or discordant pair counts. 
+The original Kendall-tau formula can be easily modified to handle ties by adding the tied $x$ and $y$ values to the denominator, and in our special case of missing data, we can add the ties that result from both of $(x_i, x_j)$ and $(y_i, y_j)$ being missing.
+
+$$\tau = \frac{\left | pairs_{concordant} \right | - \left | pairs_{discordant} \right |}{\left | pairs_{concordant} \right | + \left | pairs_{discordant} \right | + \left | pairs_{xties} \right | + \left | pairs_{yties} \right | + \left | pairs_{missing} \right |}$$
+
+In the first instance, we remove those cases where both of the pairs are missing, as well as the following concordant and discordant pairs:
+
+  * $x_i \& !x_j$ and $y_i \& !y_j$ 
+  * $x_i \& x_j$ and $!y_i \& y_j$ 
+  * $x_i \& !x_j$ and $!y_i \& y_j$
+  * $!x_i \& x_j$ and $y_i \& !y_j$
+
+We refer to this case as the "local" ICI-Kt correlation.
+It is most appropriate for the comparison of only two samples, where we are concerned with what values are present in the two samples, and the odd case of missingness.
+
+The other case, where we leave the above definitions in, as well as the ties resulting from both $x$ and $y$ being missing, we refer to as the "global" ICI-Kt correlation.
+In this case, every single sample-sample correlation will consider the same number pair comparisons.
+This is more useful when analyzing correlations between multiple samples, not just two sets of data.
+
+### Comparison To Other Correlation Measures
+
+Obviously we need some information about how it compares in here ...., I may need to look at what I've done and rethink it.
+
+If I were a reader, what do I want to know??
+
+  * Comparison with Pearson & normal Kendall-tau with missing data.
+
+### Utility for Large Omics' Data Sets
+
+#### Example of Finding Outliers
+
+
+#### Using Random Subsamples
+
+```{r pretty_print}
+pretty_print = function(in_val){
+  sprintf(in_val, fmt = '%#.1f')
+}
+```
+
+Given the length of time it takes to run the calculations for larger datasets (in particular RNA-Seq data), we wondered if "good enough" results could be obtained using subsamples of the features across the samples.
+Our starting data is the set of samples from the *recount2* project, and narrowed down to the stage I (I, Ia, and Ib) adenocarcinoma tumor samples and normal tissue samples, with `r nrow(transcript_data)` features that have a non-zero value in at least one sample, and `r ncol(transcript_data)` samples.
+Using the full set of features, the sample - sample correlations were calculated in `r pretty_print(reference_cor$run_time / 60)`  minutes, or `r pretty_print(reference_cor$run_time / 3600)` hours.
+
+Given such long run times, we decided to investigate the effect of subsampling features to decrease run time while still retaining reasonable estimates of the sample - sample correlations.
+Figure X plots the feature subsample correlations for 10% and 30% of the features against those generated by the full set (A), as well as the histogram of the differences in values (B).
+The plot of the changes in standard deviation of the differences as a function of the percentage of subsampled features in Fig X(C) demonstrates that there is little value in using more than **XX%** of the subsampled features, while Fig X(D) demonstrates the significant time savings achieved by using subsampled features compared to the full set.
