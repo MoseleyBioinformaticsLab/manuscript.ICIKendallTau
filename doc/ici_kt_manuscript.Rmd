@@ -1,0 +1,86 @@
+---
+title: 'Information-Content-Informed Kendall-tau Correlation: Utilizing Missing Values'
+author: 'Robert M Flight & Hunter NB Moseley'
+date: '`r Sys.time()`'
+output: 
+  redoc::redoc
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Abstract
+
+Almost all correlation measures available today are unable to handle missing values.
+They either get ignored completely, or may be imputed and used in the calculation of the correlation coefficient.
+In both cases, the correlation value will be impacted from it's true value, whatever it should be based on having no missing data.
+Missing values occur in real life data for a variety of reasons. In -omics data sets, the primary reasons are being not present in a sample, or present but below the detection limit.
+Therefore, these missing data are not missing at random, but potentially encode some information by the fact of their "missingness".
+We propose the information-content-informed Kendall-tau (ICI-Kt) correlation measure, that allows missing values to carry explicit information in determination of concordant and discordant pairs.
+We show that the ICI-Kt allows the inclusion of missing data values using simulated and real data sets from RNA-seq experiments.
+Finally, we show that approximate ICI-Kt values can be found using smaller subsets of large data sets with significant time savings.
+
+An R package with the ICI-Kt correlation calculation is available in https://github.com/MoseleyBioinformaticsLab/visualizationQualityControl.
+
+## Introduction
+
+Correlation as a measure of the relatedness or similarity of two or more sets of data has a long history.
+It has been used and abused in various scientific fields since it's introduction, more recently for applications in the varied -omics' (genomics, transcriptomics, proteomics, and metabolomics).
+Correlation of features (RNA transcripts, proteins, metabolites) may be used to determine whether the features are related, as well as to generate feature - feature interaction networks for various analyses [STRING, WCGNA, and others I'm sure].
+Feature - feature correlation may also be used to inform which features are used for imputation of missing values [I know I've seen this somewhere ...].
+Correlation of samples in -omics may be used for evaluating whether all the samples from a particular condition are truly related to each other, as well as to inform the choice of analysis, and to check for outliers prior to other statistical analysis [Flight & Wentzell, Gierlinski et al].
+
+However, all analytical methods, and in particular the analytical methods used in -omics where so many analytes are being measured simultaneously; suffer from missing measurements.
+Of course some analytes will be missing at random just because of some issue with the instrument or that particular sample, but a large amount of missing measurements are left-censored due to analytes being below the detection limit of the instrument.
+Imputation of missing measurements in -omics samples is an active area of research, which we will not cover here beyond to say that it is worthwhile and very necessary in many instances.
+When it comes to calculating correlation, there are very few methods that explicitly account for missing data that we know of.
+In many cases, missing values may be imputed to zero (or another value) and then included in the correlation calculation.
+Imputation or replacement with zero is likely to lead to high inflation of Pearson and related correlation measures.
+Other methods might be to keep only those features with no missing values across samples (complete cases), or keep non-missing between any pair of samples (pairwise complete).
+Each of these are likely to mis-estimate the real sample - sample correlation values.
+
+Assuming that a majority of missing values are **not missing at random**, but rather result from left-censored distributions due to the analyte being below the detection limit, we propose that these missing values do in fact encode useful information that can be incorporated into correlation calculations, especially the Kendall-tau paired rank correlation coefficient.
+In this manuscript we propose new definitions of concordant and discordant rank pairs that include missing values, as well as methods for incorporating missing values into the number of tied values for the equivalent of the modified Kendall-tau coefficient.
+We examine the effect of missing values on simulated data, comparing our information-content-informed Kendall-tau (ICI-Kt) method with other simple methods of handling the missing values, namely removing them or imputing them to zero.
+Finally, we examine the ability to recapitulate ICI-Kt correlation values calculated on a large feature -omics data set using feature subsets, which is useful as the run time of large feature data sets can become prohibitive.
+
+
+## Motivation
+
+In the simplest form, the Kendall-tau correlation can be defined as:
+
+$$\tau = \frac{ | pairs_{concordant}  | - | pairs_{discordant}  |}{\binom{n}{2}}$$
+In this case a **pair** are any two $x$ and $y$ points from two different samples, consisting of $(x_i, x_j)$ and $(y_i, y_j)$.
+A concordant pair has the following classical definition:
+
+  * $x_i > x_j$ and $y_i > y_j$ 
+  * $x_i < x_j$ and $y_i < y_j$
+
+A discordant pair has the following classical definition:
+
+  * $x_i > x_j$ and $y_i < y_j$
+  * $x_i < x_j$ and $y_i > y_j$
+
+Assuming that the majority of missing values are not missing at random, but due to being below the detection limit, we can expand the concordant and discordant pair definitions to include missing values. Here $!x$ indicates a missing value.
+Information-content-informed concordant pair definitions:
+
+  * $x_i > x_j$ and $y_i > y_j$
+  * $x_i < x_j$ and $y_i < y_j$
+  * $x_i > x_j$ and $y_i \& !y_j$
+  * $x_i < x_j$ and $!y_i \& y_j$
+  * $x_i \& !x_j$ and $y_i > y_j$
+  * $!x_i \& x_j$ and $y_i < y_j$ 
+  * $x_i \& !x_j$ and $y_i \& !y_j$ 
+  * $x_i \& x_j$ and $!y_i \& y_j$ 
+  
+Information content informed discordant pair definitions:
+
+  * $x_i > x_j$ and $y_i < y_j$ 
+  * $x_i < x_j$ and $y_i > y_j$
+  * $x_i > x_j$ and $!y_i \& y_j$ 
+  * $x_i < x_j$ and $y_i \& !y_j$
+  * $x_i \& !x_j$ and $y_i < y_j$
+  * $!x_i \& x_j$ and $y_i > y_j$
+  * $x_i \& !x_j$ and $!y_i \& y_j$
+  * $!x_i \& x_j$ and $y_i \& !y_j$
