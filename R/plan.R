@@ -1,6 +1,11 @@
 select_functions = rlang::syms(c("var_select", "pca_select"))
 #reference_cor = readRDS(here::here("data/recount_adeno_cor.rds"))
 fractions = (c(seq(0.01, 0.05, 0.01), seq(0.1, 0.9, 0.05)))
+rep_10 = rep(0.1, 20)
+
+small_samples = seq(4, 40, 4)
+big_samples = seq(40, 264, 20)
+
 set.seed(1234)
 
 the_plan <-
@@ -78,7 +83,37 @@ the_plan <-
    #    compare_fractional_correlation(run_random_fraction, reference_cor),
    #    transform = map(run_random_fraction)
    # ),
-   # 
+   
+   select_random_multiple = target(
+      select_random(transcript_data, fraction = frac_value),
+      transform = map(frac_value = !!rep_10)
+   ),
+   
+   run_random_multiple = target(
+      run_fractional_correlation(select_random_multiple),
+      transform = map(select_random_multiple)
+   ),
+   
+   select_ss_small = target(
+      select_samples(transcript_data, n_sample = n_sample),
+      transform = map(n_sample = !!small_samples)
+   ),
+   
+   select_ss_big = target(
+      select_samples(transcript_data, n_sample = n_sample),
+      transform = map(n_sample = !!big_samples)
+   ),
+   
+   run_small = target(
+      run_small_samples(select_ss_small),
+      transform = map(select_ss_small)
+   ),
+   
+   run_big = target(
+     run_big_samples(select_ss_big),
+     transform = map(select_ss_big)
+   ),
+   
    improve_runtime = target(
       command = {
          rmarkdown::render(knitr_in("doc/improve_runtime.Rmd"))
