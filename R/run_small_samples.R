@@ -7,7 +7,7 @@
 ##' @return
 ##' @author rmflight
 ##' @export
-run_small_samples <- function(select_ss_small) {
+run_small_samples <- function(in_data) {
 
   future::plan(multicore(workers = 1))
   cor = visqc_ici_kendallt(t(in_data$data))
