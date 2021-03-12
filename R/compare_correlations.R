@@ -123,7 +123,7 @@ compare_negative_kt_c <- function(x, y, where_na, low_indices = FALSE, perspecti
 ##' @return
 ##' @author rmflight
 ##' @export
-compare_negative_pearson <- function(x, y, where_na, low_indices = FALSE) {
+compare_negative_pearson <- function(x, y, where_na, low_indices = FALSE, method = "pearson") {
   n_entry = length(x)
   furrr::future_map_dbl(where_na, function(use_na){
     #knitrProgressBar::update_progress(prog_where)
@@ -141,9 +141,9 @@ compare_negative_pearson <- function(x, y, where_na, low_indices = FALSE) {
     y_na = n_entry - y_na + 1
     tmp_y[y_na] = NA
     tmp_x[x_na] = NA
-    in_matrix = rbind(tmp_x, tmp_y)
-    out_res = locally_it_weighted_pairwise_correlation(in_matrix)
-    out_res$cor[1, 2]
+    in_matrix = cbind(tmp_x, tmp_y)
+    out_res = cor(in_matrix, use = "pairwise.complete.obs", method = method)
+    out_res[1, 2]
   }, .progress = TRUE)
 }
 
@@ -156,7 +156,7 @@ compare_negative_pearson <- function(x, y, where_na, low_indices = FALSE) {
 ##' @return
 ##' @author rmflight
 ##' @export
-compare_positive_pearson <- function(x, y, where_na, low_indices = FALSE) {
+compare_positive_pearson <- function(x, y, where_na, low_indices = FALSE, method = "pearson") {
   n_entry = length(x)
   #prog_where = knitrProgressBar::progress_estimated(length(where_na))
   furrr::future_map_dbl(where_na, function(use_na){
@@ -176,9 +176,9 @@ compare_positive_pearson <- function(x, y, where_na, low_indices = FALSE) {
     
     tmp_y[y_na] = NA
     tmp_x[x_na] = NA
-    in_matrix = rbind(tmp_x, tmp_y)
-    out_res = locally_it_weighted_pairwise_correlation(in_matrix)
-    out_res$cor[1, 2]
+    in_matrix = cbind(tmp_x, tmp_y)
+    out_res = cor(in_matrix, use = "pairwise.complete.obs", method = method)
+    out_res[1, 2]
   }, .progress = TRUE)
   
   
