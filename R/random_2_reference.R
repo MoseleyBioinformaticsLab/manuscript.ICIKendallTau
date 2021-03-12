@@ -3,8 +3,8 @@ random_2_reference = function(in_cor, ref_cor){
   tri_ref = extract_data(ref_cor)
   
   diff_cor = tri_cor - tri_ref
-  data.frame(median = median(diff, na.rm = TRUE),
-             sd = sd(diff, na.rm = TRUE),
+  data.frame(median = median(diff_cor, na.rm = TRUE),
+             sd = sd(diff_cor, na.rm = TRUE),
              time = in_cor$run_time,
              type = in_cor$type,
              fraction = in_cor$frac)

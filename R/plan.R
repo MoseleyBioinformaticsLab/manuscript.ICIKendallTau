@@ -47,12 +47,12 @@ the_plan <-
    realistic_positive_kendall = compare_positive_pearson(realistic_sample, realistic_sample, realistic_na, method = "kendall"),
    realistic_negative_kendall = compare_negative_pearson(realistic_sample, realistic_neg_sample, realistic_na, method = "kendall"),
    
-   kendall_pearson_comparison = target(
-     command = {
-       rmarkdown::render(knitr_in("doc/kendall_pearson_comparisons.Rmd"))
-       file_out("doc/kendall_pearson_comparisons.pdf")
-     }
-   ),
+   # kendall_pearson_comparison = target(
+   #   command = {
+   #     rmarkdown::render(knitr_in("doc/kendall_pearson_comparisons.Rmd"))
+   #     file_out("doc/kendall_pearson_comparisons.pdf")
+   #   }
+   # ),
    
    transcript_data = readRDS(here::here("data/recount_adeno_counts.rds")),
    transcript_pca = prcomp(t(log1p(transcript_data)), center = TRUE, scale. = FALSE),
@@ -122,9 +122,9 @@ the_plan <-
    
    ref_data = readRDS(here::here("data/reference_cor.rds")),
    
-   results_small = target(
-      random_2_reference(run_small, ref_data),
-      transform = map(run_small)
+   results_random = target(
+      random_2_reference(run_random, ref_data),
+      transform = map(run_random)
    ),
    
    improve_runtime = target(
