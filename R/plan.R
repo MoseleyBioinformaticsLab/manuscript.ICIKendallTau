@@ -127,6 +127,11 @@ the_plan <-
       transform = map(run_random)
    ),
    
+   combined_random = target(
+      bind_rows(results_random),
+      transform = combine(results_random)
+   ),
+   
    improve_runtime = target(
       command = {
          rmarkdown::render(knitr_in("doc/improve_runtime.Rmd"))
