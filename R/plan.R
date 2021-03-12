@@ -132,6 +132,46 @@ the_plan <-
       transform = combine(results_random)
    ),
    
+   results_small = target(
+      random_2_reference(run_small, ref_data),
+      transform = map(run_small)
+   ),
+   
+   combined_small = target(
+      bind_rows(results_small),
+      transform = combine(results_small)
+   ),
+   
+   results_big = target(
+      random_2_reference(run_big, ref_data),
+      transform = map(run_big)
+   ),
+   
+   combined_big = target(
+      bind_rows(results_big),
+      transform = combine(results_big)
+   ),
+   
+   results_nonrandom = target(
+      random_2_reference(run_nonrandom, ref_data),
+      transform = map(run_nonrandom)
+   ),
+   
+   combined_nonrandom = target(
+      bind_rows(results_nonrandom),
+      transform = combine(results_nonrandom)
+   ),
+   
+   results_rand_multiple = target(
+      random_2_reference(run_random_multiple, ref_data),
+      transform = map(run_random_multiple)
+   ),
+   
+   combined_rand_multiple = target(
+      bind_rows(results_rand_multiple),
+      transform = combine(results_rand_multiple)
+   ),
+   
    improve_runtime = target(
       command = {
          rmarkdown::render(knitr_in("doc/improve_runtime.Rmd"))
