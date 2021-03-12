@@ -32,6 +32,9 @@ the_plan <-
    positive_low_pearson = compare_positive_pearson(x, y, where_na, low_indices = TRUE),
    negative_low_pearson = compare_negative_pearson(x, y2, where_na, low_indices = TRUE),
    
+   positive_low_kendall = compare_positive_pearson(x, y, where_na, low_indices = TRUE, method = "kendall"),
+   negative_low_kendall = compare_negative_pearson(x, y2, where_na, low_indices = TRUE, method = "kendall"),
+   
    realistic_sample = create_sample(n = 1000),
    realistic_neg_sample = sort(realistic_sample, decreasing = TRUE),
    realistic_na = create_random_na(),
@@ -40,6 +43,9 @@ the_plan <-
    
    realistic_positive_pearson = compare_positive_pearson(realistic_sample, realistic_sample, realistic_na),
    realistic_negative_pearson = compare_negative_pearson(realistic_sample, realistic_neg_sample, realistic_na),
+   
+   realistic_positive_kendall = compare_positive_pearson(realistic_sample, realistic_sample, realistic_na, method = "kendall"),
+   realistic_negative_kendall = compare_negative_pearson(realistic_sample, realistic_neg_sample, realistic_na, method = "kendall"),
    
    kendall_pearson_comparison = target(
      command = {
@@ -112,6 +118,13 @@ the_plan <-
    run_big = target(
      run_big_samples(select_ss_big),
      transform = map(select_ss_big)
+   ),
+   
+   ref_data = readRDS(here::here("data/reference_cor.rds")),
+   
+   results_small = target(
+      random_2_reference(run_small, ref_data),
+      transform = map(run_small)
    ),
    
    improve_runtime = target(
