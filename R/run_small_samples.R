@@ -15,5 +15,7 @@ run_small_samples <- function(in_data) {
   cor$n_sample = in_data$n_sample
   cor
   future::plan(multicore)
+  
+  return(cor)
 
 }
