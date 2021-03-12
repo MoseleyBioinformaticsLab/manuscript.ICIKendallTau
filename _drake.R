@@ -12,3 +12,4 @@ drake_config(the_plan,
              lock_envir = FALSE,
              memory_strategy = "preclean",
              keep_going = TRUE)
+textme::textme("ici-kt done")
