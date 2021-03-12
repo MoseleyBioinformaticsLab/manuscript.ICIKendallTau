@@ -1,6 +1,6 @@
 var_select = function(pca_data, matrix_data, fraction){
   n_item = round(fraction * nrow(matrix_data))
-  var_rows = apply(matrix_data, 1, var)
+  var_rows = apply(matrix_data, 1, var, na.rm = TRUE)
   var_data = data.frame(row_id = rownames(matrix_data),
                         var = var_rows)
   var_data = dplyr::arrange(var_data, dplyr::desc(var))

@@ -35,8 +35,9 @@ the_plan <-
    positive_low_kendall = compare_positive_pearson(x, y, where_na, low_indices = TRUE, method = "kendall"),
    negative_low_kendall = compare_negative_pearson(x, y2, where_na, low_indices = TRUE, method = "kendall"),
    
-   realistic_sample = create_sample(n = 1000),
-   realistic_neg_sample = sort(realistic_sample, decreasing = TRUE),
+   realistic_sample_1 = create_sample(n = 1000),
+   realistic_sample_2 = create_sample(n = 1000),
+   realistic_neg_sample = sort(realistic_sample2, decreasing = TRUE),
    realistic_na = create_random_na(),
    realistic_positive_kt = compare_positive_kt(realistic_sample, realistic_sample, realistic_na),
    realistic_negative_kt = compare_negative_kt(realistic_sample, realistic_neg_sample, realistic_na),
@@ -57,8 +58,12 @@ the_plan <-
    transcript_data = readRDS(here::here("data/recount_adeno_counts.rds")),
    transcript_pca = prcomp(t(log1p(transcript_data)), center = TRUE, scale. = FALSE),
    
+   transcript_na = zero_to_na(transcript_data),
+   
+   ref_cor = visqc_ici_kendallt(t(transcript_na)),
+   
    select_nonrandom_fraction = target(
-      select_function(transcript_pca, transcript_data, fraction = frac_value),
+      select_function(transcript_pca, transcript_na, fraction = frac_value),
       transform = cross(
          frac_value = !!fractions[c(10, 14)],
          select_function = !!select_functions
@@ -71,7 +76,7 @@ the_plan <-
    ),
    
    select_random_fraction = target(
-      select_random(transcript_data, fraction = frac_value),
+      select_random(transcript_na, fraction = frac_value),
       transform = map(frac_value = !!fractions)
    ),
    
@@ -91,7 +96,7 @@ the_plan <-
    # ),
    
    select_random_multiple = target(
-      select_random(transcript_data, fraction = frac_value),
+      select_random(transcript_na, fraction = frac_value),
       transform = map(frac_value = !!rep_10)
    ),
    
@@ -101,12 +106,12 @@ the_plan <-
    ),
    
    select_ss_small = target(
-      select_samples(transcript_data, n_sample = n_sample),
+      select_samples(transcript_na, n_sample = n_sample),
       transform = map(n_sample = !!small_samples)
    ),
    
    select_ss_big = target(
-      select_samples(transcript_data, n_sample = n_sample),
+      select_samples(transcript_na, n_sample = n_sample),
       transform = map(n_sample = !!big_samples)
    ),
    
@@ -120,10 +125,8 @@ the_plan <-
      transform = map(select_ss_big)
    ),
    
-   ref_data = readRDS(here::here("data/reference_cor.rds")),
-   
    results_random = target(
-      random_2_reference(run_random, ref_data),
+      random_2_reference(run_random, ref_cor),
       transform = map(run_random)
    ),
    
@@ -133,7 +136,7 @@ the_plan <-
    ),
    
    results_small = target(
-      random_2_reference(run_small, ref_data),
+      random_2_reference(run_small, ref_cor),
       transform = map(run_small)
    ),
    
@@ -143,7 +146,7 @@ the_plan <-
    ),
    
    results_big = target(
-      random_2_reference(run_big, ref_data),
+      random_2_reference(run_big, ref_cor),
       transform = map(run_big)
    ),
    
@@ -153,7 +156,7 @@ the_plan <-
    ),
    
    results_nonrandom = target(
-      random_2_reference(run_nonrandom, ref_data),
+      random_2_reference(run_nonrandom, ref_cor),
       transform = map(run_nonrandom)
    ),
    
