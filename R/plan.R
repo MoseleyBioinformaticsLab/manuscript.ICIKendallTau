@@ -172,6 +172,12 @@ the_plan <-
       transform = combine(results_rand_multiple)
    ),
    
+   reshaped_random = reshape_data(combined_random),
+   reshaped_nonrandom = reshape_data(combined_nonrandom),
+   reshaped_multiple = reshape_data(combined_rand_multiple),
+   reshaped_small = reshape_data(combined_small),
+   reshaped_big = reshape_data(combined_big),
+   
    improve_runtime = target(
       command = {
          rmarkdown::render(knitr_in("doc/improve_runtime.Rmd"))

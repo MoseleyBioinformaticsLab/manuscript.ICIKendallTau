@@ -10,3 +10,5 @@ library(knitrProgressBar)
 library(furrr)
 library(rlang)
 future::plan(multicore)
+
+theme_set(cowplot::theme_cowplot())
