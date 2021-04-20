@@ -55,3 +55,27 @@ run_fractional_correlation = function(in_data){
   cor$frac = in_data$frac
   cor
 }
+
+run_fractional_pearson = function(in_data){
+  t1 = Sys.time()
+  out_cor = cor(in_data$data, method = "pearson", use = "pairwise.complete.obs")
+  t2 = Sys.time()
+  t_res = as.numeric(difftime(t2, t1, units = "secs"))
+  res = list(cor = out_cor,
+             run_time = t_res,
+             type = in_data$type,
+             frac = in_data$frac)
+  res
+}
+
+run_fractional_kendall = function(in_data){
+  t1 = Sys.time()
+  out_cor = cor(in_data$data, method = "kendall", use = "pairwise.complete.obs")
+  t2 = Sys.time()
+  t_res = as.numeric(difftime(t2, t1, units = "secs"))
+  res = list(cor = out_cor,
+             run_time = t_res,
+             type = in_data$type,
+             frac = in_data$frac)
+  res
+}

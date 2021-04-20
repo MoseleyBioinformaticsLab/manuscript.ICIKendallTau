@@ -136,7 +136,7 @@ the_plan <-
    ),
    
    results_small = target(
-      random_2_reference(run_small, ref_cor),
+      get_run_time(run_small),
       transform = map(run_small)
    ),
    
@@ -146,7 +146,7 @@ the_plan <-
    ),
    
    results_big = target(
-      random_2_reference(run_big, ref_cor),
+      get_run_time(run_big),
       transform = map(run_big)
    ),
    
