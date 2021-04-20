@@ -37,16 +37,16 @@ the_plan <-
    
    realistic_sample_1 = create_sample(n = 1000),
    realistic_sample_2 = create_sample(n = 1000),
-   realistic_neg_sample = sort(realistic_sample2, decreasing = TRUE),
+   realistic_neg_sample = sort(realistic_sample_2, decreasing = TRUE),
    realistic_na = create_random_na(),
-   realistic_positive_kt = compare_positive_kt(realistic_sample, realistic_sample, realistic_na),
-   realistic_negative_kt = compare_negative_kt(realistic_sample, realistic_neg_sample, realistic_na),
+   realistic_positive_kt = compare_positive_kt(realistic_sample_1, realistic_sample_2, realistic_na),
+   realistic_negative_kt = compare_negative_kt(realistic_sample_1, realistic_neg_sample, realistic_na),
    
-   realistic_positive_pearson = compare_positive_pearson(realistic_sample, realistic_sample, realistic_na),
-   realistic_negative_pearson = compare_negative_pearson(realistic_sample, realistic_neg_sample, realistic_na),
+   realistic_positive_pearson = compare_positive_pearson(realistic_sample_1, realistic_sample_2, realistic_na),
+   realistic_negative_pearson = compare_negative_pearson(realistic_sample_1, realistic_neg_sample, realistic_na),
    
-   realistic_positive_kendall = compare_positive_pearson(realistic_sample, realistic_sample, realistic_na, method = "kendall"),
-   realistic_negative_kendall = compare_negative_pearson(realistic_sample, realistic_neg_sample, realistic_na, method = "kendall"),
+   realistic_positive_kendall = compare_positive_pearson(realistic_sample_1, realistic_sample_2, realistic_na, method = "kendall"),
+   realistic_negative_kendall = compare_negative_pearson(realistic_sample_1, realistic_neg_sample, realistic_na, method = "kendall"),
    
    # kendall_pearson_comparison = target(
    #   command = {
