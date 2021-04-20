@@ -180,6 +180,14 @@ the_plan <-
    reshaped_multiple = reshape_data(combined_rand_multiple),
    
    # pearson and kendall results
+   setup_pearson = list(data = transcript_na,
+                        type = "random",
+                        frac = 1),
+   ref_pearson = run_fractional_pearson(setup_pearson),
+   ref_pearson_0 = run_fractional_pearson(setup_pearson, replace_0 = TRUE),
+   ref_kendall = run_fractional_kendall(setup_pearson),
+   ref_kendall_0 = run_fractional_kendall(setup_pearson, replace_0 = TRUE),
+   
    run_random_pearson = target(
       run_fractional_pearson(select_random_fraction),
       transform = map(select_random_fraction)
