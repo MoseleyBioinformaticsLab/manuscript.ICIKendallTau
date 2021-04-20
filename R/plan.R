@@ -166,7 +166,7 @@ the_plan <-
    ),
    
    results_rand_multiple = target(
-      random_2_reference(run_random_multiple, ref_data),
+      random_2_reference(run_random_multiple, ref_cor),
       transform = map(run_random_multiple)
    ),
    
@@ -178,8 +178,6 @@ the_plan <-
    reshaped_random = reshape_data(combined_random),
    reshaped_nonrandom = reshape_data(combined_nonrandom),
    reshaped_multiple = reshape_data(combined_rand_multiple),
-   reshaped_small = reshape_data(combined_small),
-   reshaped_big = reshape_data(combined_big),
    
    improve_runtime = target(
       command = {
