@@ -179,6 +179,28 @@ the_plan <-
    reshaped_nonrandom = reshape_data(combined_nonrandom),
    reshaped_multiple = reshape_data(combined_rand_multiple),
    
+   # pearson and kendall results
+   run_random_pearson = target(
+      run_fractional_pearson(select_random_fraction),
+      transform = map(select_random_fraction)
+   ),
+   
+   run_random_pearson_0 = target(
+      run_fractional_pearson(select_random_fraction, replace_0 = TRUE),
+      transform = map(select_random_fraction)
+   ),
+   
+   run_random_kendall = target(
+      run_fractional_kendall(select_random_fraction),
+      transform = map(select_random_fraction)
+   ),
+   
+   run_random_kendall_0 = target(
+      run_fractional_kendall(select_random_fraction, replace_0 = TRUE),
+      transform = map(select_random_fraction)
+   ),
+   
+   
    improve_runtime = target(
       command = {
          rmarkdown::render(knitr_in("doc/improve_runtime.Rmd"))

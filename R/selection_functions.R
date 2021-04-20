@@ -56,7 +56,12 @@ run_fractional_correlation = function(in_data){
   cor
 }
 
-run_fractional_pearson = function(in_data){
+run_fractional_pearson = function(in_data, replace_0 = FALSE){
+  if (replace_0) {
+    tmp_data = in_data$data
+    tmp_data[is.na(tmp_data)] = 0
+    in_data$data = tmp_data
+  }
   t1 = Sys.time()
   out_cor = cor(in_data$data, method = "pearson", use = "pairwise.complete.obs")
   t2 = Sys.time()
@@ -68,7 +73,12 @@ run_fractional_pearson = function(in_data){
   res
 }
 
-run_fractional_kendall = function(in_data){
+run_fractional_kendall = function(in_data, replace_0 = FALSE){
+  if (replace_0) {
+    tmp_data = in_data$data
+    tmp_data[is.na(tmp_data)] = 0
+    in_data$data = tmp_data
+  }
   t1 = Sys.time()
   out_cor = cor(in_data$data, method = "kendall", use = "pairwise.complete.obs")
   t2 = Sys.time()
