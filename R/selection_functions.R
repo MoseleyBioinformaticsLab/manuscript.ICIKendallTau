@@ -120,7 +120,7 @@ multicore_kendallt = function(data_matrix){
   null_comparisons = purrr::map_lgl(split_comparisons, is.null)
   split_comparisons = split_comparisons[!null_comparisons]
   
-  do_split = function(do_comparisons, exclude_data, perspective) {
+  do_split = function(do_comparisons, data_matrix) {
     #seq_range = seq(in_range[1], in_range[2])
     #print(seq_range)
     tmp_cor = matrix(0, nrow = ncol(data_matrix), ncol = ncol(data_matrix))
@@ -138,11 +138,11 @@ multicore_kendallt = function(data_matrix){
   # itself, as some of the other operations will add a bit of time
   # 
   t1 = Sys.time()
-  split_cor = furrr::future_map(split_comparisons, do_split, exclude_data, perspective)
+  split_cor = furrr::future_map(split_comparisons, do_split, data_matrix)
   t2 = Sys.time()
   t_diff = as.numeric(difftime(t2, t1, units = "secs"))
   
-  cor_matrix = matrix(0, nrow = ncol(exclude_data), ncol = ncol(data_matrix))
+  cor_matrix = matrix(0, nrow = ncol(data_matrix), ncol = ncol(data_matrix))
   rownames(cor_matrix) = colnames(cor_matrix) = colnames(data_matrix)
   for (isplit in split_cor) {
     cor_matrix = cor_matrix + isplit
