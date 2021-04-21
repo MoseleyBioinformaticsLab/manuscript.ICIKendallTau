@@ -12,16 +12,16 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ## Abstract
 
-Almost all correlation measures available today are unable to handle missing values.
-They either get ignored completely, or may be imputed and used in the calculation of the correlation coefficient.
-In both cases, the correlation value will be impacted from it's true value, whatever it should be based on having no missing data.
-Missing values occur in real life data for a variety of reasons. In -omics data sets, the primary reasons are being not present in a sample, or present but below the detection limit.
-Therefore, these missing data are not missing at random, but potentially encode some information by the fact of their "missingness".
-We propose the information-content-informed Kendall-tau (ICI-Kt) correlation measure, that allows missing values to carry explicit information in determination of concordant and discordant pairs.
+Almost all correlation measures currently available are unable to handle missing values.
+Missing values either get ignored completely by removing them, or may be imputed and used in the calculation of the correlation coefficient.
+In both cases, the correlation value will be impacted from it's true value, whatever it should be based on the ideal of no missing data.
+Missing values occur in real life data for a variety of reasons. In -omics data sets, the primary reasons are not being present in a sample, or present but below the detection limit.
+Therefore, these missing data are not missing at random, but potentially encode some information by their "missingness".
+We propose the information-content-informed Kendall-tau (ICI-Kt) correlation coefficient, that allows missing values to carry explicit information in determination of concordant and discordant pairs.
 We show that the ICI-Kt allows the inclusion of missing data values using simulated and real data sets from RNA-seq experiments.
-Finally, we show that approximate ICI-Kt values can be found using smaller subsets of large data sets with significant time savings.
+Finally, we show that approximate ICI-Kt values can be calculated using smaller subsets of large data sets with significant time savings.
 
-An R package with the ICI-Kt correlation calculation is available in https://github.com/MoseleyBioinformaticsLab/visualizationQualityControl.
+The ICI-Kt correlation calculation is available as part of the visualizationQualityControl package at  https://github.com/MoseleyBioinformaticsLab/visualizationQualityControl.
 
 ## Introduction
 
