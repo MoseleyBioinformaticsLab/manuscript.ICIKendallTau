@@ -9,6 +9,7 @@ library(tidyr)
 library(knitrProgressBar)
 library(furrr)
 library(rlang)
+library(patchwork)
 future::plan(multicore)
 
 theme_set(cowplot::theme_cowplot())
