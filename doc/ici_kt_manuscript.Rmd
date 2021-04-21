@@ -155,6 +155,20 @@ Then $n$ is the length of the variables, $m$ is the count of missing values acro
 
 ### Comparison To Other Correlation Measures
 
+We compared the ICI-Kt correlation to both Pearson and regular Kendall correlations in a variety of simulated scenarios, as well as a large RNA-seq dataset.
+The simplest scenario is to generate three samples, where two are perfectly correlated, and the second perfectly anti-correlated, and replace the values in each systematically with missing values (in this case NA), and compute the ICI-Kt, Pearson, and Kendall correlations.
+
+```{r compare_simple}
+loadd(positive_kt)
+loadd(positive_pearson)
+positive_pearson[is.na(positive_pearson)] = 0
+
+compare_df = data.frame(ici_kt = positive_kt,
+                        pearson = positive_pearson)
+ggplot(compare_df, aes(x = pearson, y = ici_kt)) + geom_point()
+#
+#loadd(positive_kendall)
+```
 
 
 ### Utility for Large Omics' Data Sets
