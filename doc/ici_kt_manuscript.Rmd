@@ -155,11 +155,7 @@ Then $n$ is the length of the variables, $m$ is the count of missing values acro
 
 ### Comparison To Other Correlation Measures
 
-Obviously we need some information about how it compares in here ...., I may need to look at what I've done and rethink it.
 
-If I were a reader, what do I want to know??
-
-**I need to discuss switching to Pearson and Kendall-tau with Hunter**.
 
 ### Utility for Large Omics' Data Sets
 
@@ -187,7 +183,7 @@ min_sd = combined_random %>%
 combined_random = combined_random %>%
   dplyr::mutate(sd_ratio = sd / min_sd)
 long_random = combined_random %>%
-  dplyr::mutate(`Log2(Time)` = log2(time),
+  dplyr::mutate(`Log2(Run Time)` = log2(time),
                 `Median(diff)` = median,
                 `Ratio(SD(diff))` = sd_ratio) %>%
   dplyr::select(-sd, -time, -median, -sd_ratio) %>%
@@ -199,6 +195,11 @@ random_plot = ggplot(long_random, aes(x = fraction, y = value)) +
   facet_wrap(~ measure, scales = "free", nrow = 1)
 
 loadd(combined_rand_multiple)
+combined_rand_multiple  = combined_rand_multiple %>%
+  dplyr::mutate(`Median(diff)` = median,
+                SD = sd,
+                `Run Time` = time) %>%
+  dplyr::select(-median, -sd, -time)
 long_rand_multiple = tidyr::pivot_longer(combined_rand_multiple, cols = !c(fraction, type), names_to = "measure", values_to = "value")
 
 replicate_plot = ggplot(long_rand_multiple, aes(x = value)) + geom_histogram() +
