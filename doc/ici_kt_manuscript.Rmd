@@ -4,10 +4,12 @@ author: 'Robert M Flight & Hunter NB Moseley'
 date: '`r Sys.time()`'
 output: 
   redoc::redoc
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 ```
 
 ## Abstract
@@ -170,6 +172,73 @@ ggplot(compare_df, aes(x = pearson, y = ici_kt)) + geom_point()
 #loadd(positive_kendall)
 ```
 
+A slightly more realistic comparison is to create two samples with 1000 observations each drawn from a log-normal distribution, and sorted in each case.
+The *true* correlation for each of the Kendall and Pearson correlations can be calculated, and then missingness introduced in the lower range of values.
+
+```{r compare_realistic}
+loadd(realistic_sample_1)
+loadd(realistic_sample_2)
+loadd(realistic_neg_sample)
+ref_pearson = cor(realistic_sample_1, realistic_sample_2)
+ref_kendall = visqc_ici_kendallt(rbind(realistic_sample_1, realistic_sample_2), exclude_0 = FALSE, scale_max = FALSE)$cor[2,1]
+
+ref_pearson_neg = cor(realistic_sample_1, realistic_neg_sample)
+ref_kendall_neg = visqc_ici_kendallt(rbind(realistic_sample_1, realistic_neg_sample), exclude_0 = FALSE, scale_max = FALSE)$cor[2,1]
+
+loadd(realistic_na)
+n_na = purrr::map_int(realistic_na, length)
+loadd(realistic_positive_pearson)
+loadd(realistic_positive_kendall)
+loadd(realistic_positive_kt)
+loadd(realistic_negative_pearson)
+loadd(realistic_negative_kendall)
+loadd(realistic_negative_kt)
+positive_df = rbind(data.frame(cor = realistic_positive_pearson,
+                                diff = ref_pearson - realistic_positive_pearson,
+                                na = n_na,
+                                type = "pearson",
+                                dir = "positive"),
+                     data.frame(cor = realistic_positive_kendall,
+                                diff = ref_kendall - realistic_positive_kendall,
+                                na = n_na,
+                                type = "kendall",
+                                dir = "positive"),
+                     data.frame(cor = realistic_positive_kt,
+                                diff = ref_kendall - realistic_positive_kt,
+                                na = n_na,
+                                type = "icikt",
+                                dir = "positive"))
+negative_df = rbind(data.frame(cor = realistic_negative_pearson,
+                                diff = ref_pearson_neg - realistic_negative_pearson,
+                                na = n_na,
+                                type = "pearson",
+                                dir = "negative"),
+                     data.frame(cor = realistic_negative_kendall,
+                                diff = ref_kendall_neg - realistic_negative_kendall,
+                                na = n_na,
+                                type = "kendall",
+                                dir = "negative"),
+                     data.frame(cor = realistic_negative_kt,
+                                diff = ref_kendall_neg - realistic_negative_kt,
+                                na = n_na,
+                                type = "icikt",
+                                dir = "negative"))
+pos_diff = ggplot(positive_df, aes(x = na, y = diff)) + 
+  geom_point() +
+  facet_grid(type ~ ., scales = "free") +
+  labs(subtitle = "Positive Correlation")
+neg_diff = ggplot(negative_df, aes(x = na, y = diff)) +
+  geom_point() +
+  facet_grid(type ~ ., scales = "free") +
+  labs(subtitle = "Negative Correlation")
+pos_diff + neg_diff
+```
+
+**Fig X**. The effect on correlation as increasing numbers of entries in either or both samples are changed to NA for ICI-Kendall-tau, Kendall-tau, and Pearson.
+
+In **Figure X**, we can see that as missing values are added, only the ICI-Kendall-tau correlation values change in any significant way.
+As the number of missing values increase, the ICI-Kendall-tau values drop or increase by up to 0.2.
+Similarly, Pearson correlation is also affected, but the degree of change in the correlation values are much less, on the order of only 1x10-4 for the positive case.
 
 ### Utility for Large Omics' Data Sets
 
