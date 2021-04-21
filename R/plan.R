@@ -35,6 +35,9 @@ the_plan <-
    positive_low_kendall = compare_positive_pearson(x, y, where_na, low_indices = TRUE, method = "kendall"),
    negative_low_kendall = compare_negative_pearson(x, y2, where_na, low_indices = TRUE, method = "kendall"),
    
+   positive_kendall = compare_positive_pearson(x, y, where_na, method = "kendall"),
+   negative_kendall = compare_negative_pearson(x, y2, where_na, method = "kendall"),
+   
    realistic_sample_1 = create_sample(n = 1000),
    realistic_sample_2 = create_sample(n = 1000),
    realistic_neg_sample = sort(realistic_sample_2, decreasing = TRUE),
