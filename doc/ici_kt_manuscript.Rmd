@@ -138,11 +138,11 @@ In the first instance, we remove those cases where both of the pairs are missing
   * $!x_i \& x_j$ and $y_i \& !y_j$
 
 We refer to this case as the "local" ICI-Kt correlation.
-It is most appropriate for the comparison of only two samples, where we are concerned with what values are present in the two samples, and the odd case of missingness.
+It is most appropriate for the comparison of only two samples, where we are concerned with what values are present in the two samples, with the odd case of missingness.
 
 The other case, where we leave the above definitions in, as well as the ties resulting from both $x$ and $y$ being missing, we refer to as the "global" ICI-Kt correlation.
 In this case, every single sample-sample correlation will consider the same number pair comparisons.
-This is more useful when analyzing correlations between multiple samples, not just two sets of data.
+This is more useful when analyzing correlations across multiple samples, not just two sets of data.
 
 ### Theoretical Maxima
 
@@ -150,7 +150,7 @@ The "global" case also provides an interesting property, whereby we can calculat
 This value can be useful to scale the rest of the observed correlation values across many sample - sample correlations, providing a value that scales an entire dataset appropriately.
 
 $$cor_{max} = \frac{\binom{n-m}{2} + n * m}{\binom{n-m}{2} + n * m + \binom{m}{2}}$$
-For this, we choose the two samples with the least number of missing values across the dataset.
+To calculate the theoretical maximum correlation for rescaling, we choose the two samples with the least number of missing values across the dataset.
 Then $n$ is the length of the variables, $m$ is the count of missing values across the two samples divided by two and rounded towards zero.
 
 ### Comparison To Other Correlation Measures
@@ -172,6 +172,16 @@ If I were a reader, what do I want to know??
 pretty_print = function(in_val){
   sprintf(in_val, fmt = '%#.1f')
 }
+```
+
+```{r load_ici_timings}
+reshaped_random = readRDS(here::here("data", "reshaped_random.rds"))
+reshaped_nonrandom = readRDS(here::here("data", "reshaped_nonrandom.rds"))
+
+ggplot(reshaped_random, aes(x = fraction, y = value)) + 
+  geom_line() + 
+  facet_wrap(~ measure, ncol = 2, scales = "free") +
+  geom_vline(xintercept = 0.1, color = "red")
 ```
 
 Given the length of time it takes to run the calculations for larger datasets (in particular RNA-Seq data), we wondered if "good enough" results could be obtained using subsamples of the features across the samples.
