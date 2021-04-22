@@ -215,6 +215,8 @@ the_plan <-
    right_censored_cor = right_censor_correlate(right_censored_samples),
    random_censored_cor = random_censor_correlate(right_censored_samples),
    
+   egfr_cor = run_egfr_cor(),
+   
    improve_runtime = target(
       command = {
          rmarkdown::render(knitr_in("doc/improve_runtime.Rmd"))
