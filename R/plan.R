@@ -212,6 +212,8 @@ the_plan <-
    ),
    
    right_censored_samples = create_rc_samples(),
+   right_censored_cor = right_censor_correlate(right_censored_samples),
+   random_censored_cor = random_censor_correlate(right_censored_samples),
    
    improve_runtime = target(
       command = {
