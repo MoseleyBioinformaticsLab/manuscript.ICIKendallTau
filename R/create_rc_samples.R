@@ -59,7 +59,7 @@ random_censor_correlate = function(rc_samples, n_na = seq(0, 300, 50)){
     p_cor_0 = cor(tmp_rc, method = "pearson")[1,2]
     k_cor_0 = cor(tmp_rc, method = "kendall")[1,2]
     
-    data.frame(cor = c(ici_cor,
+    tmp_frame = data.frame(cor = c(ici_cor,
                        p_cor,
                        k_cor,
                        p_cor_0,
@@ -70,6 +70,8 @@ random_censor_correlate = function(rc_samples, n_na = seq(0, 300, 50)){
                          "pearson_0",
                          "kendall_0"),
                n_na = in_na)
+    tmp_frame$na_locs = list(na_locs)
+    tmp_frame
     
   })
   censor_cor
