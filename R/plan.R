@@ -211,6 +211,7 @@ the_plan <-
       transform = map(select_random_fraction)
    ),
    
+   right_censored_samples = create_rc_samples(),
    
    improve_runtime = target(
       command = {
