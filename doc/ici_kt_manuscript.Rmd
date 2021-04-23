@@ -39,7 +39,7 @@ Imputation of missing measurements in -omics samples is an active area of resear
 When it comes to calculating correlation, there are very few methods that explicitly account for missing data that we know of.
 In many cases, missing values may be imputed to zero (or another value) and then included in the correlation calculation.
 Imputation or replacement with zero is likely to lead to high inflation of Pearson and related correlation measures.
-Other methods might be to keep only those features with no missing values across samples (complete cases), or keep non-missing between any pair of samples (pairwise complete).
+Other methods might be to keep only those features with no missing values across samples (complete cases), or keep non-missing between any pair of samples (pairwise complete cases).
 Each of these are likely to mis-estimate the real sample - sample correlation values.
 
 Assuming that a majority of missing values are **not missing at random**, but rather result from left-censored distributions due to the analyte being below the detection limit, we propose that these missing values do in fact encode useful information that can be incorporated into correlation calculations, especially the Kendall-tau paired rank correlation coefficient.
@@ -179,7 +179,7 @@ Then $n$ is the length of the variables, $m$ is the count of missing values acro
 ### Comparison To Other Correlation Measures
 
 We compared the ICI-Kt correlation to both Pearson and regular Kendall correlations with simulated missing data, as well as a large RNA-seq dataset.
-The simplest scenario is to create three samples, where two are perfectly correlated, and the second perfectly anti-correlated, and replace the values in each systematically with missing values (in this case NA), and compute the ICI-Kt, Pearson, and Kendall correlations.
+The simplest simulated samples are to create three samples, where two are perfectly correlated, and the second perfectly anti-correlated, and replace the values in each systematically with missing values (in this case NA), and compute the ICI-Kt, Pearson, and Kendall correlations.
 
 ```{r compare_simple}
 loadd(positive_kt)
@@ -189,12 +189,12 @@ positive_pearson[is.na(positive_pearson)] = 0
 compare_df = data.frame(ici_kt = positive_kt,
                         pearson = positive_pearson)
 ggplot(compare_df, aes(x = pearson, y = ici_kt)) + geom_point()
-#
-#loadd(positive_kendall)
 ```
 
+**I'm not sure if I'll include these, because these were mostly done to check that the calculations were correct**.
+
 A slightly more realistic comparison is to create two samples with 1000 observations each drawn from a log-normal distribution, and sorted in each case.
-The *true* correlation for each of the Kendall and Pearson correlations can be calculated, and then missingness introduced in the lower range of values.
+The *true* correlation for each of the Kendall and Pearson correlations can be calculated, and then missingness introduced in the lower range of values (see Methods).
 
 ```{r compare_realistic}
 loadd(realistic_sample_1)
@@ -255,10 +255,10 @@ neg_diff = ggplot(negative_df, aes(x = na, y = diff)) +
 pos_diff + neg_diff
 ```
 
-**Fig X**. The effect on correlation as increasing numbers of entries in either or both samples are changed to NA for ICI-Kendall-tau, Kendall-tau, and Pearson.
+**Fig X**. The effect on correlation as increasing numbers of entries in either or both samples are changed to NA for ICI-Kt, Kendall, and Pearson.
 
-In **Figure X**, we can see that as missing values are added, only the ICI-Kendall-tau correlation values change in any significant way.
-As the number of missing values increase, the ICI-Kendall-tau values drop or increase by up to 0.2.
+In **Figure X**, we can see that as missing values are added, only the ICI-Kt correlation values change in any significant way.
+As the number of missing values increase, the ICI-Kt values drop or increase by up to 0.2.
 Similarly, Pearson correlation is also affected, but the degree of change in the correlation values are much less, on the order of only 1x10-4 for the positive case.
 
 ### Utility in Large Omics' Data Sets
@@ -290,6 +290,30 @@ diff_vals = data.frame(ref = extract_data(ref_cor),
 diff_vals = diff_vals %>%
   dplyr::mutate(diff_1 = f_1 - ref,
                 diff_3 = f_3 - ref)
+ref_f1_f3 = 
+  (ggplot(diff_vals, aes(x = ref, y = f_1)) + geom_point() +
+     labs(x = "full correlation", y = "10% features") +
+     coord_equal()) /
+  (ggplot(diff_vals, aes(x = ref, y = f_3)) + geom_point() +
+     labs(x = "full correlation", y = "30% features") +
+     coord_equal())
+diff_f1_f3 = 
+  (ggplot(diff_vals, aes(x = diff_1)) +
+     geom_histogram(bins = 100) +
+     labs(x = "10% features") +
+     coord_cartesian(xlim = c(-0.01, 0.01))) /
+  (ggplot(diff_vals, aes(x = diff_3)) +
+     geom_histogram(bins = 100) +
+     labs(x = "30% features") +
+     coord_cartesian(xlim = c(-0.01, 0.01)))
+
+f1_f3_plot = ref_f1_f3 | diff_f1_f3
+f1_f3_plot
+```
+
+**Fig X**. Differences of correlation calculated for the ICI-Kt method using the full set of features and 10% and 30% of features as a scatterplot (left) and histogram (right).
+
+```{r variables_as_percent}
 loadd(combined_random)
 min_sd = combined_random %>%
   dplyr::pull(sd) %>%
@@ -327,22 +351,52 @@ Sample-sample correlation differences are computed with respect to the correlati
 Bottom: Median differences, standard deviations and times to compute the sample-sample correlations for 20 different random feature samples using 10% of the features.
 
 Given the length of time it takes to run the calculations for larger datasets (in particular RNA-Seq data), we wondered if "good enough" results could be obtained using subsamples of the features across the samples.
-Our starting data is the set of samples from the *recount2* project, and narrowed down to the stage I (I, Ia, and Ib) adenocarcinoma tumor samples and normal tissue samples, with `r nrow(transcript_data)` features that have a non-zero value in at least one sample, and `r ncol(transcript_data)` samples.
+Our starting data is a set of stage I (I, Ia, and Ib) adenocarcinoma tumor and normal tissue RNA-Seq samples from the *recount2* project, with `r nrow(transcript_data)` features that have a non-zero value in at least one sample, and `r ncol(transcript_data)` samples.
 Using the full set of features, the sample - sample correlations were calculated in `r pretty_print(ref_cor$run_time / 60)`  minutes, or `r pretty_print(ref_cor$run_time / 3600)` hours (on an 80 core machine).
 This translates to days on machines with fewer cores.
 
 Given such long run times, we decided to investigate the effect of subsampling features to decrease run time while still retaining reasonable estimates of the sample - sample correlations.
-Figure X plots the feature subsample correlations for 10% and 30% of the features against those generated by the full set (A), as well as the histogram of the differences in values (B).
-The plot of the changes in standard deviation of the differences as a function of the percentage of subsampled features in Fig X(C) demonstrates that there is little value in using more than **XX%** of the subsampled features, while Fig X(D) demonstrates the significant time savings achieved by using subsampled features compared to the full set.
+Figure X plots the feature subsample correlations for 10% and 30% of the features against those generated by the full set (left), as well as the histogram of the differences in values (right).
+The plot of the changes in standard deviation (SD) of the differences as a function of the percentage of subsampled features in Fig X(top, Ratio(SD(diff))) demonstrates that the SD quickly goes towards the minimum ratio of the minimum ratio of SD, while the run time similarly increases extremely quickly (time is on a log2 scale, so each unit is a doubling of the run time).
 
-Using the 10% level of feature subsampling, we also repeated the calculations 20 times with new subsets to verify that the results were not dependent on any particular subsample of features.
+Using the 10% level of feature subsampling, we also repeated the calculations 20 times with new subsets to verify that the results were not dependent on any particular subsample of features (Figure X (bottom)).
+
+Similar graphs of the median and SD for versions of Pearson and Kendall correlation are included in the supplemental materials.
 
 #### Dependence on Number of Samples
 
-Finally, we wanted to characterize the time required as a function of the number of samples, and therefore the number of sample - sample comparisons. 
+Finally, we wanted to characterize the time required as a function of the number of samples, and therefore the number of sample - sample comparisons.
+For this, we ran with small numbers of samples **without** parallelization enabled, and then with larger numbers of samples **with** parallelization enabled.
 
-**I need to discuss what exactly we want to do here with Hunter**.
+```{r dependence_number}
+loadd(combined_small)
+loadd(combined_big)
+combined_small = combined_small %>%
+  dplyr::mutate(set = "small")
+combined_big = combined_big %>%
+  dplyr::mutate(set = "large")
+all_samples = rbind(combined_small, combined_big)
+all_samples$set = factor(all_samples$set, levels = c("small", "large"), ordered = TRUE)
 
+ggplot(all_samples, aes(x = n_sample, y = log2(time))) + 
+  geom_line() +
+  facet_wrap(~ set, nrow = 1, scales = "free_x") +
+  labs(x = "Number of Samples",
+       y = "Log2(Time) (s)")
+```
+
+**Fig X**. Time taken by the ICI-Kt as a function of the number of samples, using 2 - 40 samples without parallelization, and 50 - 250 samples with parallelization.
+
+As samples are added, the run time quickly increases, much as the number of features added also quickly increases.
+With enough cores (80 in this case), the increase in time as samples are added increases in a similar way, and in fact the 6.5 times number of samples can be run in a similar amount of time as the 40 samples on a single core.
+
+### Discussion
+
+???
+
+### Conclusions
+
+???
 
 ## Author Contributions
 
