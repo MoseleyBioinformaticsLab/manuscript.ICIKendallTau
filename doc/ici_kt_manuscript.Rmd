@@ -255,7 +255,7 @@ neg_diff = ggplot(negative_df, aes(x = na, y = diff)) +
 pos_diff + neg_diff
 ```
 
-**Fig X**. The effect on correlation as increasing numbers of entries in either or both samples are changed to NA for ICI-Kt, Kendall, and Pearson.
+**Fig X**. The effect on correlation as increasing numbers of entries in either or both samples are replaced with missing values for ICI-Kt, Kendall, and Pearson.
 
 In **Figure X**, we can see that as missing values are added, only the ICI-Kt correlation values change in any significant way.
 As the number of missing values increase, the ICI-Kt values drop or increase by up to 0.2.
@@ -265,7 +265,13 @@ Similarly, Pearson correlation is also affected, but the degree of change in the
 
 #### Examples of Finding Outliers
 
-**I can't figure out which of Christine's datasets this was for anymore ...**
+We analyzed two RNA-Seq datasets for possible outliers using ICI-Kt.
+The first is a collection of 56 samples in a cancer model and trying to determine differences in expression with and without EGFR as well as grown flat or as organoids.
+ICI-Kt correlations were calculated using the genes that had a non-zero count in at least one of the samples.
+For each sample, the median ICI-Kt value was calculated amongst the samples for each of the defined groups.
+Two samples were found to have low correlations within their group.
+
+For the adenocarcinoma data, median correlations within the tumor and normal groups were calculated.
 
 
 #### Using Random Subsamples
@@ -311,7 +317,7 @@ f1_f3_plot = ref_f1_f3 | diff_f1_f3
 f1_f3_plot
 ```
 
-**Fig X**. Differences of correlation calculated for the ICI-Kt method using the full set of features and 10% and 30% of features as a scatterplot (left) and histogram (right).
+**Fig X**. Sample-sample ICI-Kt correlations using the full set of features and 10% and 30% of features. Plotted against the full feature set (left), and histogram of the differences to the full feature set (right).
 
 ```{r variables_as_percent}
 loadd(combined_random)
@@ -328,6 +334,8 @@ long_random = combined_random %>%
   tidyr::pivot_longer(cols = !c(type, fraction),
                       names_to = "measure",
                       values_to = "value") 
+long_random$measure = factor(long_random$measure, 
+                             levels = c("Ratio(SD(diff))", "Median(diff)", "Log2(Run Time)"), ordered = TRUE)
 random_plot = ggplot(long_random, aes(x = fraction, y = value)) + 
   geom_line() +
   facet_wrap(~ measure, scales = "free", nrow = 1)
@@ -339,6 +347,9 @@ combined_rand_multiple  = combined_rand_multiple %>%
                 `Run Time` = time) %>%
   dplyr::select(-median, -sd, -time)
 long_rand_multiple = tidyr::pivot_longer(combined_rand_multiple, cols = !c(fraction, type), names_to = "measure", values_to = "value")
+long_rand_multiple$measure = factor(long_rand_multiple$measure,
+                                    levels = c("SD", "Median(diff)", "Run Time"),
+                                    ordered = TRUE)
 
 replicate_plot = ggplot(long_rand_multiple, aes(x = value)) + geom_histogram() +
   facet_wrap(~ measure, scales = "free", nrow = 1)
