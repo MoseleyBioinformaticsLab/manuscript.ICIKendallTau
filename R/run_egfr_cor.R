@@ -22,7 +22,10 @@ find_egfr_outliers = function(egfr_cor){
   
   egfr_cor = egfr_cor[egfr_info$sample, egfr_info$sample]
   med_cor = median_correlations(egfr_cor, egfr_info$type)
-  out_frac = outlier_fraction(t(count_matrix), egfr_info$type)
+  out_frac = outlier_fraction(t(log1p(count_matrix)), egfr_info$type)
   out_samples = determine_outliers(med_cor, out_frac, frac_weight = 0)
+  hi_cor = dplyr::filter(out_samples, med_cor >= median(med_cor), outlier) %>%
+    dplyr::pull(sample_id)
+  out_samples[out_samples$sample_id %in% hi_cor, "outlier"] = FALSE
   out_samples
 }
