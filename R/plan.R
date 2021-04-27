@@ -216,6 +216,7 @@ the_plan <-
    random_censored_cor = random_censor_correlate(right_censored_samples),
    
    egfr_cor = run_egfr_cor(),
+   egfr_outliers = find_egfr_outliers(egfr_cor),
    
    improve_runtime = target(
       command = {

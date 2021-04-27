@@ -14,3 +14,15 @@ run_egfr_cor <- function() {
   count_cor
 
 }
+
+find_egfr_outliers = function(egfr_cor){
+  count_matrix = readRDS(here::here("data", "brainson_egfr_counts.rds"))
+  egfr_info = readRDS(here::here("data", "brainson_egfr_info.rds"))
+  count_matrix = count_matrix[, egfr_info$sample]
+  
+  egfr_cor = egfr_cor[egfr_info$sample, egfr_info$sample]
+  med_cor = median_correlations(egfr_cor, egfr_info$type)
+  out_frac = outlier_fraction(t(count_matrix), egfr_info$type)
+  out_samples = determine_outliers(med_cor, out_frac, frac_weight = 0)
+  out_samples
+}
