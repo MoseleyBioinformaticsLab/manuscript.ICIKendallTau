@@ -50,7 +50,7 @@ select_random = function(matrix_data, fraction){
 }
 
 run_fractional_correlation = function(in_data){
-  cor = visqc_ici_kendallt(t(in_data$data))
+  cor = ici_kendalltau(t(in_data$data))
   cor$type = in_data$type
   cor$frac = in_data$frac
   cor

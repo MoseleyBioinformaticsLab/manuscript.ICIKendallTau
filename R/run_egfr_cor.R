@@ -10,7 +10,7 @@
 run_egfr_cor <- function() {
 
   count_matrix = readRDS(here::here("data", "brainson_egfr_counts.rds"))
-  count_cor = visqc_ici_kendallt(t(count_matrix), exclude_0 = TRUE, perspective = "global")$cor
+  count_cor = ici_kendalltau(t(count_matrix), exclude_0 = TRUE, perspective = "global")$cor
   count_cor
 
 }
@@ -27,5 +27,7 @@ find_egfr_outliers = function(egfr_cor){
   hi_cor = dplyr::filter(out_samples, med_cor >= median(med_cor), outlier) %>%
     dplyr::pull(sample_id)
   out_samples[out_samples$sample_id %in% hi_cor, "outlier"] = FALSE
-  out_samples
+  n_miss = data.frame(sample_id = colnames(count_matrix),
+                      n_missing = apply(count_matrix, 2, function(.x){sum(.x == 0)}))
+  out_samples = dplyr::left_join(out_samples, n_miss, by = "sample_id")
 }

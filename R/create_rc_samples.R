@@ -21,7 +21,7 @@ right_censor_correlate = function(rc_samples, cut_values = seq(0, 1.5, by = 0.1)
     tmp_rc[tmp_rc < in_cut] = NA
     n_na = sum(is.na(tmp_rc))
     
-    ici_cor = visqc_ici_kendallt(t(tmp_rc), exclude_0 = FALSE, perspective = "global")$cor[1,2]
+    ici_cor = ici_kendalltau(t(tmp_rc), exclude_0 = FALSE, perspective = "global")$cor[1,2]
     p_cor = cor(tmp_rc, use = "pairwise.complete.obs", method = "pearson")[1,2]
     k_cor = cor(tmp_rc, use = "pairwise.complete.obs", method = "kendall")[1,2]
     tmp_rc[is.na(tmp_rc)] = 0
@@ -52,7 +52,7 @@ random_censor_correlate = function(rc_samples, n_na = seq(0, 300, 50)){
     na_locs = sample(n_total, in_na)
     tmp_rc[na_locs] = NA
     
-    ici_cor = visqc_ici_kendallt(t(tmp_rc), exclude_0 = FALSE, perspective = "global")$cor[1,2]
+    ici_cor = ici_kendalltau(t(tmp_rc), exclude_0 = FALSE, perspective = "global")$cor[1,2]
     p_cor = cor(tmp_rc, use = "pairwise.complete.obs", method = "pearson")[1,2]
     k_cor = cor(tmp_rc, use = "pairwise.complete.obs", method = "kendall")[1,2]
     tmp_rc[is.na(tmp_rc)] = 0

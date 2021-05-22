@@ -63,7 +63,7 @@ the_plan <-
    
    transcript_na = zero_to_na(transcript_data),
    
-   ref_cor = visqc_ici_kendallt(t(transcript_na)),
+   ref_cor = ici_kendalltau(t(transcript_na)),
    
    select_nonrandom_fraction = target(
       select_function(transcript_pca, transcript_na, fraction = frac_value),

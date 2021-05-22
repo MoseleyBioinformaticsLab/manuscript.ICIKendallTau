@@ -2,6 +2,7 @@
 library(dotenv)
 library(drake)
 library(ggplot2)
+library(ICIKendallTau)
 library(visualizationQualityControl)
 library(dplyr)
 library(rmarkdown)
