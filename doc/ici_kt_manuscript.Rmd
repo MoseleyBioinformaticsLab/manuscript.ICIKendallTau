@@ -15,64 +15,68 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 ## Abstract
 
 Almost all correlation measures currently available are unable to handle missing values.
-Missing values either get ignored completely by removing them, or may be imputed and used in the calculation of the correlation coefficient.
-In both cases, the correlation value will be impacted from it's true value, whatever it should be based on the ideal of no missing data.
-Missing values occur in real life data for a variety of reasons. In -omics data sets, the primary reasons are not being present in a sample, or present but below the detection limit.
-Therefore, these missing data are not missing at random, but potentially encode some information by their "missingness".
-We propose the information-content-informed Kendall-tau (ICI-Kt) correlation coefficient, that allows missing values to carry explicit information in determination of concordant and discordant pairs.
-We show that the ICI-Kt allows the inclusion of missing data values using simulated and real data sets from RNA-seq experiments.
-Finally, we show that approximate ICI-Kt values can be calculated using smaller subsets of large data sets with significant time savings.
+Typically, missing values are either ignored completely by removing them or are imputed and used in the calculation of the correlation coefficient.
+In both cases, the correlation value will be impacted based on a perspective that missing data represents no useful information.
+However, missing values occur in real data sets for a variety of reasons. 
+In -omics data sets that are derived from analytical measurements, the primary reason is that a specific measureable phenomenom falls below the detection limits of the analytical instrumentation.
+Therefore, these missing data are not missing at random, but represent some information by their "missingness".
+Therefore, we propose an information-content-informed Kendall-tau (ICI-Kt) correlation coefficient that allows missing values to carry explicit information in determination of concordant and discordant pairs.
+With both simulated and real data sets from RNA-seq experiments, we demonstrate that the ICI-Kt allows for the inclusion of missing data values as interpretable information.
+Moreover, our implementation of ICI-Kt uses a mergesort-like algorithm that provides nlog(n) computational performance. 
+Finally, we show that approximate ICI-Kt values can be calculated using smaller subsets of large data sets with significant time savings, which has practical computational value when feature sizes are very large.
 
-The ICI-Kt correlation calculation is available as part of the visualizationQualityControl package at  https://github.com/MoseleyBioinformaticsLab/visualizationQualityControl.
+The ICI-Kt correlation calculation is available in an R package on GitHub at https://moseleyBionformaticsLab/ICIKendallTau.
 
 ## Introduction
 
-Correlation as a measure of the relatedness or similarity of two or more sets of data has a long history.
-It has been used and abused in various scientific fields since it's introduction, more recently for applications in the varied -omics' (genomics, transcriptomics, proteomics, and metabolomics).
-Correlation of features (RNA transcripts, proteins, metabolites) may be used to determine whether the features are related, as well as to generate feature - feature interaction networks for various analyses [STRING, WCGNA, and others I'm sure].
-Feature - feature correlation may also be used to inform which features are used for imputation of missing values [I know I've seen this somewhere ...].
+Correlation as a measure of the relatedness or similarity of two or more sets of data has a long history, with the mathematical technique being used (and abused) in various scientific fields since it's introduction. [refs]
+More recently, correlation calculations have become a cornerstone statistical method in the analysis and integration of varied -omics' datasets, especially the big 5 omics: genomics, transcriptomics, proteomics, metabolomics, epigenomics [refs].
+Correlation between biomolecular features (nucleotide variants, RNA transcripts, proteins, metabolites) may be used to determine the relationship between pairs of the features as well as to detect and derive correlative structures between groups of features [refs].
+Moreover, correlation is a foundational method for generating biomolecular feature - feature interaction networks, like those provided by STRING [ref], Genemania [ref], and WCGNA [ref].
+Feature - feature correlation may also be used to inform which features are used for imputation of missing values [refs].
 Correlation of samples in -omics may be used for evaluating whether all the samples from a particular condition are truly related to each other, as well as to inform the choice of analysis, and to check for outliers prior to other statistical analysis [Flight & Wentzell, Gierlinski et al].
 
 However, all analytical methods, and in particular the analytical methods used in -omics where so many analytes are being measured simultaneously; suffer from missing measurements.
-Of course some analytes will be missing at random just because of some issue with the instrument or that particular sample, but a large amount of missing measurements are left-censored due to analytes being below the detection limit of the instrument.
+Of course some analytes will be missing at random just because of some issue with the instrument or that particular sample, but a large amount of missing measurements are left-censored due to analytes being below the effective detection limit of the instrument.
+Some analytical instruments are actually purposely designed to floor measurements, when they occur below a certain signal to noise ratio threshold.
 Imputation of missing measurements in -omics samples is an active area of research, which we will not cover here beyond to say that it is worthwhile and very necessary in many instances.
 When it comes to calculating correlation, there are very few methods that explicitly account for missing data that we know of.
 In many cases, missing values may be imputed to zero (or another value) and then included in the correlation calculation.
 Imputation or replacement with zero is likely to lead to high inflation of Pearson and related correlation measures.
-Other methods might be to keep only those features with no missing values across samples (complete cases), or keep non-missing between any pair of samples (pairwise complete cases).
-Each of these are likely to mis-estimate the real sample - sample correlation values.
+Other approaches keep only those features with no missing values across samples (complete cases), or keep non-missing between any pair of samples (pairwise complete cases).
+Each of these are likely to mis-estimate the real sample - sample correlation values, especially from specific data interpretation perspectives.
 
-Assuming that a majority of missing values are **not missing at random**, but rather result from left-censored distributions due to the analyte being below the detection limit, we propose that these missing values do in fact encode useful information that can be incorporated into correlation calculations, especially the Kendall-tau paired rank correlation coefficient.
-In this manuscript we propose new definitions of concordant and discordant rank pairs that include missing values, as well as methods for incorporating missing values into the number of tied values for the equivalent of the modified Kendall-tau coefficient.
-We examine the effect of missing values on simulated data, comparing our information-content-informed Kendall-tau (ICI-Kt) method with other simple methods of handling the missing values, namely removing them or imputing them to zero.
-Finally, we examine the ability to recapitulate ICI-Kt correlation values calculated on a large feature -omics data set using feature subsets, which is useful as the run time of large feature data sets can become prohibitive.
+Assuming that a majority of missing values are **not missing at random**, but rather result from left-censored distributions due to the analyte being below the effective detection limit, we propose that these missing values do in fact encode useful information that can be incorporated into correlation calculations, especially the Kendall-tau paired rank correlation coefficient.
+In this manuscript, we propose new definitions of concordant and discordant rank pairs that include missing values, as well as methods for incorporating missing values into the number of tied values for the equivalent of the modified Kendall-tau coefficient.
+We examine the effect of missing values on simulated data, comparing our information-content-informed Kendall-tau (ICI-Kt) method with other simpler methods of handling the missing values, namely removing them or imputing them to zero.
+Finally, we examine the ability to recapitulate ICI-Kt correlation values calculated on a large feature -omics data set using feature subsets, which is useful as the run time of very large feature data sets can become prohibitive.
 
 ## Methods
 
 ### Implementation Details
 
-A reference implementation where the various concordant and discordant pair definitions are written as simple logical tests in R was produced to allow further exploration of methods for speeding up the calculation.
+We produced an initial reference implementation in R where the various concordant and discordant pair definitions were written as simple logical tests in R to allow further exploration and validation of faster implementations.
 In practice, it is possible to replace the missing values with a value that is smaller than all of the values in the two sets of values under consideration, and then do tests of signs to define concordant and discordant pairs (see the definitions of concordant and discordant pairs in Results).
-The special cases for ties can then be tested and counted and included or rejected depending on whether the "local" or "global" correlation definitions are desired.
 
-C++ and R code implementations are in the src/kendallc.cpp and R/kendalltau.R files of the visualizationQualityControl R package, hosted at https://github.com/MoseleyBioinformaticsLab/visualizationQualityControl.
+
+C++ and R code implementations are in the src/kendallc.cpp and R/kendalltau.R files of the ICIKendallTau R package, hosted at https://github.com/MoseleyBioinformaticsLab/ICIKendallTau.
 The version of the code used in this manuscript is available on figshare.
 
-### Simulated Samples
+### Simulated Data Sets
 
-Simulated samples are generated by drawing 1000 random values from a log-normal distribution with a mean of 1 and sd of 0.5 and sorting them.
-The negative sample has values multiplied by -1.
+Simulated feature vectors (analytical samples) are generated by drawing 1000 random values from a log-normal distribution with a mean of 1 and sd of 0.5 and sorting them.
+A negative analytical sample has values multiplied by -1.
 Missing value indices are generated by randomly sampling up to 499 of the lowest values in each sample.
-The missing indices are replaced with NA, and then calculated the correlation between the samples.
+The missing indices are replaced with NA, and then correlations between the analytical samples are calculated.
 
-Another group of two samples are generated by drawing 1000 random values from a log-normal distribution, and adding noise from a normal distribution with a mean of zero and standard deviation of 0.2 to create two samples.
-Missing values are generated to these samples two ways: 1) by setting various intensity cutoffs from 0 to 1.5 in 0.1 increments and setting any values below the cutoff to missing; 2) randomly sampling indices in the two-sample matrix in increments of zero to 300 in increments of 50 and setting the indices to missing.
+Another, more realistic, simulated data set is generated by drawing 1000 random values from a log-normal distribution, and adding noise from a normal distribution with a mean of zero and standard deviation of 0.2 to create two statistical samples.
+Missing values are created in these statistical samples via two methods: 1) by setting various intensity cutoffs from 0 to 1.5 in 0.1 increments and setting any values below the cutoff to missing; 2) randomly sampling indices in the two-sample matrix in increments of zero to 300 in increments of 50 and setting the indices to missing.
 
-### EGFR RNA-Seq Data
+### EGFR RNA-Seq Data Set
 
 RNA-Seq dataset from null and knock-in EGFR mice mutants. **going to need more than this**.
 
-### Adenocarcinoma Recount RNA-Seq Data
+### Adenocarcinoma Recount RNA-Seq Data Set
 
 We downloaded the V2 Recount lung cancer data, extracted the scaled counts, and trimmed to the Stage I adenocarcinoma samples, and those genes that have a non-zero count in at least one of the samples.
 
@@ -80,20 +84,19 @@ Pearson and Kendall correlations are calculated with zero, and replacing zero va
 
 ### Multiprocessing
 
-When a large number of samples need to be compared, it may be useful to split the comparisons across compute instances (either hyperthreaded or physical cores or their combination, or physical compute clusters).
+When a large number of samples need to be compared, it may be useful to split the comparisons across compute instances (across hyperthreaded cores, physical cores, or physical compute nodes).
 The *furrr* R package makes the definition of compute clusters easy.
-For a large matrix computation, we first define the sample - sample comparisons to be performed, and then check how many instances of compute are available (defined by a previous call to *furrr*), split the comparisons into a list that can be easily distributed using *furrr::future_map*.
+For a large correlation matrix computation, we first define the sample - sample comparisons to be performed, then check how many instances of compute are available (defined by a previous call to *furrr*), and finally split the comparisons into a list that can be easily distributed using the *furrr::future_map* function.
 
 ### Subsampling of Features
 
-In addition to using the full set of features to calculate sample - sample correlations, it is possible to select subsamples of the features and only use them to calculate correlations.
-Three methods were implemented: 1 - random selections; 2 - top set of features by variance; 3 - top set of features by variance of principal components.
+In addition to using the full set of features to calculate sample - sample correlations, it is possible to select a subsample of features and only use this feature subset to calculate correlations.
+Three methods were implemented: 1) random selections; 2) top set of features by variance; and 3) top set of features by variance of principal components.
 
-For (1), random selection, feature subsamples of 1 - 5%, and then in 5% increments to 90% were taken using the *sample* R function.
-For (2), selection by variance, feature variances across samples were calculated, and then the features ranked by their variances.
-For (3), selection by variance of the principal components.
-Using the full data set, PCA decomposition was performed, and the variance contribution of each PC calculated.
-The percent variance was used to define the number of features with high loadings on that PC to take to make up the total subsample, with each PC contributing relatively less and less features.
+For (1), random selection, feature subsamples of 1 - 5% by 1% increments, and then in 5% increments to 90% were taken using the *sample* R function.
+For (2), selection by variance, feature variances across samples were calculated, and then ranked by the variances.
+For (3), selection by variance of the principal components, principal component analysis (PCA) decomposition was performed on the full data set, the variance contribution of each PC calculated, and then the percent variance for each principal component (PC) is used to determine the number of features with high loadings to select from the given PC.
+In this feature subsampling approach, weaker PCs contribute proportionately fewer features to the feature subset.
 Both the feature variance and PC variance subsample methods were run with subsamples of 30% and 50% of the features.
 
 In all subsamples, the sample - sample correlation differences to those generated with the full feature set were compared, and the median and standard deviation of all of the correlation differences calculated to evaluate the performance of the subsampling.
@@ -101,8 +104,9 @@ In all subsamples, the sample - sample correlation differences to those generate
 
 ### Computing Environment
 
-All calculations were run on desktop machines with Intel i7-4930K CPUs clocked at 3.4GHz, with 6 physical cores and 12 available using hyperthreading, and 64GB of RAM.
-The *drake* package was used to manage calculation dependencies, with each correlation of samples using internal multiprocessing via the *furrr* and *future* packages.
+All calculations were run on a virtual machine with 80 virtual cores, and 1 TB of RAM.
+The virtual machine was run on a KYRic node ....
+We used the *drake* package to manage calculation dependencies.
 
 ## Results
 
@@ -111,7 +115,7 @@ The *drake* package was used to manage calculation dependencies, with each corre
 In the simplest form, the Kendall-tau correlation can be defined as:
 
 $$\tau = \frac{ | pairs_{concordant}  | - | pairs_{discordant}  |}{\left | pairs_{concordant} \right | + \left | pairs_{discordant} \right |}$$
-In this case a **pair** are any two $x$ and $y$ points from two different samples, consisting of $(x_i, x_j)$ and $(y_i, y_j)$.
+**NEED to discuss this definition with Hunter**.In this case a **pair** are any two $x$ and $y$ points from two different samples, consisting of $(x_i, x_j)$ and $(y_i, y_j)$.
 A concordant pair has the following classical definition:
 
   * $x_i > x_j$ and $y_i > y_j$ 
@@ -122,8 +126,8 @@ A discordant pair has the following classical definition:
   * $x_i > x_j$ and $y_i < y_j$
   * $x_i < x_j$ and $y_i > y_j$
 
-Assuming that the majority of missing values are not missing at random, but due to being below the detection limit, we can expand the concordant and discordant pair definitions to include missing values. Here $!x$ indicates a missing value.
-Information-content-informed concordant pair definitions:
+Assuming that the majority of missing values are not missing at random, but due to being below the effective detection limit, we can expand the concordant and discordant pair definitions to include missing values. Here $!x$ indicates a missing value.
+The information-content-informed concordant pair definitions are below:
 
   * $x_i > x_j$ and $y_i > y_j$
   * $x_i < x_j$ and $y_i < y_j$
@@ -134,7 +138,7 @@ Information-content-informed concordant pair definitions:
   * $x_i \& !x_j$ and $y_i \& !y_j$ 
   * $x_i \& x_j$ and $!y_i \& y_j$ 
   
-Information content informed discordant pair definitions:
+The information content informed discordant pair definitions are below:
 
   * $x_i > x_j$ and $y_i < y_j$ 
   * $x_i < x_j$ and $y_i > y_j$
@@ -147,24 +151,18 @@ Information content informed discordant pair definitions:
 
 ### Considering Ties
 
-Tied values contribute to neither of the concordant or discordant pair counts. 
-The original Kendall-tau formula can be easily modified to handle ties by adding the tied $x$ and $y$ values to the denominator, and in our special case of missing data, we can add the ties that result from both of $(x_i, x_j)$ and $(y_i, y_j)$ being missing.
+Tied values do not contribute to eeither of the concordant or discordant pair counts, and the original Kendall-tau formula which calculates the tau-a statistic does not consider the presence of tied values.
+However, the related tau-b statistic does handle the presence of tied values by adding the tied $x$ and $y$ values to the denominator, and in our special case of missing data, we can add the ties that result from both of $(x_i, x_j)$ and $(y_i, y_j)$ being missing.
 
-$$\tau = \frac{\left | pairs_{concordant} \right | - \left | pairs_{discordant} \right |}{\left | pairs_{concordant} \right | + \left | pairs_{discordant} \right | + \left | pairs_{xties} \right | + \left | pairs_{yties} \right | + \left | pairs_{missing} \right |}$$
+$$\tau = \frac{\left | pairs_{concordant} \right | - \left | pairs_{discordant} \right |}{\sqrt{(n_0 - n_{xtie})(n_0 - n_{ytie})}}$$
 
-In the first instance, we remove those cases where both of the pairs are missing, as well as the following concordant and discordant pairs:
-
-  * $x_i \& !x_j$ and $y_i \& !y_j$ 
-  * $x_i \& x_j$ and $!y_i \& y_j$ 
-  * $x_i \& !x_j$ and $!y_i \& y_j$
-  * $!x_i \& x_j$ and $y_i \& !y_j$
-
+In the first instance, we remove those x-y points where both values are missing.
 We refer to this case as the "local" ICI-Kt correlation.
 It is most appropriate for the comparison of only two samples, where we are concerned with what values are present in the two samples, with the odd case of missingness.
 
-The other case, where we leave the above definitions in, as well as the ties resulting from both $x$ and $y$ being missing, we refer to as the "global" ICI-Kt correlation.
-In this case, every single sample-sample correlation will consider the same number pair comparisons.
-This is more useful when analyzing correlations across multiple samples, not just two sets of data.
+The other case, where we leave ties resulting from points with missing $x$ and $y$, we refer to as the "global" ICI-Kt correlation.
+In this case, every single sample-sample correlation will consider the same number of pair comparisons.
+This is more useful when analyzing and interpreting correlations across multiple samples, not just two feature vectors.
 
 ### Theoretical Maxima
 
@@ -178,33 +176,20 @@ Then $n$ is the length of the variables, $m$ is the count of missing values acro
 
 ### Comparison To Other Correlation Measures
 
-We compared the ICI-Kt correlation to both Pearson and regular Kendall correlations with simulated missing data, as well as a large RNA-seq dataset.
-The simplest simulated samples are to create three samples, where two are perfectly correlated, and the second perfectly anti-correlated, and replace the values in each systematically with missing values (in this case NA), and compute the ICI-Kt, Pearson, and Kendall correlations.
+We compared the ICI-Kt correlation to both Pearson and regular Kendall-tau-b correlations as calculated by the built-in R functions using simulated data sets with missing values, as well as a large RNA-seq dataset.
 
-```{r compare_simple}
-loadd(positive_kt)
-loadd(positive_pearson)
-positive_pearson[is.na(positive_pearson)] = 0
-
-compare_df = data.frame(ici_kt = positive_kt,
-                        pearson = positive_pearson)
-ggplot(compare_df, aes(x = pearson, y = ici_kt)) + geom_point()
-```
-
-**I'm not sure if I'll include these, because these were mostly done to check that the calculations were correct**.
-
-A slightly more realistic comparison is to create two samples with 1000 observations each drawn from a log-normal distribution, and sorted in each case.
-The *true* correlation for each of the Kendall and Pearson correlations can be calculated, and then missingness introduced in the lower range of values (see Methods).
+We created two samples with 1000 observations each drawn from a log-normal distribution, and sorted in each case.
+The *true* correlation for each of the Kendall and Pearson correlations were calculated, and then missingness was introduced in the lower range of values (see Methods).
 
 ```{r compare_realistic}
 loadd(realistic_sample_1)
 loadd(realistic_sample_2)
 loadd(realistic_neg_sample)
 ref_pearson = cor(realistic_sample_1, realistic_sample_2)
-ref_kendall = visqc_ici_kendallt(rbind(realistic_sample_1, realistic_sample_2), exclude_0 = FALSE, scale_max = FALSE)$cor[2,1]
+ref_kendall = ici_kendalltau(rbind(realistic_sample_1, realistic_sample_2), exclude_0 = FALSE, scale_max = FALSE)$cor[2,1]
 
 ref_pearson_neg = cor(realistic_sample_1, realistic_neg_sample)
-ref_kendall_neg = visqc_ici_kendallt(rbind(realistic_sample_1, realistic_neg_sample), exclude_0 = FALSE, scale_max = FALSE)$cor[2,1]
+ref_kendall_neg = ici_kendalltau(rbind(realistic_sample_1, realistic_neg_sample), exclude_0 = FALSE, scale_max = FALSE)$cor[2,1]
 
 loadd(realistic_na)
 n_na = purrr::map_int(realistic_na, length)
@@ -255,15 +240,15 @@ neg_diff = ggplot(negative_df, aes(x = na, y = diff)) +
 pos_diff + neg_diff
 ```
 
-**Fig X**. The effect on correlation as increasing numbers of entries in either or both samples are replaced with missing values for ICI-Kt, Kendall, and Pearson.
+**Fig X**. The effect on ICI-Kt, Kendall-tau, and Pearson correlations as increasing numbers of values in either or both samples are replaced with missing values.
 
 In **Figure X**, we can see that as missing values are added, only the ICI-Kt correlation values change in any significant way.
 As the number of missing values increase, the ICI-Kt values drop or increase by up to 0.2.
-Similarly, Pearson correlation is also affected, but the degree of change in the correlation values are much less, on the order of only 1x10-4 for the positive case.
+Similarly, Pearson correlation is also affected, but the degree of change in the correlation values are much less (notice the difference in the y-axis scales), on the order of only 1x10-4 for the positive case.
 
 ### Utility in Large Omics' Data Sets
 
-#### Examples of Finding Outliers
+#### Detecting Outlier Samples
 
 We analyzed two RNA-Seq datasets for possible outliers using ICI-Kt.
 The first is a collection of 56 samples in a cancer model and trying to determine differences in expression with and without EGFR as well as grown flat or as organoids.
@@ -271,7 +256,32 @@ ICI-Kt correlations were calculated using the genes that had a non-zero count in
 For each sample, the median ICI-Kt value was calculated amongst the samples for each of the defined groups.
 Two samples were found to have low correlations within their group.
 
+```{r outlier_adenocarcinoma}
+loadd(ref_cor)
+loadd(transcript_data)
+adeno_cor = ref_cor$cor
+adeno_info = readRDS(here::here("data", "recount_adeno_info.rds"))
+adeno_cor = adeno_cor[adeno_info$sample_id2, adeno_info$sample_id2]
+
+transcript_data = transcript_data[, adeno_info$sample_id2]
+pearson_adeno_cor = cor(log1p(transcript_data))
+
+med_cor = median_correlations(adeno_cor, sample_classes = adeno_info$sample_type)
+p_med_cor = median_correlations(pearson_adeno_cor, sample_classes = adeno_info$sample_type)
+
+split_med = split(med_cor, med_cor$sample_class)
+split_p = split(p_med_cor, p_med_cor$sample_class)
+cor_outlier = function(cor_df){
+  out_vals = boxplot.stats(cor_df$med_cor)$out
+  cor_df$sample_id[cor_df$med_cor %in% out_vals]
+}
+med_outliers = purrr::map(split_med, cor_outlier) %>% unlist()
+p_outliers = purrr::map(split_p, cor_outlier) %>% unlist()
+```
+
 For the adenocarcinoma data, median correlations within the tumor and normal groups were calculated.
+A group of samples in each appear to be outliers.
+Principal component analysis (PCA) shows that the outliers ....
 
 
 #### Using Random Subsamples
@@ -363,8 +373,8 @@ Bottom: Median differences, standard deviations and times to compute the sample-
 
 Given the length of time it takes to run the calculations for larger datasets (in particular RNA-Seq data), we wondered if "good enough" results could be obtained using subsamples of the features across the samples.
 Our starting data is a set of stage I (I, Ia, and Ib) adenocarcinoma tumor and normal tissue RNA-Seq samples from the *recount2* project, with `r nrow(transcript_data)` features that have a non-zero value in at least one sample, and `r ncol(transcript_data)` samples.
-Using the full set of features, the sample - sample correlations were calculated in `r pretty_print(ref_cor$run_time / 60)`  minutes, or `r pretty_print(ref_cor$run_time / 3600)` hours (on an 80 core machine).
-This translates to days on machines with fewer cores.
+
+In our original implementation with actual pairwise comparisons, the adenocarcinoma pairwise comparisons took 6.7 hours, on an 80 core virtual machine.
 
 Given such long run times, we decided to investigate the effect of subsampling features to decrease run time while still retaining reasonable estimates of the sample - sample correlations.
 Figure X plots the feature subsample correlations for 10% and 30% of the features against those generated by the full set (left), as well as the histogram of the differences in values (right).
@@ -412,3 +422,23 @@ With enough cores (80 in this case), the increase in time as samples are added i
 ## Author Contributions
 
 RMF wrote the code in the visualizationQualityControl R package, tested the ICI-Kt correlation code, and wrote all of the analysis code for this manuscript. HNBM conceived of the ICI-Kt correlation, provided input into code structures, provided supervision of the analyses and interpretation of results. Both authors contributed to the writing of the manuscript.
+
+## Supplemental
+
+The simplest simulated data set includes three samples, where two are perfectly correlated, and the third perfectly anti-correlated. 
+We then created missing values (replaced value with NA) in each sample systematically, and computed the ICI-Kt, Pearson, and Kendall-tau correlations.
+
+```{r compare_simple}
+loadd(positive_kt)
+loadd(positive_pearson)
+positive_pearson[is.na(positive_pearson)] = 0
+
+compare_df = data.frame(ici_kt = positive_kt,
+                        pearson = positive_pearson)
+ggplot(compare_df, aes(x = pearson, y = ici_kt)) + geom_point()
+```
+
+**I'm not sure if I'll include these, because these were mostly done to check that the calculations were correct**.
+
+
+## References
