@@ -25,7 +25,7 @@ compare_positive_kt <- function(x, y, where_na, low_indices = FALSE, perspective
     
     tmp_y[y_na] = NA
     tmp_x[x_na] = NA
-    ici_kt(tmp_x, tmp_y, perspective = perspective)
+    ici_kt(tmp_x, tmp_y, perspective = perspective)[[1]]
   }, .progress = TRUE)
   
   tmp
@@ -50,7 +50,7 @@ compare_positive_kt_c <- function(x, y, where_na, low_indices = FALSE, perspecti
     
     tmp_y[y_na] = NA
     tmp_x[x_na] = NA
-    ici_kt(tmp_x, tmp_y, perspective = perspective)
+    ici_kt(tmp_x, tmp_y, perspective = perspective)[[1]]
   #})
   }, .progress = TRUE)
   
@@ -84,7 +84,7 @@ compare_negative_kt <- function(x, y, where_na, low_indices = FALSE, perspective
     
     tmp_y[y_na] = NA
     tmp_x[x_na] = NA
-    ici_kt(tmp_x, tmp_y, perspective = perspective)
+    ici_kt(tmp_x, tmp_y, perspective = perspective)[[1]]
   }, .progress = TRUE)
   
   
@@ -108,7 +108,7 @@ compare_negative_kt_c <- function(x, y, where_na, low_indices = FALSE, perspecti
     
     tmp_y[y_na] = NA
     tmp_x[x_na] = NA
-    ici_kt(tmp_x, tmp_y, perspective = perspective)
+    ici_kt(tmp_x, tmp_y, perspective = perspective)[[1]]
   }, .progress = TRUE)
   
   
