@@ -65,7 +65,7 @@ A concordant pair has the following classical definition:
   * $x_i > x_j$ and $y_i > y_j$ 
   * $x_i < x_j$ and $y_i < y_j$
 
-A discordant pair has the following classical definition:
+A discordant pair has the following classical definition [@kendall_newmeasure_1938]:
 
   * $x_i > x_j$ and $y_i < y_j$
   * $x_i < x_j$ and $y_i > y_j$
@@ -96,7 +96,7 @@ The information content informed discordant pair definitions are below:
 ### Considering Ties
 
 Tied values do not contribute to eeither of the concordant or discordant pair counts, and the original Kendall-tau formula which calculates the tau-a statistic does not consider the presence of tied values.
-However, the related tau-b statistic does handle the presence of tied values by adding the tied $x$ and $y$ values to the denominator, and in our special case of missing data, we can add the ties that result from both of $(x_i, x_j)$ and $(y_i, y_j)$ being missing.
+However, the related tau-b statistic does handle the presence of tied values by adding the tied $x$ and $y$ values to the denominator, and in our special case of missing data, we can add the ties that result from both of $(x_i, x_j)$ and $(y_i, y_j)$ being missing [@kendall_treatment_ties_1945; @kendall_rankcorrelationbook_1948].
 
 $$\tau = \frac{\left | pairs_{concordant} \right | - \left | pairs_{discordant} \right |}{\sqrt{(n_0 - n_{xtie})(n_0 - n_{ytie})}}$$
 
@@ -119,12 +119,13 @@ Then $n$ is the length of the variables, $m$ is the count of missing values acro
 
 ### Implementation Details
 
-We produced an initial reference implementation in R where the various concordant and discordant pair definitions were written as simple logical tests in R to allow further exploration and validation of faster implementations.
+We produced an initial reference implementation in R [@rcoreteam_rlanguage_2020] where the various concordant and discordant pair definitions were written as simple logical tests in R to allow further exploration and validation of faster implementations.
 In practice, it is possible to replace the missing values with a value that is smaller than all of the values in the two sets of values under consideration, and then do tests of signs to define concordant and discordant pairs (see the definitions of concordant and discordant pairs above).
 
-After this initial implementation, we used the SciPy kendalltau code as a model to create a mergesort based implementation that has a complexity of O(nlog(n)), in comparison to the pairwise testing that has a complexity of O(n^2).
+After this initial implementation, we used the SciPy [@virtanen_scipy_2020] kendalltau code as a model to create a mergesort based implementation that has a complexity of O(nlog(n)), in comparison to the pairwise testing that has a complexity of O(n^2) [@knight_mergesortkendall_1966].
+This provides a 460X speedup of the runtime to compare two feature vectors.
 
-C++ and R code implementations are in the src/kendallc.cpp and R/kendalltau.R files of the ICIKendallTau R package, hosted at https://github.com/MoseleyBioinformaticsLab/ICIKendallTau.
+C++ (via *Rcpp* [@eddelbuettel_rcppseamless_2011; @eddelbuettel_seamlessbook_2013; @eddelbuettel_extendingrcpp_2018]) and R code implementations are in the src/kendallc.cpp and R/kendalltau.R files of the ICIKendallTau R package, hosted at https://github.com/MoseleyBioinformaticsLab/ICIKendallTau.
 The version of the code used in this manuscript is available on figshare.
 
 ### Simulated Data Sets
@@ -171,8 +172,9 @@ In all subsamples, the sample - sample correlation differences to those generate
 ### Computing Environment
 
 All calculations were run on a virtual machine with 80 virtual cores, and 1 TB of RAM.
-The virtual machine was run on a KYRic node ....
-We used the *drake* package to manage calculation dependencies.
+The virtual machine is running on top of a 50 node cluster, each with 4 10-core processors, 3TB of RAM and an 8TB solid-state-drive array, provided by the Kentucky Research Informatics Cloud (KyRIC).
+KyRIC manages the virtual machines via an OpenStack instance.
+We used the *drake* package to manage calculation dependencies [@landau_drakepackage_2018].
 
 ## Results
 
