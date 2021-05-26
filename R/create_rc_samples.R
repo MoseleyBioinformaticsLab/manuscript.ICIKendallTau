@@ -7,7 +7,7 @@
 ##' @return
 ##' @author rmflight
 ##' @export
-create_rc_samples <- function() {
+create_lc_samples <- function() {
 
   base_sample = rlnorm(1000, meanlog = 1, sdlog = 0.5)
   rep_data = add_uniform_noise(2, base_sample, 0.2)
@@ -15,18 +15,18 @@ create_rc_samples <- function() {
 
 }
 
-right_censor_correlate = function(rc_samples, cut_values = seq(0, 1.5, by = 0.1)){
+left_censor_correlate = function(lc_samples, cut_values = seq(0, 1.5, by = 0.1)){
   censor_cor = purrr::map_df(cut_values, function(in_cut){
-    tmp_rc = rc_samples
-    tmp_rc[tmp_rc < in_cut] = NA
-    n_na = sum(is.na(tmp_rc))
+    tmp_lc = lc_samples
+    tmp_lc[tmp_lc < in_cut] = NA
+    n_na = sum(is.na(tmp_lc))
     
-    ici_cor = ici_kendalltau(t(tmp_rc), exclude_0 = FALSE, perspective = "global")$cor[1,2]
-    p_cor = cor(tmp_rc, use = "pairwise.complete.obs", method = "pearson")[1,2]
-    k_cor = cor(tmp_rc, use = "pairwise.complete.obs", method = "kendall")[1,2]
-    tmp_rc[is.na(tmp_rc)] = 0
-    p_cor_0 = cor(tmp_rc, method = "pearson")[1,2]
-    k_cor_0 = cor(tmp_rc, method = "kendall")[1,2]
+    ici_cor = ici_kendalltau(t(tmp_lc), exclude_0 = FALSE, perspective = "global")$cor[1,2]
+    p_cor = cor(tmp_lc, use = "pairwise.complete.obs", method = "pearson")[1,2]
+    k_cor = cor(tmp_lc, use = "pairwise.complete.obs", method = "kendall")[1,2]
+    tmp_lc[is.na(tmp_lc)] = 0
+    p_cor_0 = cor(tmp_lc, method = "pearson")[1,2]
+    k_cor_0 = cor(tmp_lc, method = "kendall")[1,2]
     
     data.frame(cor = c(ici_cor,
                        p_cor,
@@ -45,19 +45,19 @@ right_censor_correlate = function(rc_samples, cut_values = seq(0, 1.5, by = 0.1)
   censor_cor
 }
 
-random_censor_correlate = function(rc_samples, n_na = seq(0, 300, 50)){
+random_censor_correlate = function(lc_samples, n_na = seq(0, 300, 50)){
   censor_cor = purrr::map_df(n_na, function(in_na){
-    tmp_rc = rc_samples
-    n_total = length(rc_samples)
+    tmp_lc = lc_samples
+    n_total = length(lc_samples)
     na_locs = sample(n_total, in_na)
-    tmp_rc[na_locs] = NA
+    tmp_lc[na_locs] = NA
     
-    ici_cor = ici_kendalltau(t(tmp_rc), exclude_0 = FALSE, perspective = "global")$cor[1,2]
-    p_cor = cor(tmp_rc, use = "pairwise.complete.obs", method = "pearson")[1,2]
-    k_cor = cor(tmp_rc, use = "pairwise.complete.obs", method = "kendall")[1,2]
-    tmp_rc[is.na(tmp_rc)] = 0
-    p_cor_0 = cor(tmp_rc, method = "pearson")[1,2]
-    k_cor_0 = cor(tmp_rc, method = "kendall")[1,2]
+    ici_cor = ici_kendalltau(t(tmp_lc), exclude_0 = FALSE, perspective = "global")$cor[1,2]
+    p_cor = cor(tmp_lc, use = "pairwise.complete.obs", method = "pearson")[1,2]
+    k_cor = cor(tmp_lc, use = "pairwise.complete.obs", method = "kendall")[1,2]
+    tmp_lc[is.na(tmp_lc)] = 0
+    p_cor_0 = cor(tmp_lc, method = "pearson")[1,2]
+    k_cor_0 = cor(tmp_lc, method = "kendall")[1,2]
     
     tmp_frame = data.frame(cor = c(ici_cor,
                        p_cor,
