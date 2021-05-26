@@ -8,8 +8,10 @@ lapply(list.files("./R", full.names = TRUE), source)
 ## The arguments to drake_config() are basically the same as those to make().
 ## lock_envir allows functions that alter the random seed to be used. The biggest
 ## culprits of this seem to be interactive graphics e.g. plotly and mapdeck.
+logfile = paste0("ici_log_", gsub(" ", "-", Sys.time()), ".log")
 drake_config(the_plan,
              lock_envir = FALSE,
              memory_strategy = "preclean",
+             log_make = logfile,
              keep_going = TRUE)
 
