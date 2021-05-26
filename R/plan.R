@@ -1,6 +1,6 @@
 select_functions = rlang::syms(c("var_select", "pca_select"))
 #reference_cor = readRDS(here::here("data/recount_adeno_cor.rds"))
-fractions = (c(seq(0.01, 0.05, 0.01), seq(0.1, 0.9, 0.05)))
+fractions = (c(seq(0.01, 0.09, 0.01), seq(0.1, 0.9, 0.05)))
 rep_10 = rep(0.1, 20)
 
 small_samples = seq(4, 40, 4)
@@ -68,7 +68,7 @@ the_plan <-
    select_nonrandom_fraction = target(
       select_function(transcript_pca, transcript_na, fraction = frac_value),
       transform = cross(
-         frac_value = !!fractions[c(10, 14)],
+         frac_value = !!fractions,
          select_function = !!select_functions
       )
    ),
@@ -211,9 +211,9 @@ the_plan <-
       transform = map(select_random_fraction)
    ),
    
-   right_censored_samples = create_rc_samples(),
-   right_censored_cor = right_censor_correlate(right_censored_samples),
-   random_censored_cor = random_censor_correlate(right_censored_samples),
+   left_censored_samples = create_lc_samples(),
+   left_censored_cor = left_censor_correlate(left_censored_samples),
+   random_censored_cor = random_censor_correlate(left_censored_samples),
    
    egfr_cor = run_egfr_cor(),
    egfr_outliers = find_egfr_outliers(egfr_cor),
