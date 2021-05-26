@@ -69,7 +69,7 @@ compare_positive_kt_c <- function(x, y, where_na, low_indices = FALSE, perspecti
 compare_negative_kt <- function(x, y, where_na, low_indices = FALSE, perspective = "global") {
   n_entry = length(x)
   furrr::future_map_dbl(where_na, function(use_na){
-    #message(.y)
+    #message(use_na)
     tmp_x = x
     tmp_y = y
     y_na = use_na[use_na > n_entry] - n_entry
@@ -85,7 +85,8 @@ compare_negative_kt <- function(x, y, where_na, low_indices = FALSE, perspective
     tmp_y[y_na] = NA
     tmp_x[x_na] = NA
     ici_kt(tmp_x, tmp_y, perspective = perspective)[[1]]
-  }, .progress = TRUE)
+  })
+#  , .progress = TRUE)
   
   
 }
