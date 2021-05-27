@@ -218,11 +218,9 @@ the_plan <-
    egfr_cor = run_egfr_cor(),
    egfr_outliers = find_egfr_outliers(egfr_cor),
    
-   improve_runtime = target(
-      command = {
-         rmarkdown::render(knitr_in("doc/improve_runtime.Rmd"))
-         file_out("doc/improve_runtime.pdf")
-      }
+   pca_random = target(
+      evaluate_by_pca(select_random_fraction, transcript_pca),
+      transform = map(select_random_fraction)
    )
   
 
