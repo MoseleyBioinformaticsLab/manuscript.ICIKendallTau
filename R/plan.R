@@ -221,6 +221,11 @@ the_plan <-
    eval_random = target(
       evaluate_by_pca(select_random_fraction, transcript_pca),
       transform = map(select_random_fraction)
+   ),
+   
+   eval_nonrandom = target(
+      evaluate_by_pca(select_nonrandom_fraction, transcript_pca),
+      transform = map(select_nonrandom_fraction)
    )
   
 
