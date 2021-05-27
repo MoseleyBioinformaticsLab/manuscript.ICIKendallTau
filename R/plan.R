@@ -223,10 +223,19 @@ the_plan <-
       transform = map(select_random_fraction)
    ),
    
+   combined_eval_random = target(
+      bind_rows(eval_random),
+      transform = combine(eval_random)
+   ),
+   
    eval_nonrandom = target(
       evaluate_by_pca(select_nonrandom_fraction, transcript_pca),
       transform = map(select_nonrandom_fraction)
+   ),
+   
+   combined_eval_nonrandom = target(
+      bind_rows(eval_nonrandom),
+      transform = combine(eval_nonrandom)
    )
-  
 
 )
