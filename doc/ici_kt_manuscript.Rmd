@@ -48,7 +48,7 @@ Other approaches keep only those features with no missing values across samples 
 Each of these are likely to mis-estimate the real sample - sample correlation values, especially from specific data interpretation perspectives.
 
 ```{r include_figure1}
-knitr::include_graphics(here::here("doc/problem_description.png"))
+knitr::include_graphics(here::here("doc/the_problem.png"))
 ```
 
 Figure 1. Graphical description of the left-censored data problem.

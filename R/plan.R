@@ -234,8 +234,11 @@ the_plan <-
    ),
    
    combined_eval_nonrandom = target(
-      bind_rows(eval_nonrandom),
+      # bind_rows(eval_nonrandom),
       transform = combine(eval_nonrandom)
-   )
+   ),
+   
+   all_pca_eval = bind_rows(combined_eval_random,
+                            combined_eval_nonrandom)
 
 )
