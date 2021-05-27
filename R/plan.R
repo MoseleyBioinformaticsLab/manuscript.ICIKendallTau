@@ -218,7 +218,7 @@ the_plan <-
    egfr_cor = run_egfr_cor(),
    egfr_outliers = find_egfr_outliers(egfr_cor),
    
-   pca_random = target(
+   eval_random = target(
       evaluate_by_pca(select_random_fraction, transcript_pca),
       transform = map(select_random_fraction)
    )
