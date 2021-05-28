@@ -52,11 +52,11 @@ knitr::include_graphics(here::here("doc/the_problem.png"))
 ```
 
 Figure 1. Graphical description of the left-censored data problem.
-The true analyte concentration range is on the left, and an example sample concentration density is shown on the right.
-In the middle is a theoretical instrument response.
-Below certain analyte concentrations, highlighted as the blue region, the instrument returns **0** or **missing** values.
-Above certain concentrations, highlighted as the red region, all values returned will also be identical (or flagged depending on the instrument).
-Analytes with concentrations in the blue region may vary with overall sample composition, as well as natural variances within each sample.
+The true analyte concentration range covers the full range of the density distribution, with the minimum on the left, and the maximum on the right.
+An example density plot of the analyte concentrations for a single sample is shown as a solid line, and the instrument response to concentration as a dashed line.
+Below certain analyte concentrations, highlighted as the red region, the instrument returns **0** or **missing** values.
+Above certain concentrations, highlighted as the yellow region, all values returned will also be identical (or flagged depending on the instrument).
+Which analytes will have concentrations in the red region may vary from sample to sample due to the overall sample composition, as well as natural variances within each sample.
 
 Assuming that a majority of missing values are **not missing at random**, but rather result from left-censored distributions due to the analyte being below the effective detection limit (see Figure 1), we propose that these missing values do in fact encode useful information that can be incorporated into correlation calculations, especially the Kendall-tau paired rank correlation coefficient.
 In this manuscript, we propose new definitions of concordant and discordant rank pairs that include missing values, as well as methods for incorporating missing values into the number of tied values for the equivalent of the modified Kendall-tau coefficient.
@@ -300,7 +300,7 @@ A group of samples in each appear to be outliers.
 Principal component analysis (PCA) shows that the outliers ....
 
 
-#### Using Random Subsamples
+### Feature Subsampling Randomly
 
 ```{r pretty_print}
 pretty_print = function(in_val){
@@ -314,15 +314,21 @@ loadd(ref_cor)
 ```
 
 ```{r load_ici_timings}
+loadd(run_random_select_random_fraction_0.01)
 loadd(run_random_select_random_fraction_0.1)
 loadd(run_random_select_random_fraction_0.3)
 diff_vals = data.frame(ref = extract_data(ref_cor),
+                       f_01 = 
+extract_data(run_random_select_random_fraction_0.01),
                      f_1 = extract_data(run_random_select_random_fraction_0.1),
                      f_3 = extract_data(run_random_select_random_fraction_0.3))
 diff_vals = diff_vals %>%
-  dplyr::mutate(diff_1 = f_1 - ref,
-                diff_3 = f_3 - ref)
+  dplyr::mutate(diff_1 = f_01 - ref,
+                diff_10 = f_1 - ref,
+                diff_30 = f_3 - ref)
 ref_f1_f3 = 
+  (ggplot(diff_vals, aes(x = ref, y = f_01)) + geom_point() +
+     labs(x = "full correlation", y = "1% features")) /
   (ggplot(diff_vals, aes(x = ref, y = f_1)) + geom_point() +
      labs(x = "full correlation", y = "10% features") +
      coord_equal()) /
