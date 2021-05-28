@@ -241,6 +241,7 @@ the_plan <-
    all_pca_eval = bind_rows(combined_eval_random,
                             combined_eval_nonrandom),
    
-   single_core_perf = run_single_cor()
+   single_core_perf = run_single_cor(),
+   complexity_figure = create_complexity_figure(single_core_perf)
 
 )
