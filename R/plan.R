@@ -239,6 +239,8 @@ the_plan <-
    ),
    
    all_pca_eval = bind_rows(combined_eval_random,
-                            combined_eval_nonrandom)
+                            combined_eval_nonrandom),
+   
+   single_core_perf = run_single_cor()
 
 )
