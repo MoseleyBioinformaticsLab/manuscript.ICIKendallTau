@@ -135,6 +135,8 @@ In practice, it is possible to replace the missing values with a value that is s
 
 After this initial implementation, we used the SciPy [@virtanen_scipy_2020] kendalltau code as a model to create a mergesort based implementation that has a complexity of O(nlog(n)), in comparison to the pairwise testing that has a complexity of O(n^2) [@knight_mergesortkendall_1966].
 This provides a 460X speedup of the runtime to compare two feature vectors.
+In comparison to directly counting the concordant and discordant pairs, some of the values in the mergesort implementation can reach the 32 bit default limit in C++.
+Therefore, we used 64 bit ... **I'm not sure how to word this here**.
 
 C++ (via *Rcpp* [@eddelbuettel_rcppseamless_2011; @eddelbuettel_seamlessbook_2013; @eddelbuettel_extendingrcpp_2018]) and R code implementations are in the src/kendallc.cpp and R/kendalltau.R files of the ICIKendallTau R package, hosted at https://github.com/MoseleyBioinformaticsLab/ICIKendallTau.
 The version of the code used in this manuscript is available on figshare.
@@ -170,7 +172,7 @@ For a large correlation matrix computation, we first define the sample - sample 
 In addition to using the full set of features to calculate sample - sample correlations, it is possible to select a subsample of features and only use this feature subset to calculate correlations.
 Three methods were implemented: 1) random selections; 2) top set of features by variance; and 3) top set of features by variance of principal components.
 
-For (1), random selection, feature subsamples of 1 - 5% by 1% increments, and then in 5% increments to 90% were taken using the *sample* R function.
+For (1), random selection, feature subsamples of 1 - 10% by 1% increments, and then in 5% increments to 90% were taken using the *sample* R function.
 For (2), selection by variance, feature variances across samples were calculated, and then ranked by the variances.
 For (3), selection by variance of the principal components, principal component analysis (PCA) decomposition was performed on the full data set, the variance contribution of each PC calculated, and then the percent variance for each principal component (PC) is used to determine the number of features with high loadings to select from the given PC.
 In this feature subsampling approach, weaker PCs contribute proportionately fewer features to the feature subset.
@@ -298,6 +300,40 @@ p_outliers = purrr::map(split_p, cor_outlier) %>% unlist()
 For the adenocarcinoma data, median correlations within the tumor and normal groups were calculated.
 A group of samples in each appear to be outliers.
 Principal component analysis (PCA) shows that the outliers ....
+
+### Algorithmic Performance
+
+We compared the performance of our Rcpp mergesort implementation to the base R cor function using both "pearson" and "kendall" methods on a single core with increasing numbers of features.
+
+Figure X 
+
+```{r show_performance_graph}
+single_core_perf = run_single_cor()
+s_perf_plot = ggplot(single_core_perf, aes(x = n, y = time, color = method)) +
+  geom_line(size = 2) + 
+  coord_cartesian(ylim = c(NA, 0.002)) + 
+  theme(legend.position = c(0.6, 0.2)) +
+  labs(x = "Number of Features", y = "Time (s)")
+s_perf_plot
+
+mod_perf = dplyr::filter(single_core_perf, method %in% "ici_kt")
+mod_perf$time = mod_perf$time + 0.015
+core_perf2 = bind_rows(
+  mod_perf,
+  dplyr::filter(single_core_perf, !(method %in% "ici_kt"))
+)
+inset_perf = ggplot(core_perf2, aes(x = n, y = time, color = method)) +
+  geom_line(size = 1.5) +
+  theme(legend.position = "none",
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank()) +
+  labs(x = "", y = "")
+
+s_perf_plot + inset_element(inset_perf, 0.1, 0.72, 1, 1)
+```
+
+Figure X. Comparison of the Rcpp mergesort ici_kt, and base R's correlation function using the "pearson" and "kendall" methods as the number of features are increased from 100 to 5000.
+Inset is the expanded view showing the full range of computation time in seconds.
 
 
 ### Feature Subsampling Randomly
@@ -460,7 +496,12 @@ compare_df = data.frame(ici_kt = positive_kt,
 ggplot(compare_df, aes(x = pearson, y = ici_kt)) + geom_point()
 ```
 
-**I'm not sure if I'll include these, because these were mostly done to check that the calculations were correct**.
+In addition to comparing their performance, we can check that the algorithmic complexity fits the theoretically expected complexity by fitting a regression line of the run time to the number of items.
+
+```{r plot_complexity}
+complex_figure = create_complexity_figure(single_core_perf)
+complex_figure
+```
 
 
 ## References
