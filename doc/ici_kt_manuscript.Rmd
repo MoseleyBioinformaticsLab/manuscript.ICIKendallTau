@@ -364,22 +364,26 @@ diff_vals = diff_vals %>%
                 diff_30 = f_3 - ref)
 ref_f1_f3 = 
   (ggplot(diff_vals, aes(x = ref, y = f_01)) + geom_point() +
-     labs(x = "full correlation", y = "1% features")) /
+     labs(x = "full correlation", y = "1% Features")) /
   (ggplot(diff_vals, aes(x = ref, y = f_1)) + geom_point() +
-     labs(x = "full correlation", y = "10% features") +
+     labs(x = "full correlation", y = "10% Features") +
      coord_equal()) /
   (ggplot(diff_vals, aes(x = ref, y = f_3)) + geom_point() +
-     labs(x = "full correlation", y = "30% features") +
+     labs(x = "full correlation", y = "30% Features") +
      coord_equal())
 diff_f1_f3 = 
   (ggplot(diff_vals, aes(x = diff_1)) +
      geom_histogram(bins = 100) +
-     labs(x = "10% features") +
-     coord_cartesian(xlim = c(-0.01, 0.01))) /
-  (ggplot(diff_vals, aes(x = diff_3)) +
+     labs(x = "1% Features") +
+     coord_cartesian(xlim = c(-0.03, 0.03))) /
+  (ggplot(diff_vals, aes(x = diff_10)) +
      geom_histogram(bins = 100) +
-     labs(x = "30% features") +
-     coord_cartesian(xlim = c(-0.01, 0.01)))
+     labs(x = "10% Features") +
+     coord_cartesian(xlim = c(-0.03, 0.03))) /
+  (ggplot(diff_vals, aes(x = diff_30)) +
+     geom_histogram(bins = 100) +
+     labs(x = "30% Features") +
+     coord_cartesian(xlim = c(-0.03, 0.03)))
 
 f1_f3_plot = ref_f1_f3 | diff_f1_f3
 f1_f3_plot
