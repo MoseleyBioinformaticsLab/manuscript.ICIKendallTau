@@ -10,7 +10,7 @@ editor_options:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, fig.wdith = 8, fig.height = 5)
 ```
 
 ## Abstract
@@ -184,10 +184,11 @@ In all subsamples, the sample - sample correlation differences to those generate
 
 ### Computing Environment
 
-All calculations were run on a virtual machine with 80 virtual cores, and 1 TB of RAM.
+Most calculations were run on a virtual machine with 80 virtual cores, and 1 TB of RAM.
 The virtual machine is running on top of a 50 node cluster, each with 4 10-core processors, 3TB of RAM and an 8TB solid-state-drive array, provided by the Kentucky Research Informatics Cloud (KyRIC).
 KyRIC manages the virtual machines via an OpenStack instance.
 We used the *drake* package to manage calculation dependencies [@landau_drakepackage_2018].
+For the comparisons of time taken using different numbers of samples to evaluate the algorithmic complexity, calculations were run on a single laptop Intel i7 core clocked at 2.2 GHz.
 
 ## Results
 
@@ -314,7 +315,7 @@ s_perf_plot = ggplot(single_core_perf, aes(x = n, y = time, color = method)) +
   coord_cartesian(ylim = c(NA, 0.002)) + 
   theme(legend.position = c(0.6, 0.2)) +
   labs(x = "Number of Features", y = "Time (s)")
-s_perf_plot
+#s_perf_plot
 
 mod_perf = dplyr::filter(single_core_perf, method %in% "ici_kt")
 mod_perf$time = mod_perf$time + 0.015
@@ -336,6 +337,28 @@ Figure X. Comparison of the Rcpp mergesort ici_kt, and base R's correlation func
 Inset is the expanded view showing the full range of computation time in seconds.
 
 
+### Multi-Processing Performance
+
+In addition to an evaluation of the mergesort performance, we also wanted to evaluate the multi-processing performance.
+For this, we ran with small numbers of samples **without** parallelization enabled, and then with larger numbers of samples **with** parallelization enabled.
+
+```{r dependence_number}
+loadd(combined_big)
+combined_big = combined_big %>%
+  dplyr::mutate(set = "large")
+
+ggplot(combined_big, aes(x = n_sample, y = log2(time))) + 
+  geom_line() +
+  facet_wrap(~ set, nrow = 1, scales = "free_x") +
+  labs(x = "Number of Samples",
+       y = "Log2(Time) (s)")
+```
+
+**Fig X**. Time taken by ICI-Kt as a function of the number of samples with multi-processing at the R level, using 80 cores.
+
+As samples are added, the run time quickly increases logarithmically, similar to increasing samples on a single core.
+
+
 ### Feature Subsampling Randomly
 
 ```{r pretty_print}
@@ -349,7 +372,7 @@ loadd(transcript_data)
 loadd(ref_cor)
 ```
 
-```{r load_ici_timings}
+```{r load_ici_timings, fig.height = 8, fig.width = 5}
 loadd(run_random_select_random_fraction_0.01)
 loadd(run_random_select_random_fraction_0.1)
 loadd(run_random_select_random_fraction_0.3)
@@ -363,115 +386,52 @@ diff_vals = diff_vals %>%
                 diff_10 = f_1 - ref,
                 diff_30 = f_3 - ref)
 ref_f1_f3 = 
-  (ggplot(diff_vals, aes(x = ref, y = f_01)) + geom_point() +
-     labs(x = "full correlation", y = "1% Features")) /
-  (ggplot(diff_vals, aes(x = ref, y = f_1)) + geom_point() +
-     labs(x = "full correlation", y = "10% Features") +
-     coord_equal()) /
-  (ggplot(diff_vals, aes(x = ref, y = f_3)) + geom_point() +
-     labs(x = "full correlation", y = "30% Features") +
-     coord_equal())
-diff_f1_f3 = 
+  ((ggplot(diff_vals, aes(x = ref, y = f_01)) + geom_point() +
+     labs(x = "All Features", y = "1% Features") +
+  coord_equal() +
+    geom_abline(slope = 1, color = "red")) |
   (ggplot(diff_vals, aes(x = diff_1)) +
      geom_histogram(bins = 100) +
-     labs(x = "1% Features") +
-     coord_cartesian(xlim = c(-0.03, 0.03))) /
+     labs(x = "Correlation Residual") +
+     coord_cartesian(xlim = c(-0.03, 0.03)) +
+     scale_y_continuous(expand = expansion(mult = 0)) +
+     geom_vline(xintercept = 0, color = "red"))) /
+  ((ggplot(diff_vals, aes(x = ref, y = f_1)) + geom_point() +
+     labs(x = "All Features", y = "10% Features") +
+     coord_equal() +
+      geom_abline(slope = 1, color = "red")) | 
   (ggplot(diff_vals, aes(x = diff_10)) +
      geom_histogram(bins = 100) +
-     labs(x = "10% Features") +
-     coord_cartesian(xlim = c(-0.03, 0.03))) /
+     labs(x = "Correlation Residual") +
+     coord_cartesian(xlim = c(-0.03, 0.03)) +
+     scale_y_continuous(expand = expansion(mult = 0)) +
+     geom_vline(xintercept = 0, color = "red"))) /
+  ((ggplot(diff_vals, aes(x = ref, y = f_3)) + geom_point() +
+     labs(x = "All Features", y = "30% Features") +
+     coord_equal() +
+      geom_abline(slope = 1, color = "red")) +
   (ggplot(diff_vals, aes(x = diff_30)) +
      geom_histogram(bins = 100) +
-     labs(x = "30% Features") +
-     coord_cartesian(xlim = c(-0.03, 0.03)))
+     labs(x = "Correlation Residual") +
+     coord_cartesian(xlim = c(-0.03, 0.03)) +
+     scale_y_continuous(expand = expansion(mult = 0)) +
+     geom_vline(xintercept = 0, color = "red")))
 
-f1_f3_plot = ref_f1_f3 | diff_f1_f3
-f1_f3_plot
+ref_f1_f3
 ```
 
-**Fig X**. Sample-sample ICI-Kt correlations using the full set of features and 10% and 30% of features. Plotted against the full feature set (left), and histogram of the differences to the full feature set (right).
-
-```{r variables_as_percent}
-loadd(combined_random)
-min_sd = combined_random %>%
-  dplyr::pull(sd) %>%
-  min()
-combined_random = combined_random %>%
-  dplyr::mutate(sd_ratio = sd / min_sd)
-long_random = combined_random %>%
-  dplyr::mutate(`Log2(Run Time)` = log2(time),
-                `Median(diff)` = median,
-                `Ratio(SD(diff))` = sd_ratio) %>%
-  dplyr::select(-sd, -time, -median, -sd_ratio) %>%
-  tidyr::pivot_longer(cols = !c(type, fraction),
-                      names_to = "measure",
-                      values_to = "value") 
-long_random$measure = factor(long_random$measure, 
-                             levels = c("Ratio(SD(diff))", "Median(diff)", "Log2(Run Time)"), ordered = TRUE)
-random_plot = ggplot(long_random, aes(x = fraction, y = value)) + 
-  geom_line() +
-  facet_wrap(~ measure, scales = "free", nrow = 1)
-
-loadd(combined_rand_multiple)
-combined_rand_multiple  = combined_rand_multiple %>%
-  dplyr::mutate(`Median(diff)` = median,
-                SD = sd,
-                `Run Time` = time) %>%
-  dplyr::select(-median, -sd, -time)
-long_rand_multiple = tidyr::pivot_longer(combined_rand_multiple, cols = !c(fraction, type), names_to = "measure", values_to = "value")
-long_rand_multiple$measure = factor(long_rand_multiple$measure,
-                                    levels = c("SD", "Median(diff)", "Run Time"),
-                                    ordered = TRUE)
-
-replicate_plot = ggplot(long_rand_multiple, aes(x = value)) + geom_histogram() +
-  facet_wrap(~ measure, scales = "free", nrow = 1)
-
-random_plot / replicate_plot
-```
-
-**Fig X**. Top: Fraction of features used vs the log2 of the run time, the median value of the sample-sample correlation differences, and the standard deviation of the sample-sample correlation differences as a ratio of the standard deviation for the 90% features case. 
-Sample-sample correlation differences are computed with respect to the correlations generated using all features. 
-Bottom: Median differences, standard deviations and times to compute the sample-sample correlations for 20 different random feature samples using 10% of the features.
+Figure X. Sample-sample ICI-Kt correlations using all features compared with 1%, 10% and 30% random subsets of features. Left: The sample-sample correlations using all features are plotted against the sample-sample correlations using a random subset. Red line indicates perfect agreement. Right: Histogram of the residual differences of the sample-sample correlations, where the difference is the (random subset - all features).
 
 Given the length of time it takes to run the calculations for larger datasets (in particular RNA-Seq data), we wondered if "good enough" results could be obtained using subsamples of the features across the samples.
 Our starting data is a set of stage I (I, Ia, and Ib) adenocarcinoma tumor and normal tissue RNA-Seq samples from the *recount2* project, with `r nrow(transcript_data)` features that have a non-zero value in at least one sample, and `r ncol(transcript_data)` samples.
 
 In our original implementation with actual pairwise comparisons, the adenocarcinoma pairwise comparisons took 6.7 hours, on an 80 core virtual machine.
+With the mergesort implementation, that time was greatly reduced.
+However, given that there may still be cases where the number of comparisons are so large that run time is still a concern, we investigated the effect of estimating sample-sample correlations using a subset of the features.
 
-Given such long run times, we decided to investigate the effect of subsampling features to decrease run time while still retaining reasonable estimates of the sample - sample correlations.
-Figure X plots the feature subsample correlations for 10% and 30% of the features against those generated by the full set (left), as well as the histogram of the differences in values (right).
-The plot of the changes in standard deviation (SD) of the differences as a function of the percentage of subsampled features in Fig X(top, Ratio(SD(diff))) demonstrates that the SD quickly goes towards the minimum ratio of the minimum ratio of SD, while the run time similarly increases extremely quickly (time is on a log2 scale, so each unit is a doubling of the run time).
+Figure X compares the sample-sample correlations from a random percent subsample of features to those obtained using all of the features.
+Both the pairwise plot (left) and histogram of residual differences (right) show that the correlations become much closer to those obtained when using all of the features.
 
-Using the 10% level of feature subsampling, we also repeated the calculations 20 times with new subsets to verify that the results were not dependent on any particular subsample of features (Figure X (bottom)).
-
-Similar graphs of the median and SD for versions of Pearson and Kendall correlation are included in the supplemental materials.
-
-#### Dependence on Number of Samples
-
-Finally, we wanted to characterize the time required as a function of the number of samples, and therefore the number of sample - sample comparisons.
-For this, we ran with small numbers of samples **without** parallelization enabled, and then with larger numbers of samples **with** parallelization enabled.
-
-```{r dependence_number}
-loadd(combined_small)
-loadd(combined_big)
-combined_small = combined_small %>%
-  dplyr::mutate(set = "small")
-combined_big = combined_big %>%
-  dplyr::mutate(set = "large")
-all_samples = rbind(combined_small, combined_big)
-all_samples$set = factor(all_samples$set, levels = c("small", "large"), ordered = TRUE)
-
-ggplot(all_samples, aes(x = n_sample, y = log2(time))) + 
-  geom_line() +
-  facet_wrap(~ set, nrow = 1, scales = "free_x") +
-  labs(x = "Number of Samples",
-       y = "Log2(Time) (s)")
-```
-
-**Fig X**. Time taken by the ICI-Kt as a function of the number of samples, using 2 - 40 samples without parallelization, and 50 - 250 samples with parallelization.
-
-As samples are added, the run time quickly increases, much as the number of features added also quickly increases.
-With enough cores (80 in this case), the increase in time as samples are added increases in a similar way, and in fact the 6.5 times number of samples can be run in a similar amount of time as the 40 samples on a single core.
 
 ### Discussion
 
