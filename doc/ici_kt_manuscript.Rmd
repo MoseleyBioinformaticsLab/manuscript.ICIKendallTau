@@ -221,45 +221,55 @@ loadd(realistic_negative_kt)
 positive_df = rbind(data.frame(cor = realistic_positive_pearson,
                                 diff = ref_pearson - realistic_positive_pearson,
                                 na = n_na,
-                                type = "pearson",
+                                type = "Pearson",
                                 dir = "positive"),
                      data.frame(cor = realistic_positive_kendall,
                                 diff = ref_kendall - realistic_positive_kendall,
                                 na = n_na,
-                                type = "kendall",
+                                type = "Kendall",
                                 dir = "positive"),
                      data.frame(cor = realistic_positive_kt,
                                 diff = ref_kendall - realistic_positive_kt,
                                 na = n_na,
-                                type = "icikt",
+                                type = "ICI-Kt",
                                 dir = "positive"))
 negative_df = rbind(data.frame(cor = realistic_negative_pearson,
                                 diff = ref_pearson_neg - realistic_negative_pearson,
                                 na = n_na,
-                                type = "pearson",
+                                type = "Pearson",
                                 dir = "negative"),
                      data.frame(cor = realistic_negative_kendall,
                                 diff = ref_kendall_neg - realistic_negative_kendall,
                                 na = n_na,
-                                type = "kendall",
+                                type = "Kendall",
                                 dir = "negative"),
                      data.frame(cor = realistic_negative_kt,
                                 diff = ref_kendall_neg - realistic_negative_kt,
                                 na = n_na,
-                                type = "icikt",
+                                type = "ICI-Kt",
                                 dir = "negative"))
-pos_diff = ggplot(positive_df, aes(x = na, y = diff)) + 
+negative_df = negative_df %>%
+  dplyr::mutate(perc_missing = na / max(na) * 100,
+                type = factor(type, levels = c("Kendall", "Pearson", "ICI-Kt"), ordered = TRUE))
+positive_df = positive_df %>%
+  dplyr::mutate(perc_missing = na / max(na) * 100,
+                type = factor(type, levels = c("Kendall", "Pearson", "ICI-Kt"), ordered = TRUE))
+pos_diff = ggplot(positive_df, aes(x = perc_missing, y = diff)) + 
   geom_point() +
   facet_grid(type ~ ., scales = "free") +
-  labs(subtitle = "Positive Correlation")
-neg_diff = ggplot(negative_df, aes(x = na, y = diff)) +
+  labs(subtitle = "Positive Correlation",
+       x = "Percent Missing") +
+  scale_y_continuous(labels = label_scientific(digits = 2))
+neg_diff = ggplot(negative_df, aes(x = perc_missing, y = diff)) +
   geom_point() +
   facet_grid(type ~ ., scales = "free") +
-  labs(subtitle = "Negative Correlation")
+  labs(subtitle = "Negative Correlation",
+       x = "Percent Missing") +
+  scale_y_continuous(labels = label_scientific(digits = 2))
 pos_diff + neg_diff
 ```
 
-**Fig X**. The effect on ICI-Kt, Kendall-tau, and Pearson correlations as increasing numbers of values in either or both samples are replaced with missing values.
+**Fig X**. The effect on Kendall, Pearson and ICI-Kt correlations as increasing percentages in either or both samples are replaced with missing values for both positively and negatively correlated samples.
 
 In **Figure X**, we can see that as missing values are added, only the ICI-Kt correlation values change in any significant way.
 As the number of missing values increase, the ICI-Kt values drop or increase by up to 0.2.
@@ -275,7 +285,8 @@ ICI-Kt correlations were calculated using the genes that had a non-zero count in
 For each sample, the median ICI-Kt value was calculated amongst the samples for each of the defined groups.
 Two samples were found to have low correlations within their group.
 
-```{r outlier_adenocarcinoma}
+
+```{r outlier_adenocarcinoma_setup}
 loadd(ref_cor)
 loadd(transcript_data)
 adeno_cor = ref_cor$cor
@@ -295,12 +306,38 @@ cor_outlier = function(cor_df){
   cor_df$sample_id[cor_df$med_cor %in% out_vals]
 }
 med_outliers = purrr::map(split_med, cor_outlier) %>% unlist()
+med_cor$outlier = FALSE
+med_cor[med_cor$sample_id %in% med_outliers, "outlier"] = TRUE
 p_outliers = purrr::map(split_p, cor_outlier) %>% unlist()
+p_med_cor$outlier = FALSE
+p_med_cor[p_med_cor$sample_id %in% p_outliers, "outlier"] = TRUE
+p_med_cor$correlation = "Pearson"
+med_cor$correlation = "ICI-Kt"
+
+all_med_cor = rbind(p_med_cor, med_cor)
+all_med_cor = all_med_cor %>%
+  dplyr::mutate(type2 = dplyr::case_when(
+    grepl("Primary", sample_class) ~ "Tumor",
+    grepl("Normal", sample_class) ~ "Normal"
+  ))
+```
+
+The second is a collection of `r ncol(transcript_data)` adenocarcinoma samples from the TCGA project, and incorporated into the recount2 project [@collado-torres_recount2_2017].
+In this dataset there are `r nrow(dplyr::filter(adeno_info, grepl("Normal", sample_type)))` normal and `r nrow(dplyr::filter(adeno_info, grepl("Tumor", sample_type)))` tumor samples.
+
+From the pairwise sample-sample correlations, median correlations for each sample with all the other samples of the same class (normal or tumor) were calculated.
+Outliers were determined using the boxplot.stats R function.
+
+```{r plot_adenocarcinoma}
+ggplot(all_med_cor, aes(x = type2, y = med_cor)) + 
+  geom_sina(aes(color = outlier, group = sample_class)) +
+  facet_wrap(~ correlation) +
+  theme(legend.position = c(0.4, 0.2)) +
+  labs(x = "Sample Type", y = "Median Correlation")
 ```
 
 For the adenocarcinoma data, median correlations within the tumor and normal groups were calculated.
-A group of samples in each appear to be outliers.
-Principal component analysis (PCA) shows that the outliers ....
+`r tools::toTitleCase(n2w(nrow(dplyr::filter(med_cor, outlier, grepl("Normal", sample_class)))))` sample in the Normal, and `r n2w(nrow(dplyr::filter(med_cor, outlier, grepl("Tumor", sample_class))))` outliers were found, whether using ICI-Kt correlation or Pearson correlation.
 
 ### Algorithmic Performance
 
@@ -467,5 +504,8 @@ complex_figure = create_complexity_figure(single_core_perf)
 complex_figure
 ```
 
+## Acknowledgements
+
+The results shown here are in whole or part based upon data generated by the TCGA Research Network: https://www.cancer.gov/tcga.
 
 ## References
