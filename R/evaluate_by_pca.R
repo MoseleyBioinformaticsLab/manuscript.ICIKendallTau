@@ -25,3 +25,12 @@ evaluate_by_pca <- function(select_random_fraction, transcript_pca) {
   perc_var$frac = select_random_fraction$frac
   perc_var
 }
+
+summarize_by_pca = function(perc_var){
+  perc_var %>%
+    dplyr::group_by(type, frac) %>%
+    dplyr::summarise(kt = ici_kt(percent, selected_frac)["tau"],
+                     med = median(selected_frac),
+                     diff = med - frac[1],
+                     diff_perc = diff / frac[1])
+}
