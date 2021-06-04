@@ -180,6 +180,15 @@ Both the feature variance and PC variance subsample methods were run with subsam
 
 In all subsamples, the sample - sample correlation differences to those generated with the full feature set were compared, and the median and standard deviation of all of the correlation differences calculated to evaluate the performance of the subsampling.
 
+### Principal Component Evaluation of Subsample Coverage
+
+The principal component decomposition of the full adenocarcinoma dataset was used to define the loadings for each principal component.
+For a given principal component (PC), the sum of the absolute values of the loadings defines the total loadings for that PC.
+The absolute values of the loadings for the subsampled features are also summed, and then divided by the total loadings previously calculated using all features.
+The loading fraction is calculated for each subsample of features, across all PCs.
+The responsible variance for each PC was also calculated as the variance of the scores in each PC.
+Further, the Kendall-tau correlation between the loading fraction and the PC variances was calculated.
+The median loading fraction across all PCs was also calculated, as well as fractional difference of the median loading fraction to the intended fraction (the number of subsampled features over the total number of features).
 
 
 ### Computing Environment
@@ -343,7 +352,9 @@ For the adenocarcinoma data, median correlations within the tumor and normal gro
 
 We compared the performance of our Rcpp mergesort implementation to the base R cor function using both "pearson" and "kendall" methods on a single core with increasing numbers of features.
 
-Figure X 
+Figure X shows that the "kendall" method is the slowest by far.
+Zoomed out, the ICI-Kt appears as fast as using "pearson", but upon zooming in, it's possible to see that ICI-Kt is using increasing amounts of time much faster than "pearson".
+In fact, regressing the time to number of samples using a formula with the expected algorithmic complexity, "pearson" shows O(n), ICI-Kt is O(nlog(n)), and "kendall" is O(n^2) (see supplemental).
 
 ```{r show_performance_graph}
 single_core_perf = run_single_cor()
@@ -467,14 +478,109 @@ With the mergesort implementation, that time was greatly reduced.
 However, given that there may still be cases where the number of comparisons are so large that run time is still a concern, we investigated the effect of estimating sample-sample correlations using a subset of the features.
 
 Figure X compares the sample-sample correlations from a random percent subsample of features to those obtained using all of the features.
-Both the pairwise plot (left) and histogram of residual differences (right) show that the correlations become much closer to those obtained when using all of the features.
+Both the pairwise plot (left) and histogram of residual differences (right) show that the correlations become much closer to those obtained when using all of the features as the percentage of subsampled features is increased.
 
+### Deviations Based on Principal Component Coverage
 
-### Discussion
+As a further evaluation of the random feature subsampling, we used principal component coverage to discern how the random subsampling behaves (see Methods).
+For each principal component, the coverage was evaluated as the fraction of the loadings accounted for by the subsampled features.
+Further, the Kendall-tau correlation between the variance of the principal component and the fraction of loadings was calculated, as well as the median of the loading coverage across all principal components.
+Figure X shows that for the random feature subsampling, Kendall-tau correlation implies no relationship between the loading fraction and the contributed variance of a PC, and the median of the loading fractions across PCs is close to the intended fraction of data accounted for.
+
+```{r pca_eval}
+loadd(pca_eval_summary)
+
+rand_eval = pca_eval_summary %>%
+  dplyr::filter(type %in% "random")
+
+r_e_kt = ggplot(rand_eval, aes(x = frac, y = kt)) + 
+geom_hline(yintercept = 0, color = "red") + 
+  geom_point() +
+  labs(x = "Subsample Fraction", y = "Kendall-tau")
+r_e_diff = ggplot(rand_eval, aes(x = frac, y = diff_perc)) + 
+  geom_hline(yintercept = 0, color = "red") +
+  geom_point() +
+  labs(x = "Subsample Fraction", y = "Percent Median Loading Fraction Difference")
+
+rand_plot = r_e_kt | r_e_diff
+rand_plot + plot_annotation(tag_levels = 'A')
+```
+
+Figure X. A) Subsampled feature fraction plotted against the Kendall-tau correlation between the loading fraction and the contributed variance of the PC.
+Red line drawn at correlation of zero.
+B) Subsampled feature fraction plotted against the percent difference of the median loading fraction to the intended loading fraction, which is also the subsample fraction.
+Red line drawn at a difference of zero.
+
+### Evaluation of Variance and PCA Based Subsampling
+
+In addition to the random feature subsamples, we also implemented feature selection methods based on loading contributions to each PC, as well as feature variances in the full data set (see Methods).
+As shown in Figure X, both of these feature selection methods perform extremely poorly, even with a fraction of 0.5.
+
+```{r poor_pca_var}
+loadd(run_nonrandom_select_nonrandom_fraction_0.5_var_select)
+loadd(run_nonrandom_select_nonrandom_fraction_0.5_pca_select)
+diff_var = data.frame(ref = extract_data(ref_cor),
+                         f_50 = 
+                           extract_data(run_nonrandom_select_nonrandom_fraction_0.5_var_select)) %>%
+  dplyr::mutate(diff = f_50 - ref)
+diff_pca = data.frame(ref = extract_data(ref_cor),
+                      f_50 = extract_data(run_nonrandom_select_nonrandom_fraction_0.5_pca_select)) %>%
+  dplyr::mutate(diff = f_50 - ref)
+
+var_diff = ggplot(diff_var, aes(x = ref, y = f_50)) +
+  geom_abline(slope = 1, color = "red") +
+  geom_point() +
+  coord_equal() +
+  labs(x = "All Features",
+       y = "50% Features by Variance")
+pca_diff = ggplot(diff_pca, aes(x = ref, y = f_50)) +
+  geom_abline(slope = 1, color = "red") +
+  geom_point() +
+  coord_equal() +
+  labs(x = "All Features",
+       y = "50% Features by PCA")
+var_dist = ggplot(diff_var, aes(x = diff)) + 
+  geom_histogram(bins = 100) + 
+  labs(x = "Correlation Residual")
+pca_dist = ggplot(diff_pca, aes(x = diff)) +
+  geom_histogram(bins = 100) +
+  labs(x = "Correlation Residual")
+
+nonrandom_plot = (var_diff | var_dist) / (pca_diff | pca_dist)
+nonrandom_plot
+```
+
+Figure X. Sample-sample ICI-Kt correlations using all features compared with 1%, 10% and 30% random subsets of features. 
+Left: The sample-sample correlations using all features are plotted against the sample-sample correlations using 50% of features chosen by variance contribution or PCA. Red line indicates perfect agreement. 
+Right: Histogram of the residual differences of the sample-sample correlations, where the difference is the (subset - all features).
+
+We also used the same evaluation by loading fraction for the variance and PCA chosen feature subsamples.
+Figure X shows that in both the variance and PCA subsamples, there is a relationship between the loading fraction and the contributed variance of a PC.
+
+```{r nonrandom_pca}
+nonrand_eval = pca_eval_summary %>%
+  dplyr::filter(!(type %in% "random"))
+
+nr_e_kt = ggplot(nonrand_eval, aes(x = frac, y = kt, color = type)) + 
+  geom_point() +
+  labs(x = "Subsample Fraction", y = "Kendall-tau") +
+  theme(legend.position = "none")
+nr_e_diff = ggplot(nonrand_eval, aes(x = frac, y = diff_perc, color = type)) + 
+  geom_point() +
+  labs(x = "Subsample Fraction", y = "Percent Median Loading Fraction Difference") +
+  theme(legend.position = c(0.5, 0.8))
+
+nonrand_eval_plot = nr_e_kt | nr_e_diff
+nonrand_eval_plot + plot_annotation(tag_levels = 'A')
+```
+
+Figure X. 
+
+## Discussion
 
 ???
 
-### Conclusions
+## Conclusions
 
 ???
 
