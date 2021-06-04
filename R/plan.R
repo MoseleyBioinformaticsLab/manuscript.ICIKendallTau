@@ -40,7 +40,7 @@ the_plan <-
    
    realistic_sample_1 = create_sample(n = 1000),
    realistic_sample_2 = create_sample(n = 1000),
-   realistic_neg_sample = -1 * realistic_sample_2,
+   realistic_neg_sample = sort(realistic_sample_2, decreasing = TRUE),
    realistic_na = create_random_na(),
    realistic_positive_kt = compare_positive_kt(realistic_sample_1, realistic_sample_2, realistic_na),
    realistic_negative_kt = compare_negative_kt(realistic_sample_1, realistic_neg_sample, realistic_na),
