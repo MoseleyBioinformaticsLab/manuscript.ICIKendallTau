@@ -73,15 +73,16 @@ compare_negative_kt <- function(x, y, where_na, low_indices = FALSE, perspective
     #message(use_na)
     tmp_x = x
     tmp_y = y
-    y_na = use_na[use_na > n_entry] - n_entry + 500
+    y_na = use_na[use_na > n_entry] - n_entry
     x_na = use_na[use_na <= n_entry]
     
-    if (low_indices) {
+    if ((n_entry == 10) && (low_indices)) {
       y_na = y_na[y_na <= 5]
+      y_na = y_na + 5
       x_na = x_na[x_na <= 5]
+    } else {
+      y_na = y_na + 500
     }
-    
-    #y_na = n_entry - y_na + 1
     
     tmp_y[y_na] = NA
     tmp_x[x_na] = NA
@@ -133,15 +134,17 @@ compare_negative_pearson <- function(x, y, where_na, low_indices = FALSE, method
     tmp_x = x
     tmp_y = y
     
-    y_na = use_na[use_na > n_entry] - n_entry + 500
+    y_na = use_na[use_na > n_entry] - n_entry
     x_na = use_na[use_na <= n_entry]
     
-    if (low_indices) {
+    if ((n_entry == 10) && (low_indices)) {
       y_na = y_na[y_na <= 5]
+      y_na = y_na + 5
       x_na = x_na[x_na <= 5]
+    } else {
+      y_na = y_na + 500
     }
-    
-    #y_na = n_entry - y_na + 1
+
     tmp_y[y_na] = NA
     tmp_x[x_na] = NA
     in_matrix = cbind(tmp_x, tmp_y)
