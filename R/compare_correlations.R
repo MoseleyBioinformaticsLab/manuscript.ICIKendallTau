@@ -134,7 +134,7 @@ compare_negative_pearson <- function(x, y, where_na, low_indices = FALSE, method
   n_entry = length(x)
   furrr::future_imap_dfr(where_na, function(use_na, i_na){
   #purrr::imap_dfr(where_na, function(use_na, i_na){
-    message(i_na)
+    #message(i_na)
     #knitrProgressBar::update_progress(prog_where)
     tmp_x = x
     tmp_y = y
