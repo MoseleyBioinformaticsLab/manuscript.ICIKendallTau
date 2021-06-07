@@ -76,13 +76,16 @@ compare_negative_kt <- function(x, y, where_na, low_indices = FALSE, perspective
     y_na = use_na[use_na > n_entry] - n_entry
     x_na = use_na[use_na <= n_entry]
     
-    if ((n_entry == 10) && (low_indices)) {
-      y_na = y_na[y_na <= 5]
-      y_na = y_na + 5
-      x_na = x_na[x_na <= 5]
-    } else {
+    if ((n_entry == 10)) {
+      if (low_indices) {
+        y_na = y_na[y_na <= 5]
+        y_na = y_na + 5
+        x_na = x_na[x_na <= 5]
+      } 
+    } else if (n_entry == 1000) {
       y_na = y_na + 500
     }
+    
     
     tmp_y[y_na] = NA
     tmp_x[x_na] = NA
@@ -130,6 +133,8 @@ compare_negative_kt_c <- function(x, y, where_na, low_indices = FALSE, perspecti
 compare_negative_pearson <- function(x, y, where_na, low_indices = FALSE, method = "pearson") {
   n_entry = length(x)
   furrr::future_imap_dfr(where_na, function(use_na, i_na){
+  #purrr::imap_dfr(where_na, function(use_na, i_na){
+    message(i_na)
     #knitrProgressBar::update_progress(prog_where)
     tmp_x = x
     tmp_y = y
@@ -137,20 +142,23 @@ compare_negative_pearson <- function(x, y, where_na, low_indices = FALSE, method
     y_na = use_na[use_na > n_entry] - n_entry
     x_na = use_na[use_na <= n_entry]
     
-    if ((n_entry == 10) && (low_indices)) {
-      y_na = y_na[y_na <= 5]
-      y_na = y_na + 5
-      x_na = x_na[x_na <= 5]
-    } else {
+    if ((n_entry == 10)) {
+      if (low_indices) {
+        y_na = y_na[y_na <= 5]
+        y_na = y_na + 5
+        x_na = x_na[x_na <= 5]
+      } 
+    } else if (n_entry == 1000) {
       y_na = y_na + 500
     }
 
     tmp_y[y_na] = NA
     tmp_x[x_na] = NA
-    in_matrix = cbind(tmp_x, tmp_y)
-    out_res = cor(in_matrix, use = "pairwise.complete.obs", method = method)
-    data.frame(cor = out_res[1,2], i_na = i_na, x_na = length(x_na), y_na = length(y_na))
-  }, .progress = TRUE)
+    #in_matrix = cbind(tmp_x, tmp_y)
+    out_res = cor(tmp_x, tmp_y, use = "pairwise.complete.obs", method = method)
+    data.frame(cor = out_res, i_na = i_na, x_na = length(x_na), y_na = length(y_na))
+  })
+  #}, .progress = TRUE)
 }
 
 ##' .. content for \description{} (no empty lines) ..
@@ -183,8 +191,8 @@ compare_positive_pearson <- function(x, y, where_na, low_indices = FALSE, method
     tmp_y[y_na] = NA
     tmp_x[x_na] = NA
     in_matrix = cbind(tmp_x, tmp_y)
-    out_res = cor(in_matrix, use = "pairwise.complete.obs", method = method)
-    data.frame(cor = out_res[1,2], i_na = i_na, x_na = length(x_na), y_na = length(y_na))
+    out_res = cor(tmp_x, tmp_y, use = "pairwise.complete.obs", method = method)
+    data.frame(cor = out_res, i_na = i_na, x_na = length(x_na), y_na = length(y_na))
   }, .progress = TRUE)
   
   
