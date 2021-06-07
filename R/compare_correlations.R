@@ -10,7 +10,7 @@
 compare_positive_kt <- function(x, y, where_na, low_indices = FALSE, perspective = "global") {
   n_entry = length(x)
   #prog_where = knitrProgressBar::progress_estimated(length(where_na))
-  tmp = furrr::future_map_dbl(where_na, function(use_na){
+  tmp = furrr::future_imap_dfr(where_na, function(use_na, i_na){
     #message(.y)
     #knitrProgressBar::update_progress(prog_where)
     tmp_x = x
@@ -25,7 +25,8 @@ compare_positive_kt <- function(x, y, where_na, low_indices = FALSE, perspective
     
     tmp_y[y_na] = NA
     tmp_x[x_na] = NA
-    ici_kt(tmp_x, tmp_y, perspective = perspective)[[1]]
+    out_val = ici_kt(tmp_x, tmp_y, perspective = perspective)[[1]]
+    data.frame(cor = out_val, i_na = i_na, x_na = length(x_na), y_na = length(y_na))
   }, .progress = TRUE)
   
   tmp
@@ -68,7 +69,7 @@ compare_positive_kt_c <- function(x, y, where_na, low_indices = FALSE, perspecti
 ##' @export
 compare_negative_kt <- function(x, y, where_na, low_indices = FALSE, perspective = "global") {
   n_entry = length(x)
-  furrr::future_map_dbl(where_na, function(use_na){
+  furrr::future_imap_dfr(where_na, function(use_na, i_na){
     #message(use_na)
     tmp_x = x
     tmp_y = y
@@ -80,11 +81,12 @@ compare_negative_kt <- function(x, y, where_na, low_indices = FALSE, perspective
       x_na = x_na[x_na <= 5]
     }
     
-    y_na = n_entry - y_na + 1
+    #y_na = n_entry - y_na + 1
     
     tmp_y[y_na] = NA
     tmp_x[x_na] = NA
-    ici_kt(tmp_x, tmp_y, perspective = perspective)[[1]]
+    out_val = ici_kt(tmp_x, tmp_y, perspective = perspective)[[1]]
+    data.frame(cor = out_val, i_na = i_na, x_na = length(x_na), y_na = length(y_na))
   })
 #  , .progress = TRUE)
   
