@@ -73,7 +73,7 @@ compare_negative_kt <- function(x, y, where_na, low_indices = FALSE, perspective
     #message(use_na)
     tmp_x = x
     tmp_y = y
-    y_na = n_entry - (use_na[use_na > n_entry] - n_entry)
+    y_na = (n_entry + 1) - (use_na[use_na > n_entry] - n_entry)
     x_na = use_na[use_na <= n_entry]
     
     if ((n_entry == 10)) {
@@ -136,7 +136,7 @@ compare_negative_pearson <- function(x, y, where_na, low_indices = FALSE, method
     tmp_x = x
     tmp_y = y
     
-    y_na = n_entry - (use_na[use_na > n_entry] - n_entry)
+    y_na = (n_entry + 1) - (use_na[use_na > n_entry] - n_entry)
     x_na = use_na[use_na <= n_entry]
     
     if ((n_entry == 10)) {
