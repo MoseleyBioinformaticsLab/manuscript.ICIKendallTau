@@ -25,8 +25,12 @@ compare_positive_kt <- function(x, y, where_na, low_indices = FALSE, perspective
     
     tmp_y[y_na] = NA
     tmp_x[x_na] = NA
-    out_val = ici_kt(tmp_x, tmp_y, perspective = perspective)[[1]]
-    data.frame(cor = out_val, i_na = i_na, x_na = length(x_na), y_na = length(y_na))
+    # switching to only introducing NA values in either X or Y,
+    # not both, because both makes it NOT symmetric, there is
+    # just no way to do it.
+    out_val_y = ici_kt(x, tmp_y, perspective = perspective)[[1]]
+    out_val_x = ici_kt(tmp_x, y, perspective = perspective)[[1]]
+    data.frame(cor = c(out_val_y, out_val_x), i_na = i_na, x_na = c(0, length(x_na)), y_na = c(length(y_na), 0))
   }, .progress = TRUE)
   
   tmp
@@ -86,8 +90,9 @@ compare_negative_kt <- function(x, y, where_na, low_indices = FALSE, perspective
     
     tmp_y[y_na] = NA
     tmp_x[x_na] = NA
-    out_val = ici_kt(tmp_x, tmp_y, perspective = perspective)[[1]]
-    data.frame(cor = out_val, i_na = i_na, x_na = length(x_na), y_na = length(y_na))
+    out_val_y = ici_kt(x, tmp_y, perspective = perspective)[[1]]
+    out_val_x = ici_kt(tmp_x, y, perspective = perspective)[[1]]
+    data.frame(cor = c(out_val_y, out_val_x), i_na = i_na, x_na = c(0, length(x_na)), y_na = c(length(y_na), 0))
   })
 #  , .progress = TRUE)
   
@@ -150,8 +155,9 @@ compare_negative_pearson <- function(x, y, where_na, low_indices = FALSE, method
     tmp_y[y_na] = NA
     tmp_x[x_na] = NA
     #in_matrix = cbind(tmp_x, tmp_y)
-    out_res = cor(tmp_x, tmp_y, use = "pairwise.complete.obs", method = method)
-    data.frame(cor = out_res, i_na = i_na, x_na = length(x_na), y_na = length(y_na))
+    out_val_y = cor(x, tmp_y, use = "pairwise.complete.obs", method = method)
+    out_val_x = cor(tmp_x, y, use = "pairwise.complete.obs", method = method)
+    data.frame(cor = c(out_val_y, out_val_x), i_na = i_na, x_na = c(0, length(x_na)), y_na = c(length(y_na), 0))
   })
   #}, .progress = TRUE)
 }
@@ -186,8 +192,9 @@ compare_positive_pearson <- function(x, y, where_na, low_indices = FALSE, method
     tmp_y[y_na] = NA
     tmp_x[x_na] = NA
     in_matrix = cbind(tmp_x, tmp_y)
-    out_res = cor(tmp_x, tmp_y, use = "pairwise.complete.obs", method = method)
-    data.frame(cor = out_res, i_na = i_na, x_na = length(x_na), y_na = length(y_na))
+    out_val_y = cor(x, tmp_y, use = "pairwise.complete.obs", method = method)
+    out_val_x = cor(tmp_x, y, use = "pairwise.complete.obs", method = method)
+    data.frame(cor = c(out_val_y, out_val_x), i_na = i_na, x_na = c(0, length(x_na)), y_na = c(length(y_na), 0))
   }, .progress = TRUE)
   
   
