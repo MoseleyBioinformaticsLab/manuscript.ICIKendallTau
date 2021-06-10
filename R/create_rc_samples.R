@@ -45,35 +45,37 @@ left_censor_correlate = function(lc_samples, cut_values = seq(0, 1.5, by = 0.1))
   censor_cor
 }
 
-random_censor_correlate = function(lc_samples, n_na = seq(0, 300, 50)){
-  censor_cor = purrr::map_df(n_na, function(in_na){
+random_censor_correlate = function(lc_samples, n_na = seq(0, 300, 50), nrep = 100){
+  censor_cor = furrr::future_map_dfr(n_na, function(in_na){
     tmp_lc = lc_samples
     n_total = length(lc_samples)
-    na_locs = sample(n_total, in_na)
-    tmp_lc[na_locs] = NA
     
-    ici_cor = ici_kendalltau(t(tmp_lc), exclude_0 = FALSE, perspective = "global")$cor[1,2]
-    p_cor = cor(tmp_lc, use = "pairwise.complete.obs", method = "pearson")[1,2]
-    k_cor = cor(tmp_lc, use = "pairwise.complete.obs", method = "kendall")[1,2]
-    tmp_lc[is.na(tmp_lc)] = 0
-    p_cor_0 = cor(tmp_lc, method = "pearson")[1,2]
-    k_cor_0 = cor(tmp_lc, method = "kendall")[1,2]
-    
-    tmp_frame = data.frame(cor = c(ici_cor,
-                       p_cor,
-                       k_cor,
-                       p_cor_0,
-                       k_cor_0),
-               which = c("ici",
-                         "pearson",
-                         "kendall",
-                         "pearson_0",
-                         "kendall_0"),
-               n_na = in_na,
-               cutoff = 0)
-    tmp_frame$na_locs = list(na_locs)
-    tmp_frame
-    
+    purrr::map_df(seq(1, nrep), function(in_rep){
+      na_locs = sample(n_total, in_na)
+      tmp_lc[na_locs] = NA
+      
+      ici_cor = ici_kendalltau(t(tmp_lc), exclude_0 = FALSE, perspective = "global")$cor[1,2]
+      p_cor = cor(tmp_lc, use = "pairwise.complete.obs", method = "pearson")[1,2]
+      k_cor = cor(tmp_lc, use = "pairwise.complete.obs", method = "kendall")[1,2]
+      tmp_lc[is.na(tmp_lc)] = 0
+      p_cor_0 = cor(tmp_lc, method = "pearson")[1,2]
+      k_cor_0 = cor(tmp_lc, method = "kendall")[1,2]
+      
+      tmp_frame = data.frame(cor = c(ici_cor,
+                                     p_cor,
+                                     k_cor,
+                                     p_cor_0,
+                                     k_cor_0),
+                             which = c("ici",
+                                       "pearson",
+                                       "kendall",
+                                       "pearson_0",
+                                       "kendall_0"),
+                             n_na = in_na,
+                             cutoff = 0)
+      tmp_frame$na_locs = list(na_locs)
+      tmp_frame
+    })
   })
   censor_cor
 }
