@@ -59,7 +59,7 @@ random_censor_correlate = function(lc_samples, n_na = seq(0, 300, 50), nrep = 10
       k_cor = cor(tmp_lc[, 1], tmp_lc[, 2], use = "pairwise.complete.obs", method = "kendall")
       tmp_lc[is.na(tmp_lc)] = 0
       p_cor_0 = cor(tmp_lc[, 1], tmp_lc[, 2], method = "pearson")
-      k_cor_0 = cor(tmp_lc[, 1], tmp_lc[, 2], method = "kendall")[1,2]
+      k_cor_0 = cor(tmp_lc[, 1], tmp_lc[, 2], method = "kendall")
       
       tmp_frame = data.frame(cor = c(ici_cor,
                                      p_cor,
