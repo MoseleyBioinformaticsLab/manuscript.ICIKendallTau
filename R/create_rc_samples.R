@@ -21,12 +21,12 @@ left_censor_correlate = function(lc_samples, cut_values = seq(0, 1.5, by = 0.1))
     tmp_lc[tmp_lc < in_cut] = NA
     n_na = sum(is.na(tmp_lc))
     
-    ici_cor = ici_kt(tmp_lc[, 1], tmp_lc[, 2], perspective = "global")[[1]]
+    ici_cor = ici_kt(tmp_lc[, 1], tmp_lc[, 2], perspective = "global")[1]
     p_cor = cor(tmp_lc[, 1], tmp_lc[, 2], use = "pairwise.complete.obs", method = "pearson")
     k_cor = cor(tmp_lc[, 1], tmp_lc[, 2], use = "pairwise.complete.obs", method = "kendall")
     tmp_lc[is.na(tmp_lc)] = 0
     p_cor_0 = cor(tmp_lc[, 1], tmp_lc[, 2], method = "pearson")
-    k_cor_0 = cor(tmp_lc[, 2], tmp_lc[, 2], method = "kendall")
+    k_cor_0 = cor(tmp_lc[, 1], tmp_lc[, 2], method = "kendall")
     
     data.frame(cor = c(ici_cor,
                        p_cor,
