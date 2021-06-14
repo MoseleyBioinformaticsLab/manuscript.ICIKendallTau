@@ -214,6 +214,7 @@ the_plan <-
    left_censored_samples = create_lc_samples(),
    left_censored_cor = left_censor_correlate(left_censored_samples),
    random_censored_cor = random_censor_correlate(left_censored_samples),
+   logtransform_censored_cor = lt_left_censor_correlate(left_censored_samples),
    
    egfr_cor = run_egfr_cor(),
    egfr_outliers = find_egfr_outliers(egfr_cor),
