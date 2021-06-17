@@ -15,7 +15,7 @@ all_kendalltau <- function(s1, s2, sneg, where_na, perspective = "global") {
     #knitrProgressBar::update_progress(prog_where)
     tmp_s1 = s1
     tmp_s2 = s2
-    tmp_neg = neg
+    tmp_neg = sneg
     
     s2_na = use_na[use_na > n_entry] - n_entry
     s1_na = use_na[use_na <= n_entry]
