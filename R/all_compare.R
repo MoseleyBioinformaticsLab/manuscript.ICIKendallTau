@@ -10,7 +10,7 @@
 all_kendalltau <- function(s1, s2, sneg, where_na, perspective = "global") {
   n_entry = length(s1)
   #prog_where = knitrProgressBar::progress_estimated(length(where_na))
-  tmp = furrr::future_map_df(where_na, function(use_na){
+  tmp = furrr::future_map_dfr(where_na, function(use_na){
     #message(.y)
     #knitrProgressBar::update_progress(prog_where)
     tmp_s1 = s1
