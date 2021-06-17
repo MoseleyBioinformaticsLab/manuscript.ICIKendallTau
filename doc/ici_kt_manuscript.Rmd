@@ -1,6 +1,6 @@
 ---
 title: 'Information-Content-Informed Kendall-tau Correlation: Utilizing Missing Values'
-author: 'Robert M Flight & Hunter NB Moseley'
+author: 'Robert M Flight, Praneeth Bhatt, and Hunter NB Moseley'
 date: '`r Sys.time()`'
 output: 
   rmarkdown::word_document
@@ -45,7 +45,7 @@ With both simulated and real data sets from RNA-seq experiments, we demonstrate 
 Moreover, our implementation of ICI-Kt uses a mergesort-like algorithm that provides nlog(n) computational performance. 
 Finally, we show that approximate ICI-Kt values can be calculated using smaller subsets of large data sets with significant time savings, which has practical computational value when feature sizes are very large.
 
-The ICI-Kt correlation calculation is available in an R package on GitHub at https://moseleyBionformaticsLab/ICIKendallTau.
+The ICI-Kt correlation calculation is available in an R package on GitHub at https://moseleyBionformaticsLab/ICIKendallTau, as well as a Python module from PyPi under ICIKendallTau.
 
 ## Introduction
 
@@ -748,7 +748,7 @@ The actual loading fraction covered by the subsample also varies widely from the
 
 ## Author Contributions
 
-RMF wrote the code in the visualizationQualityControl R package, tested the ICI-Kt correlation code, and wrote all of the analysis code for this manuscript. HNBM conceived of the ICI-Kt correlation, provided input into code structures, provided supervision of the analyses and interpretation of results. Both authors contributed to the writing of the manuscript.
+RMF wrote the code in the visualizationQualityControl R package, tested the ICI-Kt correlation code, and wrote all of the analysis code for this manuscript. PB wrote the python module. HNBM conceived of the ICI-Kt correlation, provided input into code structures, provided supervision of the analyses and interpretation of results. All authors contributed to the writing of the manuscript.
 
 ## Supplemental
 
