@@ -1,6 +1,6 @@
 ---
 title: 'Information-Content-Informed Kendall-tau Correlation: Utilizing Missing Values'
-author: 'Robert M Flight, Praneeth Bhatt, and Hunter NB Moseley'
+author: 'Robert M Flight, Praneeth S Bhatt, and Hunter NB Moseley'
 date: '`r Sys.time()`'
 output: 
   rmarkdown::word_document
@@ -23,7 +23,7 @@ increment_count = function(in_object, id_name){
 paste_label = function(pre_text, in_object, id_name){
   object_number = in_object[id_name]
   
-  use_text = paste(pre_text, object_number, sep = " ")
+  use_text = paste(pre_text, object_number, sep = "")
   
   use_text
 }
@@ -61,7 +61,7 @@ figure_count = increment_count(figure_count, "f_problem")
 ```
 
 However, all analytical methods, and in particular the analytical methods used in -omics where so many analytes are being measured simultaneously; suffer from missing measurements.
-Of course some analytes will be missing at random just because of some issue with the instrument or that particular sample, but a large amount of missing measurements are left-censored due to analytes being below the effective detection limit of the instrument, as shown in `r paste_label("Figure", figure_count, "f_problem")`.
+Of course some analytes will be missing at random just because of some issue with the instrument or that particular sample, but a large amount of missing measurements are left-censored due to analytes being below the effective detection limit of the instrument, as shown in `r paste_label("Figure ", figure_count, "f_problem")`.
 Some analytical instruments are actually purposely designed to floor measurements, when they occur below a certain signal to noise ratio threshold.
 Imputation of missing measurements in -omics samples is an active area of research, which we will not cover here beyond to say that it is worthwhile and very necessary in many instances.
 But when it comes to calculating correlation, there are very few methods that explicitly account for missing data that we know of.
@@ -74,14 +74,14 @@ Each of these are likely to mis-estimate the real sample - sample correlation va
 knitr::include_graphics(here::here("doc/the_problem.png"))
 ```
 
-`r paste_label("Figure", figure_count, "f_problem")`. Graphical description of the left-censored data problem.
+`r paste_label("Figure ", figure_count, "f_problem")`. Graphical description of the left-censored data problem.
 The true analyte concentration range covers the full range of the density distribution, with the minimum on the left, and the maximum on the right.
 An example density plot of the analyte concentrations for a single sample is shown as a solid line, and the instrument response to concentration as a dashed line.
 Below certain analyte concentrations, highlighted as the red region, the instrument returns **0** or **missing** values.
 Above certain concentrations, highlighted as the yellow region, all values returned will also be identical (or flagged depending on the instrument).
 Which analytes will have concentrations in the red region may vary from sample to sample due to the overall sample composition, as well as natural variances within each sample.
 
-Assuming that a majority of missing values are **not missing at random**, but rather result from left-censored distributions due to the analyte being below the effective detection limit (see Figure 1), we propose that these missing values do in fact encode useful information that can be incorporated into correlation calculations, especially the Kendall-tau paired rank correlation coefficient.
+Assuming that a majority of missing values are **not missing at random**, but rather result from left-censored distributions due to the analyte being below the effective detection limit (see `r paste_label("Figure ", figure_count, "f_problem")`), we propose that these missing values do in fact encode useful information that can be incorporated into correlation calculations, especially the Kendall-tau paired rank correlation coefficient.
 In this manuscript, we propose new definitions of concordant and discordant rank pairs that include missing values, as well as methods for incorporating missing values into the number of tied values for the equivalent of the modified Kendall-tau coefficient.
 We examine the effect of missing values on simulated data, comparing our information-content-informed Kendall-tau (ICI-Kt) method with other simpler methods of handling the missing values, namely removing them or imputing them to zero.
 Finally, we examine the ability to recapitulate ICI-Kt correlation values calculated on a large feature -omics data set using feature subsets, which is useful as the run time of very large feature data sets can become prohibitive.
@@ -321,9 +321,9 @@ figure_count = increment_count(figure_count, "f_missing2cor")
 pos_diff + neg_diff
 ```
 
-`r paste_label("Figure", figure_count, "f_missing2cor")`. The effect on Kendall, Pearson and ICI-Kt correlations as increasing number of missing values in the bottom half of either sample for both positively and negatively correlated samples.
+`r paste_label("Figure ", figure_count, "f_missing2cor")`. The effect on Kendall, Pearson and ICI-Kt correlations as increasing number of missing values in the bottom half of either sample for both positively and negatively correlated samples.
 
-In `r paste_label("Figure", figure_count, "f_missing2cor")`, we can see that as missing values are added, only the ICI-Kt correlation values change in any significant way.
+In `r paste_label("Figure ", figure_count, "f_missing2cor")`, we can see that as missing values are added, only the ICI-Kt correlation values change in any significant way.
 As the number of missing values increase, the ICI-Kt values drop or increase by up to 0.2.
 Similarly, Pearson correlation is also affected, but the degree of change in the correlation values are much less (notice the difference in the y-axis scales), on the order of only 0.003 for the positive case and 0.1 for the negative case.
 Also, the lack of symmetry in the Pearson negative comparisons is due to the lack of linear correlation between the samples.
@@ -396,20 +396,20 @@ log_plot = ggplot(logtransform_censored_cor, aes(x = n_na, y = cor)) +
 (left_plot / log_plot / random_plot) + plot_annotation(tag_levels = "A")
 ```
 
-`r paste_label("Figure", figure_count, "f_leftcensored")`. Effect of introducing missing values from a cutoff (A & B) or randomly on different measures of correlation, including ICI-Kt, Kendall with pairwise complete, Kendall replacing missing with 0, Pearson with pairwise complete, and Pearson replacing missing with 0.
+`r paste_label("Figure ", figure_count, "f_leftcensored")`. Effect of introducing missing values from a cutoff (A & B) or randomly on different measures of correlation, including ICI-Kt, Kendall with pairwise complete, Kendall replacing missing with 0, Pearson with pairwise complete, and Pearson replacing missing with 0.
 A) Missing values introduced by setting an increasing cutoff.
 B) Missing values introduced by setting an increasing cutoff, and then log-transforming the values before calculating correlation.
 C) Missing values introduced at random.
 For the random case, each sample of random positions was repeated 100 times.
 
-`r paste_label("Figure", figure_count, "f_leftcensored")` demonstrates the effect of introducing left-center versus random missingness in five different measures of correlation, including the ICI-Kt, the normal Kendall tau with pairwise complete, the normal Kendall tau replacing missing with 0, Pearson with pairwise complete, and Pearson replacing missing with 0.
+`r paste_label("Figure ", figure_count, "f_leftcensored")` demonstrates the effect of introducing left-center versus random missingness in five different measures of correlation, including the ICI-Kt, the normal Kendall tau with pairwise complete, the normal Kendall tau replacing missing with 0, Pearson with pairwise complete, and Pearson replacing missing with 0.
 The ICI-Kt correlation demonstrates a slight increase from the starting 0.86 correlation value with growing left-centered missingness caused by a slight reinforcement of the correlation, while with growing random missingness, the ICI-Kt correlation drops precipitously due to the large increase in discordant pairs caused by the random missing values.
 The normal Kendall tau correlation with pairwise complete has a small decrease in the correlation value with growing left-centered missingness caused by a loss of supporting pairs, while this correlation has a near constant average value with growing random missingness.
 The normal Kendall tau correlation replacing missing with 0 has identical behavior to the ICI-Kt correlation.
 The Pearson correlation with pairwise complete is constant over growing left-centered and random missingness.
 The Pearson correlation replacing missing with 0 demonstrates a small decrease in the correlation value with growing left-centered missingness due to the zero values causing some deviation from linearity while this metric drops precipitously with growing random missingness with a magnitude similar to the ICI-Kt and normal Kendall tau replacing missing with 0.
 Overall, the ICI-Kt and the normal Kendall tau replacing missing with zero have the desirable characteristics of maintaining the correlation with growing left-centered missing while sharply dropping the correlation with growing random missingness.
-**[Don't forget to do the log-normal version of this]**.
+In a naive treatment of the left-centred missing data, if the values below the cutoff are set to missing, the data is log-transformed, and missing values subsequently set to 0; then the Kendall correlation will show some very odd patterns at low intensity cutoffs due to the introduction of discordant pairs.
 
 ### Algorithmic Performance
 
@@ -419,7 +419,7 @@ We compared the performance of our Rcpp mergesort implementation to the base R c
 figure_count = increment_count(figure_count, "f_singleperf")
 ```
 
-`r paste_label("Figure", figure_count, "f_singleperf")` shows that the "kendall" method is the slowest by far.
+`r paste_label("Figure ", figure_count, "f_singleperf")` shows that the "kendall" method is the slowest by far.
 Zoomed out, the ICI-Kt appears as fast as using "pearson", but upon zooming in, it's possible to see that ICI-Kt is using increasing amounts of time much faster than "pearson".
 In fact, regressing the time to number of samples using a formula with the expected algorithmic complexity, "pearson" shows O(n), ICI-Kt is O(nlog(n)), and "kendall" is O(n^2) (see supplemental).
 
@@ -448,7 +448,7 @@ inset_perf = ggplot(core_perf2, aes(x = n, y = time, color = method)) +
 s_perf_plot + inset_element(inset_perf, 0.1, 0.72, 1, 1)
 ```
 
-`r paste_label("Figure", figure_count, "f_singleperf")`. Comparison of the Rcpp mergesort ici_kt, and base R's correlation function using the "pearson" and "kendall" methods as the number of features are increased from 100 to 5000.
+`r paste_label("Figure ", figure_count, "f_singleperf")`. Comparison of the Rcpp mergesort ici_kt, and base R's correlation function using the "pearson" and "kendall" methods as the number of features are increased from 100 to 5000.
 Inset is the expanded view showing the full range of computation time in seconds.
 
 
@@ -469,9 +469,9 @@ ggplot(combined_big, aes(x = n_sample, y = log2(time))) +
        y = "Log2(Time) (s)")
 ```
 
-`r paste_label("Figure", figure_count, "f_multiperformance")`. Time taken by ICI-Kt as a function of the number of samples with multi-processing at the R level, using 80 cores.
+`r paste_label("Figure ", figure_count, "f_multiperformance")`. Time taken by ICI-Kt as a function of the number of samples with multi-processing at the R level, using 80 cores.
 
-As samples are added, the run time quickly increases logarithmically, similar to increasing samples on a single core (see `r paste_label("Figure", figure_count, "f_multiperformance")`).
+As samples are added, the run time quickly increases logarithmically, similar to increasing samples on a single core (see `r paste_label("Figure ", figure_count, "f_multiperformance")`).
 
 
 ### Utility in Large Omics' Data Sets
@@ -536,7 +536,7 @@ ggplot(all_med_cor, aes(x = type2, y = med_cor)) +
   labs(x = "Sample Type", y = "Median Correlation")
 ```
 
-`r paste_label("Figure", figure_count, "f_adenooutliers")`. Median correlations for each sample to all other samples in the same group of either tumor or normal, using either ICI-Kt or Pearson correlation.
+`r paste_label("Figure ", figure_count, "f_adenooutliers")`. Median correlations for each sample to all other samples in the same group of either tumor or normal, using either ICI-Kt or Pearson correlation.
 
 For the adenocarcinoma data, median correlations within the tumor and normal groups were calculated.
 `r tools::toTitleCase(n2w(nrow(dplyr::filter(med_cor, outlier, grepl("Normal", sample_class)))))` samples in the Normal, and `r n2w(nrow(dplyr::filter(med_cor, outlier, grepl("Tumor", sample_class))))` samples in the Tumor outliers were found, whether using ICI-Kt correlation or Pearson correlation.
@@ -604,7 +604,7 @@ ref_f1_f3 =
 ref_f1_f3
 ```
 
-`r paste_label("Figure", figure_count, "f_icisubsampling")`. Sample-sample ICI-Kt correlations using all features compared with 1%, 10% and 30% random subsets of features. 
+`r paste_label("Figure ", figure_count, "f_icisubsampling")`. Sample-sample ICI-Kt correlations using all features compared with 1%, 10% and 30% random subsets of features. 
 Left: The sample-sample correlations using all features are plotted against the sample-sample correlations using a random subset. Red line indicates perfect agreement. 
 Right: Histogram of the residual differences of the sample-sample correlations, where the difference is the (random subset - all features).
 
@@ -615,7 +615,7 @@ In our original Rcpp implementation using pairwise comparisons, the adenocarcino
 With the mergesort implementation, that time was greatly reduced to just over a minute (69 seconds).
 However, given that there may still be cases where the number of comparisons are so large that run time is still a concern, we investigated the effect of estimating sample-sample correlations using a subset of the features.
 
-`r paste_label("Figure", figure_count, "f_icisubsampling")` compares the sample-sample correlations from a random percent subsample of features to those obtained using all of the features.
+`r paste_label("Figure ", figure_count, "f_icisubsampling")` compares the sample-sample correlations from a random percent subsample of features to those obtained using all of the features.
 Both the pairwise plot (left) and histogram of residual differences (right) show that the correlations become much closer to those obtained when using all of the features as the percentage of subsampled features is increased.
 However, there is a consistent positive bias in the estimate, regardless of the number of subsamples used.
 
@@ -624,7 +624,7 @@ figure_count = increment_count(figure_count, "f_pcavardifference")
 ```
 
 In addition to the random feature subsamples, we also implemented feature selection methods based on loading contributions to each PC, as well as feature variances in the full data set (see Methods).
-As shown in `r paste_label("Figure", figure_count, "f_pcavardifference")`, both of these feature selection methods perform extremely poorly, even at the relatively large fraction of 50% of the features.
+As shown in `r paste_label("Figure ", figure_count, "f_pcavardifference")`, both of these feature selection methods perform extremely poorly, even at the relatively large fraction of 50% of the features.
 
 ```{r poor_pca_var}
 loadd(run_nonrandom_select_nonrandom_fraction_0.5_var_select)
@@ -660,7 +660,7 @@ nonrandom_plot = (var_diff | var_dist) / (pca_diff | pca_dist)
 nonrandom_plot
 ```
 
-`r paste_label("Figure", figure_count, "f_pcavardifference")`. Sample-sample ICI-Kt correlations using all features compared with 50% non-random subsets of features. 
+`r paste_label("Figure ", figure_count, "f_pcavardifference")`. Sample-sample ICI-Kt correlations using all features compared with 50% non-random subsets of features. 
 Left: The sample-sample correlations using all features are plotted against the sample-sample correlations using 50% of features chosen by variance contribution or PCA. Red line indicates perfect agreement. 
 Right: Histogram of the residual differences of the sample-sample correlations, where the difference is the (subset - all features).
 
@@ -728,7 +728,7 @@ eval_plot = (example_plots | e_kt | e_diff) + plot_annotation(tag_levels = "A")
 eval_plot
 ```
 
-`r paste_label("Figure", figure_count, "f_pcaeval")`. 
+`r paste_label("Figure ", figure_count, "f_pcaeval")`. 
 A) Random subsample of 0.5, with % principal component variance against the loading fraction. 
 B) Variance informed subsample of 0.5, % principal component variance against the loading fraction. 
 C) Subsample feature fraction plotted against the correlation of the loading fraction with PC variance for each type of subsampling.
@@ -752,6 +752,8 @@ RMF wrote the code in the visualizationQualityControl R package, tested the ICI-
 
 ## Supplemental
 
+### Simulated Data
+
 The simplest simulated data set includes three samples, where two are perfectly correlated, and the third perfectly anti-correlated. 
 We then created missing values (replaced value with NA) in each sample systematically, and computed the ICI-Kt, Pearson, and Kendall-tau correlations.
 
@@ -763,14 +765,39 @@ positive_pearson[is.na(positive_pearson$cor), "cor"] = 0
 compare_df = data.frame(ici_kt = positive_kt$cor,
                         pearson = positive_pearson$cor)
 ggplot(compare_df, aes(x = pearson, y = ici_kt)) + geom_point()
+figure_count = increment_count(figure_count, "kt_pearson")
+figure_count = increment_count(figure_count, "kt_distribution")
+```
+
+`r paste_label("Figure S", figure_count, "kt_pearson")`. Comparison of ICI-Kt and Pearson correlations.
+
+We can also examine the full set of positive and negative correlations generated as we vary the number of missing entries between two positively correlated samples and two negatively correlated samples.
+These distributions are shown in `r paste_label("Figure S", figure_count, "kt_distribution")`.
+
+```{r kt_full_distribution}
+loadd(all_kt)
+ggplot(all_kt, aes(x = cor)) +
+  geom_histogram(bins = 100) +
+  facet_wrap(~ comp, ncol = 1, scales = "free") +
+  labs(x = "ICI-Kt Correlation", y = "count")
+```
+
+
+### Algorithmic Complexity
+
+```{r complexity_label}
+figure_count = increment_count(figure_count, "supp_complexity")
 ```
 
 In addition to comparing their performance, we can check that the algorithmic complexity fits the theoretically expected complexity by fitting a regression line of the run time to the number of items.
+The run times and fitted lines for each method (R's Pearson, the ICI-Kt, and R's Kendall-tau) are shown in `r paste_label("Figure S", figure_count, "supp_complexity")`.
 
 ```{r plot_complexity}
 complex_figure = create_complexity_figure(single_core_perf)
 complex_figure
 ```
+
+`r paste_label("Figure S", figure_count, "supp_complexity")`. Time in seconds needed as a function of the number of features, with a fitted line for the assumed complexity for each of the methods tested, including R's Pearson correlation, the ICI-Kt mergesort, and R's Kendall-tau correlation algorithm.
 
 ## Acknowledgements
 
