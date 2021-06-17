@@ -28,9 +28,8 @@ all_kendalltau <- function(s1, s2, sneg, where_na, perspective = "global") {
     ici_s1 = ici_kt(tmp_s1, tmp_s2, perspective = perspective)[[1]]
     ici_neg = ici_kt(tmp_s1, tmp_neg, perspective = perspective)[[1]]
     data.frame(cor = c(ici_s1, ici_neg),
-               comp = c("pos", "neg"))
+               comp = c("Positive", "Negative"))
   })
   tmp
 }
 
-319715810
