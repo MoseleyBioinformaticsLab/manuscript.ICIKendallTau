@@ -356,9 +356,22 @@ random_censored_cor = random_censored_cor %>%
     which %in% "pearson_0" ~ "Pearson-0"
   ))
 
+loadd(logtransform_censored_cor)
+logtransform_censored_cor = logtransform_censored_cor %>%
+  dplyr::mutate(censoring = "random") %>%
+  dplyr::filter(n_na > 0) %>%
+  dplyr::mutate(which2 = dplyr::case_when(
+    which %in% "ici" ~ "ICI-Kt",
+    which %in% "kendall" ~ "Kendall",
+    which %in% "kendall_0" ~ "Kendall-0",
+    which %in% "pearson" ~ "Pearson",
+    which %in% "pearson_0" ~ "Pearson-0"
+  ))
+
+
 random_plot = ggplot(random_censored_cor, aes(x = n_na, y = cor)) +
   geom_sina(aes(group = n_na)) +
-  facet_wrap(~ which2, nrow = 1) +
+  facet_wrap(~ which2, nrow = 1, scales = "free_y") +
   labs(x = "Number Missing", y = "Correlation") +
   cowplot::panel_border()
 
@@ -368,17 +381,25 @@ rp_lim = rp_build$layout$panel_params[[1]]$x$get_limits()
 
 left_plot = ggplot(left_censored_cor, aes(x = n_na, y = cor)) + 
   geom_point() + 
-  facet_wrap(~ which2, nrow = 1) +
+  facet_wrap(~ which2, nrow = 1, scales = "free_y") +
   labs(x = "Number Missing", y = "Correlation") +
   scale_x_continuous(breaks = c(0, 100, 200)) +
   cowplot::panel_border() 
 
-(left_plot / random_plot) + plot_annotation(tag_levels = "A")
+log_plot = ggplot(logtransform_censored_cor, aes(x = n_na, y = cor)) +
+  geom_point() +
+  facet_wrap(~ which2, nrow = 1, scales = "free_y") +
+  labs(x = "Number Missing", y = "Correlation") +
+  scale_x_continuous(breaks = c(0, 100, 200)) +
+  cowplot::panel_border()
+
+(left_plot / log_plot / random_plot) + plot_annotation(tag_levels = "A")
 ```
 
-`r paste_label("Figure", figure_count, "f_leftcensored")`. Effect of introducing missing values from a cutoff or randomly on different measures of correlation, including ICI-Kt, Kendall with pairwise complete, Kendall replacing missing with 0, Pearson with pairwise complete, and Pearson replacing missing with 0.
+`r paste_label("Figure", figure_count, "f_leftcensored")`. Effect of introducing missing values from a cutoff (A & B) or randomly on different measures of correlation, including ICI-Kt, Kendall with pairwise complete, Kendall replacing missing with 0, Pearson with pairwise complete, and Pearson replacing missing with 0.
 A) Missing values introduced by setting an increasing cutoff.
-B) Missing values introduced at random.
+B) Missing values introduced by setting an increasing cutoff, and then log-transforming the values before calculating correlation.
+C) Missing values introduced at random.
 For the random case, each sample of random positions was repeated 100 times.
 
 `r paste_label("Figure", figure_count, "f_leftcensored")` demonstrates the effect of introducing left-center versus random missingness in five different measures of correlation, including the ICI-Kt, the normal Kendall tau with pairwise complete, the normal Kendall tau replacing missing with 0, Pearson with pairwise complete, and Pearson replacing missing with 0.
@@ -518,7 +539,7 @@ ggplot(all_med_cor, aes(x = type2, y = med_cor)) +
 `r paste_label("Figure", figure_count, "f_adenooutliers")`. Median correlations for each sample to all other samples in the same group of either tumor or normal, using either ICI-Kt or Pearson correlation.
 
 For the adenocarcinoma data, median correlations within the tumor and normal groups were calculated.
-`r tools::toTitleCase(n2w(nrow(dplyr::filter(med_cor, outlier, grepl("Normal", sample_class)))))` sample in the Normal, and `r n2w(nrow(dplyr::filter(med_cor, outlier, grepl("Tumor", sample_class))))` outliers were found, whether using ICI-Kt correlation or Pearson correlation.
+`r tools::toTitleCase(n2w(nrow(dplyr::filter(med_cor, outlier, grepl("Normal", sample_class)))))` samples in the Normal, and `r n2w(nrow(dplyr::filter(med_cor, outlier, grepl("Tumor", sample_class))))` samples in the Tumor outliers were found, whether using ICI-Kt correlation or Pearson correlation.
 
 
 #### Feature Subsets for Extremely Large Datasets
@@ -647,7 +668,7 @@ Right: Histogram of the residual differences of the sample-sample correlations, 
 figure_count = increment_count(figure_count, "f_pcaeval")
 ```
 
-Outside of the differences between the subset and full set of correlations, we also evaluated each of the feature subsets using the correlation between loading fraction and principal component contributed variance, and the difference between the median loading fraction and the intended fraction.
+Outside of the differences between the subset and full set of correlations, we also evaluated each of the feature subsets using the correlation between loading fraction and principal component contributed variance (see `r paste_label("Figure", figure_count, "f_pcaeval")` A & B), and the difference between the median loading fraction and the intended fraction (C & D).
 
 ```{r nonrandom_pca}
 loadd(pca_eval_summary)
@@ -713,7 +734,7 @@ B) Variance informed subsample of 0.5, % principal component variance against th
 C) Subsample feature fraction plotted against the correlation of the loading fraction with PC variance for each type of subsampling.
 D) Subsample feature fraction  plotted against the percent difference of the median loading fraction to the intended loading fraction, which is also the subsample fraction.
 
-`r paste_label("Figure", figure_count, "f_pcaeval")` shows that for both the PCA and variance informed subsampling methods, the loading fraction is related to the percent PC variance.
+`r paste_label("Figure", figure_count, "f_pcaeval")` shows that for both the PCA and variance informed subsampling methods, there is a relationship between loading fraction and the percent PC variance.
 In contrast, the random subsampling shows no relationship of fraction to percent PC variance.
 The actual loading fraction covered by the subsample also varies widely from the intended fraction for the PCA and variance informed subsampling, while the random subsample fraction remains close to the intended fraction, with some minor deviation at the very low fractions.
 
