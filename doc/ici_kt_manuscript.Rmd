@@ -758,6 +758,9 @@ The simplest simulated data set includes three samples, where two are perfectly 
 We then created missing values (replaced value with NA) in each sample systematically, and computed the ICI-Kt, Pearson, and Kendall-tau correlations.
 
 ```{r compare_simple}
+supp_count = c("_" = 0)
+supp_count = increment_count(supp_count, "kt_pearson")
+supp_count = increment_count(supp_count, "kt_distribution")
 loadd(positive_kt)
 loadd(positive_pearson)
 positive_pearson[is.na(positive_pearson$cor), "cor"] = 0
@@ -765,14 +768,12 @@ positive_pearson[is.na(positive_pearson$cor), "cor"] = 0
 compare_df = data.frame(ici_kt = positive_kt$cor,
                         pearson = positive_pearson$cor)
 ggplot(compare_df, aes(x = pearson, y = ici_kt)) + geom_point()
-figure_count = increment_count(figure_count, "kt_pearson")
-figure_count = increment_count(figure_count, "kt_distribution")
 ```
 
-`r paste_label("Figure S", figure_count, "kt_pearson")`. Comparison of ICI-Kt and Pearson correlations.
+`r paste_label("Figure S", supp_count, "kt_pearson")`. Comparison of ICI-Kt and Pearson correlations.
 
 We can also examine the full set of positive and negative correlations generated as we vary the number of missing entries between two positively correlated samples and two negatively correlated samples.
-These distributions are shown in `r paste_label("Figure S", figure_count, "kt_distribution")`.
+These distributions are shown in `r paste_label("Figure S", supp_count, "kt_distribution")`.
 
 ```{r kt_full_distribution}
 loadd(all_kt)
@@ -786,18 +787,18 @@ ggplot(all_kt, aes(x = cor)) +
 ### Algorithmic Complexity
 
 ```{r complexity_label}
-figure_count = increment_count(figure_count, "supp_complexity")
+supp_count = increment_count(supp_count, "supp_complexity")
 ```
 
 In addition to comparing their performance, we can check that the algorithmic complexity fits the theoretically expected complexity by fitting a regression line of the run time to the number of items.
-The run times and fitted lines for each method (R's Pearson, the ICI-Kt, and R's Kendall-tau) are shown in `r paste_label("Figure S", figure_count, "supp_complexity")`.
+The run times and fitted lines for each method (R's Pearson, the ICI-Kt, and R's Kendall-tau) are shown in `r paste_label("Figure S", supp_count, "supp_complexity")`.
 
 ```{r plot_complexity}
 complex_figure = create_complexity_figure(single_core_perf)
 complex_figure
 ```
 
-`r paste_label("Figure S", figure_count, "supp_complexity")`. Time in seconds needed as a function of the number of features, with a fitted line for the assumed complexity for each of the methods tested, including R's Pearson correlation, the ICI-Kt mergesort, and R's Kendall-tau correlation algorithm.
+`r paste_label("Figure S", supp_count, "supp_complexity")`. Time in seconds needed as a function of the number of features, with a fitted line for the assumed complexity for each of the methods tested, including R's Pearson correlation, the ICI-Kt mergesort, and R's Kendall-tau correlation algorithm.
 
 ## Acknowledgements
 
