@@ -16,6 +16,8 @@ the_plan <-
    y2 = seq(10, 1),
    where_na = create_na_indices(20),
    
+   all_kt = all_kendalltau(x, y, y2, where_na),
+   
    positive_kt = compare_positive_kt(x, y, where_na),
    negative_kt = compare_negative_kt(x, y2, where_na),
    positive_local_kt = compare_positive_kt(x, y, where_na, perspective = "local"),
