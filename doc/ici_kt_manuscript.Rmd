@@ -32,6 +32,10 @@ figure_count = c("_" = 0)
 table_count = c("_" = 0)
 ```
 
+## Where to Submit
+
+* Bioinformatics: accepts format free submission, but limit is 5000 words, and LibreOffice claims we are already over that. Not sure if that's because of the equations or what, but that's not a good start.
+
 ## Abstract
 
 Almost all correlation measures currently available are unable to handle missing values.
