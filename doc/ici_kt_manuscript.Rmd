@@ -495,33 +495,44 @@ Two samples were found to have low correlations within their group.
 ```{r outlier_adenocarcinoma_setup}
 figure_count = increment_count(figure_count, "f_adenooutliers")
 loadd(ref_cor)
-loadd(ref_missingness)
+loadd(ref_completeness)
 loadd(transcript_data)
 adeno_cor = ref_cor$cor
-adeno_cor_missing = adeno_cor * ref_missingness
+adeno_cor_complete = adeno_cor * ref_completeness
 adeno_info = readRDS(here::here("data", "recount_adeno_info.rds"))
+adeno_info$sample_num = seq(1, nrow(adeno_info))
+adeno_info = adeno_info %>%
+  dplyr::mutate(sample_id3 = dplyr::case_when(
+    grepl("Tumor", sample_type) ~ paste0("T", sample_num),
+    grepl("Normal", sample_type) ~ paste0("N", sample_num)
+  ))
 adeno_cor = adeno_cor[adeno_info$sample_id2, adeno_info$sample_id2]
-adeno_cor_missing = adeno_cor_missing[rownames(adeno_cor), colnames(adeno_cor)]
+adeno_cor_complete = adeno_cor_complete[rownames(adeno_cor), colnames(adeno_cor)]
 transcript_data = transcript_data[, adeno_info$sample_id2]
 pearson_adeno_cor = cor(log1p(transcript_data))
 
 out_frac = outlier_fraction(t(log1p(transcript_data)), sample_classes = adeno_info$sample_type)
 
 med_cor = median_correlations(adeno_cor, sample_classes = adeno_info$sample_type)
-med_missing = median_correlations(adeno_cor_missing, sample_classes = adeno_info$sample_type)
+med_complete = median_correlations(adeno_cor_complete, sample_classes = adeno_info$sample_type)
 p_med_cor = median_correlations(pearson_adeno_cor, sample_classes = adeno_info$sample_type)
 
 outlier_med = determine_outliers(med_cor, out_frac, cor_weight = 1, frac_weight = 0)
-outlier_missing = determine_outliers(med_missing, out_frac, cor_weight = 1,
+outlier_complete = determine_outliers(med_complete, out_frac, cor_weight = 1,
                                      frac_weight = 0)
 outlier_p = determine_outliers(p_med_cor, out_frac, cor_weight = 1, frac_weight = 0)
 
+outlier_med = dplyr::left_join(outlier_med, adeno_info[, c("sample_id2", "sample_id3")], by = c("sample_id" = "sample_id2"))
+outlier_complete = dplyr::left_join(outlier_complete, adeno_info[, c("sample_id2", "sample_id3")], by = c("sample_id" = "sample_id2"))
+outlier_p = dplyr::left_join(outlier_p, adeno_info[, c("sample_id2", "sample_id3")], by = c("sample_id" = "sample_id2"))
+
+
 outlier_med$correlation = "ICI-Kt"
-outlier_missing$correlation = "ICI-KT + Missingness"
+outlier_complete$correlation = "ICI-KT * Completeness"
 outlier_p$correlation = "Pearson"
 
 all_med_cor = rbind(outlier_med, 
-                    outlier_missing,
+                    outlier_complete,
                     outlier_p)
 all_med_cor = all_med_cor %>%
   dplyr::mutate(type2 = dplyr::case_when(
@@ -546,7 +557,56 @@ ggplot(all_med_cor, aes(x = type2, y = med_cor)) +
 
 `r paste_label("Figure ", figure_count, "f_adenooutliers")`. Median correlations for each sample to all other samples in the same group of either tumor or normal, using either ICI-Kt or Pearson correlation.
 
-**Put in table here denoting the correlation values, and detection by each method**.
+```{r create_outlier_table}
+table_count = increment_count(table_count, "adeno_outliers")
+outlier_cor = all_med_cor %>%
+  dplyr::filter(outlier)
+
+all_out = data.frame(sample_id3 = unique(outlier_cor$sample_id3))
+correlations = split(all_med_cor, all_med_cor$correlation)
+out_table = purrr::map_dfc(correlations, function(in_cor){
+  tmp_table = dplyr::left_join(all_out, in_cor, by = "sample_id3")
+  tmp_table = tmp_table %>%
+    dplyr::mutate(outlier2 = dplyr::case_when(
+      outlier ~ "X",
+      !outlier ~ " "
+    ))
+  new_frame = data.frame(outlier = tmp_table$outlier2,
+                         cor = tmp_table$med_cor)
+  if (tmp_table$correlation[1] == "ICI-Kt") {
+    names(new_frame) = paste0("icikt.", names(new_frame))
+  } else if (tmp_table$correlation[1] == "ICI-KT * Completeness") {
+    names(new_frame) = paste0("icikt.comp.", names(new_frame))
+  } else if (tmp_table$correlation[1] == "Pearson") {
+    names(new_frame) = paste0("pearson.", names(new_frame))
+  }
+  new_frame
+})
+out_table$sample = all_out$sample_id3
+out_table = out_table[order(out_table$pearson.cor), ]
+out_table = out_table %>%
+  dplyr::select(sample, icikt.cor, icikt.outlier,
+                icikt.comp.cor, icikt.comp.outlier,
+                pearson.cor, pearson.outlier)
+ft_out = flextable(out_table)
+ft_out = set_header_labels(ft_out,
+          sample = "Sample",
+          icikt.cor = "Correlation",
+          icikt.outlier = "Outlier",
+          icikt.comp.cor = "Correlation",
+          icikt.comp.outlier = "Outlier",
+          pearson.cor = "Correlation",
+          pearson.outlier = "Outlier")
+ft_out = add_header_row(ft_out,
+                        values = c("", "ICI-Kt", "ICI-Kt * Completeness",
+                                   "Pearson"),
+                        colwidths = c(1, 2, 2, 2))
+ft_out = colformat_double(ft_out, digits = 2)
+ft_out = autofit(ft_out)
+ft_out
+```
+`r paste_label("Table ", table_count, "adeno_outliers")`.
+Outliers determined by each of the three correlation methods, ICI-Kt, ICI-Kt multiplied with completeness, and Pearson.
 
 
 #### Feature Subsets for Extremely Large Datasets
@@ -700,7 +760,7 @@ rand_labels = data.frame(label = c(paste0("Correlation: ", format(rand_kt, digit
                          y = c(0.502, 0.504),
                          hjust = 0)
 rand_example = ggplot(rand_eval, aes(x = percent2, y = selected_frac)) +
-  geom_point() +
+  geom_point(alpha = 0.5) +
   labs(x = "% PC Variance", y = "Loading Fraction") +
   geom_text(data = rand_labels, aes(x = x, y = y, label = label, hjust = hjust))
 
@@ -714,7 +774,7 @@ pca_labels = data.frame(label = c(paste0("Correlation: ", format(pca_kt, digits 
                          y = c(0.8, 0.85),
                          hjust = 0)
 pca_example = ggplot(pca_eval, aes(x = percent2, y = selected_frac)) +
-  geom_point() +
+  geom_point(alpha = 0.5) +
   labs(x = "% PC Variance", y = "Loading Fraction") +
   geom_text(data = pca_labels, aes(x = x, y = y, label = label, hjust = hjust))
 
@@ -741,7 +801,7 @@ B) Variance informed subsample of 0.5, % principal component variance against th
 C) Subsample feature fraction plotted against the correlation of the loading fraction with PC variance for each type of subsampling.
 D) Subsample feature fraction  plotted against the percent difference of the median loading fraction to the intended loading fraction, which is also the subsample fraction.
 
-`r paste_label("Figure", figure_count, "f_pcaeval")` shows that for both the PCA and variance informed subsampling methods, there is a relationship between loading fraction and the percent PC variance.
+`r paste_label("Figure ", figure_count, "f_pcaeval")` shows that for both the PCA and variance informed subsampling methods, there is a relationship between loading fraction and the percent PC variance.
 In contrast, the random subsampling shows no relationship of fraction to percent PC variance.
 The actual loading fraction covered by the subsample also varies widely from the intended fraction for the PCA and variance informed subsampling, while the random subsample fraction remains close to the intended fraction, with some minor deviation at the very low fractions.
 
