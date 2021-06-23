@@ -219,8 +219,9 @@ the_plan <-
    random_censored_cor = random_censor_correlate(left_censored_samples),
    logtransform_censored_cor = lt_left_censor_correlate(left_censored_samples),
    
-   egfr_cor = run_egfr_cor(),
-   egfr_outliers = find_egfr_outliers(egfr_cor),
+   egfr_counts = readRDS(here::here("data", "brainson_egfr_counts.rds")),
+   egfr_cor = ici_kendalltau(t(egfr_counts))$cor,
+   egfr_completeness = pairwise_completeness(t(egfr_counts)),
    
    eval_random = target(
       evaluate_by_pca(select_random_fraction, transcript_pca),
