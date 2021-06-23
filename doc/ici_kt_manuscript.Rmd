@@ -546,8 +546,7 @@ ggplot(all_med_cor, aes(x = type2, y = med_cor)) +
 
 `r paste_label("Figure ", figure_count, "f_adenooutliers")`. Median correlations for each sample to all other samples in the same group of either tumor or normal, using either ICI-Kt or Pearson correlation.
 
-For the adenocarcinoma data, median correlations within the tumor and normal groups were calculated.
-`r tools::toTitleCase(n2w(nrow(dplyr::filter(med_cor, outlier, grepl("Normal", sample_class)))))` samples in the Normal, and `r n2w(nrow(dplyr::filter(med_cor, outlier, grepl("Tumor", sample_class))))` samples in the Tumor outliers were found, whether using ICI-Kt correlation or Pearson correlation.
+**Put in table here denoting the correlation values, and detection by each method**.
 
 
 #### Feature Subsets for Extremely Large Datasets
@@ -578,7 +577,7 @@ diff_vals = diff_vals %>%
                 diff_10 = f_1 - ref,
                 diff_30 = f_3 - ref)
 ref_f1_f3 = 
-  ((ggplot(diff_vals, aes(x = ref, y = f_01)) + geom_point() +
+  ((ggplot(diff_vals, aes(x = ref, y = f_01)) + geom_point(alpha = 0.1) +
      labs(x = "All Features", y = "1% Features") +
   coord_equal() +
     geom_abline(slope = 1, color = "red")) |
@@ -588,7 +587,7 @@ ref_f1_f3 =
      coord_cartesian(xlim = c(-0.03, 0.03)) +
      scale_y_continuous(expand = expansion(mult = 0)) +
      geom_vline(xintercept = 0, color = "red"))) /
-  ((ggplot(diff_vals, aes(x = ref, y = f_1)) + geom_point() +
+  ((ggplot(diff_vals, aes(x = ref, y = f_1)) + geom_point(alpha = 0.1) +
      labs(x = "All Features", y = "10% Features") +
      coord_equal() +
       geom_abline(slope = 1, color = "red")) | 
@@ -598,7 +597,7 @@ ref_f1_f3 =
      coord_cartesian(xlim = c(-0.03, 0.03)) +
      scale_y_continuous(expand = expansion(mult = 0)) +
      geom_vline(xintercept = 0, color = "red"))) /
-  ((ggplot(diff_vals, aes(x = ref, y = f_3)) + geom_point() +
+  ((ggplot(diff_vals, aes(x = ref, y = f_3)) + geom_point(alpha = 0.1) +
      labs(x = "All Features", y = "30% Features") +
      coord_equal() +
       geom_abline(slope = 1, color = "red")) +
@@ -647,13 +646,13 @@ diff_pca = data.frame(ref = extract_data(ref_cor),
 
 var_diff = ggplot(diff_var, aes(x = ref, y = f_50)) +
   geom_abline(slope = 1, color = "red") +
-  geom_point() +
+  geom_point(alpha = 0.1) +
   coord_equal() +
   labs(x = "All Features",
        y = "50% Features by Variance")
 pca_diff = ggplot(diff_pca, aes(x = ref, y = f_50)) +
   geom_abline(slope = 1, color = "red") +
-  geom_point() +
+  geom_point(alpha = 0.1) +
   coord_equal() +
   labs(x = "All Features",
        y = "50% Features by PCA")
