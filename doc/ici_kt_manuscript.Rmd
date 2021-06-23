@@ -42,7 +42,7 @@ Almost all correlation measures currently available are unable to handle missing
 Typically, missing values are either ignored completely by removing them or are imputed and used in the calculation of the correlation coefficient.
 In both cases, the correlation value will be impacted based on a perspective that missing data represents no useful information.
 However, missing values occur in real data sets for a variety of reasons. 
-In -omics data sets that are derived from analytical measurements, the primary reason for missing values is that a specific measureable phenomenom falls below the detection limits of the analytical instrumentation.
+In -omics data sets that are derived from analytical measurements, the primary reason for missing values is that a specific measurable phenomenon falls below the detection limits of the analytical instrumentation.
 These missing data are not missing at random, but represent some information by their "missingness".
 Therefore, we propose an information-content-informed Kendall-tau (ICI-Kt) correlation coefficient that allows missing values to carry explicit information in the determination of concordant and discordant pairs.
 With both simulated and real data sets from RNA-seq experiments, we demonstrate that the ICI-Kt allows for the inclusion of missing data values as interpretable information.
@@ -98,7 +98,8 @@ Finally, we examine the ability to recapitulate ICI-Kt correlation values calcul
 In the simplest form, the Kendall-tau correlation can be defined as:
 
 $$\tau = \frac{ | pairs_{concordant}  | - | pairs_{discordant}  |}{\left | pairs_{concordant} \right | + \left | pairs_{discordant} \right |}$$
-**NEED to discuss this definition with Hunter**.In this case a **pair** are any two $x$ and $y$ points from two different samples, consisting of $(x_i, x_j)$ and $(y_i, y_j)$.
+In this case a pair are any two x-y points, $x_i, y_i$ and $x_j, y_j$, with $i \neq j$, composed from two joint random variables X and Y, where $x_i$ represents the *ith value* in X and $y_i$ represents the *ith value* in Y.
+In an -omics context, X and Y can represent feature vectors for two experimental samples or two specific features across an ordered set of samples.
 A concordant pair has the following classical definition:
 
   * $x_i > x_j$ and $y_i > y_j$ 
