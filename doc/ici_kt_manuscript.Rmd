@@ -498,6 +498,82 @@ ICI-Kt correlations were calculated using the genes that had a non-zero count in
 For each sample, the median ICI-Kt value was calculated amongst the samples for each of the defined groups.
 Two samples were found to have low correlations within their group.
 
+```{r outlier_egfr_setup}
+figure_count = increment_count(figure_count, "f_egfroutliers")
+loadd(egfr_cor)
+loadd(egfr_completeness)
+loadd(egfr_counts)
+
+egfr_cor[egfr_cor > 1] = 1
+egfr_cor_complete = egfr_cor * egfr_completeness
+egfr_info = readRDS(here::here("data", "brainson_egfr_info.rds"))
+egfr_cor = egfr_cor[egfr_info$sample, egfr_info$sample]
+
+egfr_cor_complete = egfr_cor_complete[egfr_info$sample, egfr_info$sample]
+egfr_med_cor = median_correlations(egfr_cor, egfr_info$type)
+egfr_out_frac = outlier_fraction(t(log1p(egfr_counts)), egfr_info$type)
+
+egfr_med_out = determine_outliers(egfr_med_cor, egfr_out_frac, frac_weight = 0)
+
+egfr_complete_med = median_correlations(egfr_cor_complete, egfr_info$type)
+egfr_complete_out = determine_outliers(egfr_complete_med, egfr_out_frac, frac_weight = 0)
+
+egfr_pearson = cor(log1p(egfr_counts), use = "pairwise.complete.obs")
+egfr_pearson = egfr_pearson[egfr_info$sample, egfr_info$sample]
+egfr_pearson_med = median_correlations(egfr_pearson, egfr_info$type)
+egfr_pearson_out = determine_outliers(egfr_pearson_med, egfr_out_frac, frac_weight = 0)
+
+egfr_med_out$correlation = "ICI-Kt"
+egfr_complete_out$correlation = "ICI-Kt * Completeness"
+egfr_pearson_out$correlation = "Pearson"
+
+egfr_all_out = rbind(egfr_med_out, egfr_complete_out, egfr_pearson_out)
+
+ggplot(egfr_all_out, aes(x = type, y = ))
+adeno_info$sample_num = seq(1, nrow(adeno_info))
+adeno_info = adeno_info %>%
+  dplyr::mutate(sample_id3 = dplyr::case_when(
+    grepl("Tumor", sample_type) ~ paste0("T", sample_num),
+    grepl("Normal", sample_type) ~ paste0("N", sample_num)
+  ))
+adeno_cor = adeno_cor[adeno_info$sample_id2, adeno_info$sample_id2]
+adeno_cor_complete = adeno_cor_complete[rownames(adeno_cor), colnames(adeno_cor)]
+transcript_data = transcript_data[, adeno_info$sample_id2]
+pearson_adeno_cor = cor(log1p(transcript_data))
+
+
+
+
+out_frac = outlier_fraction(t(log1p(transcript_data)), sample_classes = adeno_info$sample_type)
+
+med_cor = median_correlations(adeno_cor, sample_classes = adeno_info$sample_type)
+med_complete = median_correlations(adeno_cor_complete, sample_classes = adeno_info$sample_type)
+p_med_cor = median_correlations(pearson_adeno_cor, sample_classes = adeno_info$sample_type)
+
+outlier_med = determine_outliers(med_cor, out_frac, cor_weight = 1, frac_weight = 0)
+outlier_complete = determine_outliers(med_complete, out_frac, cor_weight = 1,
+                                     frac_weight = 0)
+outlier_p = determine_outliers(p_med_cor, out_frac, cor_weight = 1, frac_weight = 0)
+
+outlier_med = dplyr::left_join(outlier_med, adeno_info[, c("sample_id2", "sample_id3")], by = c("sample_id" = "sample_id2"))
+outlier_complete = dplyr::left_join(outlier_complete, adeno_info[, c("sample_id2", "sample_id3")], by = c("sample_id" = "sample_id2"))
+outlier_p = dplyr::left_join(outlier_p, adeno_info[, c("sample_id2", "sample_id3")], by = c("sample_id" = "sample_id2"))
+
+
+outlier_med$correlation = "ICI-Kt"
+outlier_complete$correlation = "ICI-KT * Completeness"
+outlier_p$correlation = "Pearson"
+
+all_med_cor = rbind(outlier_med, 
+                    outlier_complete,
+                    outlier_p)
+all_med_cor = all_med_cor %>%
+  dplyr::mutate(type2 = dplyr::case_when(
+    grepl("Primary", sample_class.cor) ~ "Tumor",
+    grepl("Normal", sample_class.cor) ~ "Normal"
+  ))
+```
+
 
 ```{r outlier_adenocarcinoma_setup}
 figure_count = increment_count(figure_count, "f_adenooutliers")
