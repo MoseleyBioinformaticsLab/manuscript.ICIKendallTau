@@ -152,10 +152,17 @@ This is more useful when analyzing and interpreting correlations across multiple
 
 The "global" case also provides an interesting property, whereby we can calculate the theoretical maximum correlation that would be possible to observe given the lowest number of shared missing values.
 This value can be useful to scale the rest of the observed correlation values across many sample - sample correlations, providing a value that scales an entire dataset appropriately.
+For any pairwise comparison of two vectors (from experimental samples for example), we can calculate the maximum possible Kendall-tau for that comparison by defining the maximum number of concordant pairs as:
 
-$$cor_{max} = \frac{\binom{n-m}{2} + n * m}{\binom{n-m}{2} + n * m + \binom{m}{2}}$$
-To calculate the theoretical maximum correlation for rescaling, we choose the two samples with the least number of missing values across the dataset.
-Then $n$ is the length of the variables, $m$ is the count of missing values across the two samples divided by two and rounded towards zero.
+$$tau_{max} = \frac{\left | pairsmax_{concordant} \right |}{
+\sqrt{(n_0 - n_{xtie})(n_0 - n_{ytie})}
+}$$
+
+Where:
+
+$$pairsmax_{concordant} = n_0 - n_{xtie} - n_{ytie} - n_{tie}$$
+
+Calculating a set $tau_{max}$ values between experimental samples, we can take the maxiumum of those values, and use it to scale all of the obtained Kendall-tau values.
 
 ### Implementation Details
 
