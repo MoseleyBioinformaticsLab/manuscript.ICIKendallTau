@@ -15,6 +15,7 @@ library(rlang)
 library(patchwork)
 library(xfun)
 library(ggforce)
+library(flextable)
 future::plan(multicore)
 
 theme_set(cowplot::theme_cowplot())
