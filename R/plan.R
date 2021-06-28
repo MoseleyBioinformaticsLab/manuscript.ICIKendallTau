@@ -223,6 +223,9 @@ the_plan <-
    egfr_cor = ici_kendalltau(t(egfr_counts))$cor,
    egfr_completeness = pairwise_completeness(t(egfr_counts)),
    
+   egfr_weighted_cor = globally_it_weighted_pairwise_correlation(t(log1p(t(egfr_counts)))),
+   
+   
    eval_random = target(
       evaluate_by_pca(select_random_fraction, transcript_pca),
       transform = map(select_random_fraction)
