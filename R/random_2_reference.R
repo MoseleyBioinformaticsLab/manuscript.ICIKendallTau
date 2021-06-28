@@ -10,7 +10,7 @@ random_2_reference = function(in_cor, ref_cor){
              fraction = in_cor$frac)
 }
 
-extract_data = function(data){
-  lower_tri = lower.tri(data$cor, diag = FALSE)
-  data$cor[lower_tri]
+extract_data = function(data, which = "raw"){
+  lower_tri = lower.tri(data[[which]], diag = FALSE)
+  data[[which]][lower_tri]
 }
