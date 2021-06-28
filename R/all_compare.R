@@ -24,10 +24,21 @@ all_kendalltau <- function(s1, s2, sneg, where_na, perspective = "global") {
     tmp_s1[s1_na] = NA
     tmp_s2[s2_na] = NA
     tmp_neg[neg_na] = NA
+    s1_na = sum(is.na(tmp_s1))
+    s2_na = sum(is.na(tmp_s2))
+    neg_na = sum(is.na(tmp_neg))
     
+    s1_s2 = sum(is.na(tmp_s1) & is.na(tmp_s2))
+    s1_neg = sum(is.na(tmp_s1) & is.na(tmp_neg))
     ici_s1 = ici_kt(tmp_s1, tmp_s2, perspective = perspective)[[1]]
     ici_neg = ici_kt(tmp_s1, tmp_neg, perspective = perspective)[[1]]
-    data.frame(cor = c(ici_s1, ici_neg),
+    kt_s1 = cor(tmp_s1, tmp_s2, use = "complete.obs", method = "kendall")
+    kt_neg = cor(tmp_s1, tmp_neg, use = "complete.obs", method = "kendall")
+    data.frame(ici_kt = c(ici_s1, ici_neg),
+               kendall = c(kt_s1, kt_neg),
+               x_na = c(s1_n1, s1_na),
+               y_na = c(s2_na, neg_na),
+               c_na = c(s1_s2, s1_neg),
                comp = c("Positive", "Negative"))
   })
   tmp
