@@ -46,7 +46,7 @@ all_kendalltau <- function(s1, s2, sneg, where_na, perspective = "global") {
     
     data.frame(ici_kt = c(ici_s1, ici_neg),
                kendall = c(kt_s1, kt_neg),
-               x_na = c(s1_n1, s1_na),
+               x_na = c(s1_na, s1_na),
                y_na = c(s2_na, neg_na),
                c_na = c(s1_s2, s1_neg),
                comp = c("Positive", "Negative"))
