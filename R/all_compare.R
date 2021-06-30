@@ -32,13 +32,13 @@ all_kendalltau <- function(s1, s2, sneg, where_na, perspective = "global") {
     s1_neg = sum(is.na(tmp_s1) & is.na(tmp_neg))
     ici_s1 = ici_kt(tmp_s1, tmp_s2, perspective = perspective)[[1]]
     ici_neg = ici_kt(tmp_s1, tmp_neg, perspective = perspective)[[1]]
-    if (sum(colSums(!is.na(rbind(tmp_s1, tmp_s2)))) > 0) {
+    if (sum(colSums(!is.na(rbind(tmp_s1, tmp_s2))) == 2) > 0) {
       kt_s1 = cor(tmp_s1, tmp_s2, use = "complete.obs", method = "kendall")
     } else {
       kt_s1 = NA
     }
     
-    if (sum(colSums(!is.na(rbind(tmp_s1, tmp_neg)))) > 0) {
+    if (sum(colSums(!is.na(rbind(tmp_s1, tmp_neg))) == 2) > 0) {
       kt_neg = cor(tmp_s1, tmp_neg, use = "complete.obs", method = "kendall")
     } else {
       kt_neg = NA
