@@ -32,20 +32,19 @@ all_kendalltau <- function(s1, s2, sneg, where_na, perspective = "global") {
     s1_neg = sum(is.na(tmp_s1) & is.na(tmp_neg))
     ici_s1 = ici_kt(tmp_s1, tmp_s2, perspective = perspective)[[1]]
     ici_neg = ici_kt(tmp_s1, tmp_neg, perspective = perspective)[[1]]
-    if (sum(colSums(!is.na(rbind(tmp_s1, tmp_s2))) == 2) > 0) {
-      kt_s1 = cor(tmp_s1, tmp_s2, use = "complete.obs", method = "kendall")
-    } else {
-      kt_s1 = NA
-    }
     
-    if (sum(colSums(!is.na(rbind(tmp_s1, tmp_neg))) == 2) > 0) {
-      kt_neg = cor(tmp_s1, tmp_neg, use = "complete.obs", method = "kendall")
-    } else {
-      kt_neg = NA
-    }
+    kt_s1 = tmp_s1
+    kt_s1[is.na(kt_s1)] = 0
+    kt_s2 = tmp_s2
+    kt_s2[is.na(kt_s2)] = 0
+    kt_neg = tmp_neg
+    kt_neg[is.na(kt_neg)] = 0
+    
+    ktcor_s1 = cor(kt_s1, kt_s2, method = "kendall")
+    ktcor_neg = cor(kt_s1, kt_neg, method = "kendall")
     
     data.frame(ici_kt = c(ici_s1, ici_neg),
-               kendall = c(kt_s1, kt_neg),
+               kendall = c(ktcor_s1, ktcor_neg),
                x_na = c(s1_na, s1_na),
                y_na = c(s2_na, neg_na),
                c_na = c(s1_s2, s1_neg),
