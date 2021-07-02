@@ -226,6 +226,10 @@ the_plan <-
    egfr_weighted_cor = globally_it_weighted_pairwise_correlation(log1p(t(egfr_counts))),
    
    
+   yeast_counts = readRDS(here::here("data", "yeast_counts.rds")),
+   yeast_cor = ici_kendalltau(t(yeast_counts))$cor,
+   yeast_completeness = pairwise_completeness(t(yeast_counts)),
+   
    eval_random = target(
       evaluate_by_pca(select_random_fraction, transcript_pca),
       transform = map(select_random_fraction)
