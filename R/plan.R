@@ -226,8 +226,8 @@ the_plan <-
    egfr_weighted_cor = globally_it_weighted_pairwise_correlation(log1p(t(egfr_counts))),
    
    
-   yeast_counts = readRDS(here::here("data", "yeast_counts.rds")),
-   yeast_info = readRDS(here::here("data", "yeast_info.rds")),
+   yeast_counts = readRDS(here::here("data", "yeast_biocounts.rds")),
+   yeast_info = readRDS(here::here("data", "yeast_bioreps_info.rds")),
    yeast_cor = ici_kendalltau(t(yeast_counts))$cor,
    yeast_completeness = pairwise_completeness(t(yeast_counts)),
    yeast_pearson = cor(log1p(yeast_counts), use = "pairwise.complete.obs"),
