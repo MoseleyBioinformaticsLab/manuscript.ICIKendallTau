@@ -1029,7 +1029,7 @@ For (2), the maximum likelihood methods generally apply to Pearson and similar t
 Alvo and Cabilio's work from 1995 [@alvoRankCorrelationMethods1995] is one of the only works we are aware of that attempts to create a general framework for rank based statistics in the presence of missing data.
 However, to our knowledge their framework applies to data that is missing at random, and not missing not at random, as is the case for analytes that are below the detection limit.
 Additionally, there does not appear to be a software implementation of Alvo and Cabilio's method available.
-To our knowledge, information-content-informed Kendall-tau is the first correlation method that explicitly attempts to explicitly include the effect of missing not at random data from missing values that occur due to being below the detection limit. 
+To our knowledge, information-content-informed Kendall-tau is the first correlation method that explicitly attempts to include the effect of missing not at random data from missing values that occur due to being below the detection limit. 
 
 ## Conclusions
 
