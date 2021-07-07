@@ -504,23 +504,31 @@ loadd(egfr_cor)
 loadd(egfr_completeness)
 loadd(egfr_counts)
 
-egfr_cor[egfr_cor > 1] = 1
+#egfr_cor[egfr_cor > 1] = 1
 egfr_cor_complete = egfr_cor * egfr_completeness
 egfr_info = readRDS(here::here("data", "brainson_egfr_info.rds"))
+egfr_info$sample_num = seq(1, nrow(egfr_info))
+egfr_info = egfr_info %>%
+  dplyr::mutate(sample_id2 = dplyr::case_when(
+    grepl("2d", tumor) ~ paste0("2D", sample_num),
+    grepl("3d", tumor) ~ paste0("3D", sample_num),
+    grepl("sorted", tumor) ~ paste0("S", sample_num),
+    grepl("total", tumor) ~ paste0("T", sample_num)
+  ))
 egfr_cor = egfr_cor[egfr_info$sample, egfr_info$sample]
 
 egfr_cor_complete = egfr_cor_complete[egfr_info$sample, egfr_info$sample]
-egfr_med_cor = median_correlations(egfr_cor, egfr_info$type)
-egfr_out_frac = outlier_fraction(t(log1p(egfr_counts)), egfr_info$type)
+egfr_med_cor = median_correlations(egfr_cor, egfr_info$tumor)
+egfr_out_frac = outlier_fraction(t(log1p(egfr_counts)), egfr_info$tumor)
 
 egfr_med_out = determine_outliers(egfr_med_cor, egfr_out_frac, frac_weight = 0)
 
-egfr_complete_med = median_correlations(egfr_cor_complete, egfr_info$type)
+egfr_complete_med = median_correlations(egfr_cor_complete, egfr_info$tumor)
 egfr_complete_out = determine_outliers(egfr_complete_med, egfr_out_frac, frac_weight = 0)
 
 egfr_pearson = cor(log1p(egfr_counts), use = "pairwise.complete.obs")
 egfr_pearson = egfr_pearson[egfr_info$sample, egfr_info$sample]
-egfr_pearson_med = median_correlations(egfr_pearson, egfr_info$type)
+egfr_pearson_med = median_correlations(egfr_pearson, egfr_info$tumor)
 egfr_pearson_out = determine_outliers(egfr_pearson_med, egfr_out_frac, frac_weight = 0)
 
 egfr_med_out$correlation = "ICI-Kt"
@@ -529,51 +537,174 @@ egfr_pearson_out$correlation = "Pearson"
 
 egfr_all_out = rbind(egfr_med_out, egfr_complete_out, egfr_pearson_out)
 
-ggplot(egfr_all_out, aes(x = type, y = ))
-adeno_info$sample_num = seq(1, nrow(adeno_info))
-adeno_info = adeno_info %>%
-  dplyr::mutate(sample_id3 = dplyr::case_when(
-    grepl("Tumor", sample_type) ~ paste0("T", sample_num),
-    grepl("Normal", sample_type) ~ paste0("N", sample_num)
-  ))
-adeno_cor = adeno_cor[adeno_info$sample_id2, adeno_info$sample_id2]
-adeno_cor_complete = adeno_cor_complete[rownames(adeno_cor), colnames(adeno_cor)]
-transcript_data = transcript_data[, adeno_info$sample_id2]
-pearson_adeno_cor = cor(log1p(transcript_data))
+egfr_all_out = dplyr::left_join(egfr_all_out, egfr_info[, c("sample", "sample_id2")], by = c("sample_id" = "sample"))
+ggplot(egfr_all_out, aes(x = sample_class.cor, y = med_cor)) + 
+  geom_sina(aes(color = outlier, group = sample_class.cor)) +
+  facet_wrap(~ correlation, scales = "free_y") +
+  theme(legend.position = c(0.4, 0.6)) +
+  labs(x = "Sample Type", y = "Median Correlation")
 
-
-
-
-out_frac = outlier_fraction(t(log1p(transcript_data)), sample_classes = adeno_info$sample_type)
-
-med_cor = median_correlations(adeno_cor, sample_classes = adeno_info$sample_type)
-med_complete = median_correlations(adeno_cor_complete, sample_classes = adeno_info$sample_type)
-p_med_cor = median_correlations(pearson_adeno_cor, sample_classes = adeno_info$sample_type)
-
-outlier_med = determine_outliers(med_cor, out_frac, cor_weight = 1, frac_weight = 0)
-outlier_complete = determine_outliers(med_complete, out_frac, cor_weight = 1,
-                                     frac_weight = 0)
-outlier_p = determine_outliers(p_med_cor, out_frac, cor_weight = 1, frac_weight = 0)
-
-outlier_med = dplyr::left_join(outlier_med, adeno_info[, c("sample_id2", "sample_id3")], by = c("sample_id" = "sample_id2"))
-outlier_complete = dplyr::left_join(outlier_complete, adeno_info[, c("sample_id2", "sample_id3")], by = c("sample_id" = "sample_id2"))
-outlier_p = dplyr::left_join(outlier_p, adeno_info[, c("sample_id2", "sample_id3")], by = c("sample_id" = "sample_id2"))
-
-
-outlier_med$correlation = "ICI-Kt"
-outlier_complete$correlation = "ICI-KT * Completeness"
-outlier_p$correlation = "Pearson"
-
-all_med_cor = rbind(outlier_med, 
-                    outlier_complete,
-                    outlier_p)
-all_med_cor = all_med_cor %>%
-  dplyr::mutate(type2 = dplyr::case_when(
-    grepl("Primary", sample_class.cor) ~ "Tumor",
-    grepl("Normal", sample_class.cor) ~ "Normal"
-  ))
+# loadd(egfr_weighted_cor)
+# egfr_weighted_cor2 = egfr_weighted_cor$cor[egfr_info$sample, egfr_info$sample]
+# egfr_weighted_med_cor = median_correlations(egfr_weighted_cor2, egfr_info$tumor)
+# egfr_weighted_out = determine_outliers(egfr_weighted_med_cor, egfr_out_frac, frac_weight = 0)
+# 
+# ggplot(egfr_weighted_out, aes(x = sample_class.cor, y = med_cor)) +
+#   geom_sina(aes(color = outlier, group = sample_class.cor))
 ```
 
+`r paste_label("Figure ", figure_count, "f_egfroutliers")`.
+Median correlations for each of the EGFR RNA-Seq sample to all other samples in the same group, using either ICI-Kt, ICI-Kt * completeness, or Pearson correlation.
+
+```{r egfr_outlier_table}
+table_count = increment_count(table_count, "egfr_outliers")
+egfr_outliers = egfr_all_out %>%
+  dplyr::filter(outlier)
+
+all_egfr_out = data.frame(sample_id2 = unique(egfr_outliers$sample_id2))
+
+egfr_correlations = split(egfr_all_out, egfr_all_out$correlation)
+egfr_out_table = purrr::map_dfc(egfr_correlations, function(in_cor){
+  tmp_table = dplyr::left_join(all_egfr_out, in_cor, by = "sample_id2")
+  tmp_table = tmp_table %>%
+    dplyr::mutate(outlier2 = dplyr::case_when(
+      outlier ~ "X",
+      !outlier ~ " "
+    ))
+  new_frame = data.frame(outlier = tmp_table$outlier2,
+                         cor = tmp_table$med_cor)
+  if (tmp_table$correlation[1] == "ICI-Kt") {
+    names(new_frame) = paste0("icikt.", names(new_frame))
+  } else if (tmp_table$correlation[1] == "ICI-Kt * Completeness") {
+    names(new_frame) = paste0("icikt.comp.", names(new_frame))
+  } else if (tmp_table$correlation[1] == "Pearson") {
+    names(new_frame) = paste0("pearson.", names(new_frame))
+  }
+  new_frame
+})
+egfr_out_table$sample = all_egfr_out$sample_id2
+egfr_out_table = egfr_out_table[order(egfr_out_table$pearson.cor), ]
+egfr_out_table = egfr_out_table %>%
+  dplyr::select(sample, icikt.cor, icikt.outlier,
+                icikt.comp.cor, icikt.comp.outlier,
+                pearson.cor, pearson.outlier)
+egfr_ft_out = flextable(egfr_out_table)
+egfr_ft_out = set_header_labels(egfr_ft_out,
+          sample = "Sample",
+          icikt.cor = "Correlation",
+          icikt.outlier = "Outlier",
+          icikt.comp.cor = "Correlation",
+          icikt.comp.outlier = "Outlier",
+          pearson.cor = "Correlation",
+          pearson.outlier = "Outlier")
+egfr_ft_out = add_header_row(egfr_ft_out,
+                        values = c("", "ICI-Kt", "ICI-Kt * Completeness",
+                                   "Pearson"),
+                        colwidths = c(1, 2, 2, 2))
+egfr_ft_out = colformat_double(egfr_ft_out, digits = 2)
+egfr_ft_out = autofit(egfr_ft_out)
+egfr_ft_out
+```
+
+```{r outlier_yeast_setup}
+figure_count = increment_count(figure_count, "f_yeastoutliers")
+loadd(yeast_cor)
+loadd(yeast_completeness)
+loadd(yeast_info)
+loadd(yeast_outliers)
+```
+
+A second dataset consists of `r ncol(yeast_cor)` RNA-seq samples, with `r sum(yeast_info$Sample == "SNF2")` biological replicates of WT and SNF2 mutants.
+
+```{r plot_yeast_outliers}
+
+yeast_outliers = dplyr::left_join(yeast_info[, c("biosample"), drop = FALSE], yeast_outliers, by = c("biosample" = "sample_id")) %>%
+  dplyr::mutate(sample_id = biosample)
+
+yeast_cor_complete = yeast_cor * yeast_completeness
+yeast_cor = yeast_cor[yeast_info$biosample, yeast_info$biosample]
+
+yeast_cor_complete = yeast_cor_complete[yeast_info$biosample, yeast_info$biosample]
+yeast_med_cor = median_correlations(yeast_cor, yeast_info$Sample)
+
+yeast_med_out = determine_outliers(yeast_med_cor, yeast_outliers, frac_weight = 0)
+
+yeast_complete_med = median_correlations(yeast_cor_complete, yeast_info$Sample)
+yeast_complete_out = determine_outliers(yeast_complete_med, yeast_outliers, frac_weight = 0)
+
+loadd(yeast_pearson)
+yeast_pearson = yeast_pearson[yeast_info$biosample, yeast_info$biosample]
+yeast_pearson_med = median_correlations(yeast_pearson, yeast_info$Sample)
+yeast_pearson_out = determine_outliers(yeast_pearson_med, yeast_outliers, frac_weight = 0)
+
+yeast_med_out$correlation = "ICI-Kt"
+yeast_complete_out$correlation = "ICI-Kt * Completeness"
+yeast_pearson_out$correlation = "Pearson"
+
+yeast_all_out = rbind(yeast_med_out, yeast_complete_out, yeast_pearson_out)
+
+ggplot(yeast_all_out, aes(x = sample_class.cor, y = med_cor)) + 
+  geom_sina(aes(color = outlier, group = sample_class.cor)) +
+  facet_wrap(~ correlation, scales = "free_y") +
+  theme(legend.position = c(0.4, 0.2)) +
+  labs(x = "Sample Type", y = "Median Correlation")
+```
+
+`r paste_label("Figure ", figure_count, "f_yeastoutliers")`.
+Median correlations for each of the yeast RNA-Seq sample to all other samples in the same group, using either ICI-Kt, ICI-Kt * completeness, or Pearson correlation.
+
+```{r yeast_outlier_table}
+table_count = increment_count(table_count, "yeast_outliers")
+yeast_outliers = yeast_all_out %>%
+  dplyr::filter(outlier)
+
+all_yeast_out = data.frame(biosample = unique(yeast_outliers$biosample))
+
+yeast_correlations = split(yeast_all_out, yeast_all_out$correlation)
+yeast_out_table = purrr::map_dfc(yeast_correlations, function(in_cor){
+  tmp_table = dplyr::left_join(all_yeast_out, in_cor, by = "biosample")
+  tmp_table = tmp_table %>%
+    dplyr::mutate(outlier2 = dplyr::case_when(
+      outlier ~ "X",
+      !outlier ~ " "
+    ))
+  new_frame = data.frame(outlier = tmp_table$outlier2,
+                         cor = tmp_table$med_cor)
+  if (tmp_table$correlation[1] == "ICI-Kt") {
+    names(new_frame) = paste0("icikt.", names(new_frame))
+  } else if (tmp_table$correlation[1] == "ICI-Kt * Completeness") {
+    names(new_frame) = paste0("icikt.comp.", names(new_frame))
+  } else if (tmp_table$correlation[1] == "Pearson") {
+    names(new_frame) = paste0("pearson.", names(new_frame))
+  }
+  new_frame
+})
+yeast_out_table$sample = all_yeast_out$biosample
+yeast_out_table = yeast_out_table[order(yeast_out_table$pearson.cor), ]
+yeast_out_table = yeast_out_table %>%
+  dplyr::select(sample, icikt.cor, icikt.outlier,
+                icikt.comp.cor, icikt.comp.outlier,
+                pearson.cor, pearson.outlier)
+yeast_ft_out = flextable(yeast_out_table)
+yeast_ft_out = set_header_labels(yeast_ft_out,
+          sample = "Sample",
+          icikt.cor = "Correlation",
+          icikt.outlier = "Outlier",
+          icikt.comp.cor = "Correlation",
+          icikt.comp.outlier = "Outlier",
+          pearson.cor = "Correlation",
+          pearson.outlier = "Outlier")
+yeast_ft_out = add_header_row(yeast_ft_out,
+                        values = c("", "ICI-Kt", "ICI-Kt * Completeness",
+                                   "Pearson"),
+                        colwidths = c(1, 2, 2, 2))
+yeast_ft_out = colformat_double(yeast_ft_out, digits = 2)
+yeast_ft_out = autofit(yeast_ft_out)
+yeast_ft_out
+```
+
+`r paste_label("Table ", table_count, "yeast_outliers")`.
+Yeast sample outliers determined by each of the three correlation methods, ICI-Kt, ICI-Kt multiplied with completeness, and Pearson.
 
 ```{r outlier_adenocarcinoma_setup}
 figure_count = increment_count(figure_count, "f_adenooutliers")
@@ -624,11 +755,8 @@ all_med_cor = all_med_cor %>%
   ))
 ```
 
-The second is a collection of `r ncol(transcript_data)` adenocarcinoma samples from the TCGA project, and incorporated into the recount2 project [@collado-torres_recount2_2017].
+The third dataset is a collection of `r ncol(transcript_data)` adenocarcinoma samples from the TCGA project, and incorporated into the recount2 project [@collado-torres_recount2_2017].
 In this dataset there are `r nrow(dplyr::filter(adeno_info, grepl("Normal", sample_type)))` normal and `r nrow(dplyr::filter(adeno_info, grepl("Tumor", sample_type)))` tumor samples.
-
-From the pairwise sample-sample correlations, median correlations for each sample with all the other samples of the same class (normal or tumor) were calculated.
-Outliers were determined using the boxplot.stats R function.
 
 ```{r plot_adenocarcinoma}
 ggplot(all_med_cor, aes(x = type2, y = med_cor)) + 
@@ -638,7 +766,8 @@ ggplot(all_med_cor, aes(x = type2, y = med_cor)) +
   labs(x = "Sample Type", y = "Median Correlation")
 ```
 
-`r paste_label("Figure ", figure_count, "f_adenooutliers")`. Median correlations for each sample to all other samples in the same group of either tumor or normal, using either ICI-Kt or Pearson correlation.
+`r paste_label("Figure ", figure_count, "f_adenooutliers")`. 
+Median correlations for each adenocarcinoma TGCA RNA-Seq sample to all other samples in the same group of either tumor or normal, using either ICI-Kt, ICI-Kt * completeness, or Pearson correlation.
 
 ```{r create_outlier_table}
 table_count = increment_count(table_count, "adeno_outliers")
@@ -688,6 +817,7 @@ ft_out = colformat_double(ft_out, digits = 2)
 ft_out = autofit(ft_out)
 ft_out
 ```
+
 `r paste_label("Table ", table_count, "adeno_outliers")`.
 Outliers determined by each of the three correlation methods, ICI-Kt, ICI-Kt multiplied with completeness, and Pearson.
 
