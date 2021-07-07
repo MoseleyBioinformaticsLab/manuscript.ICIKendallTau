@@ -898,6 +898,8 @@ However, given that there may still be cases where the number of comparisons are
 `r paste_label("Figure ", figure_count, "f_icisubsampling")` compares the sample-sample correlations from a random percent subsample of features to those obtained using all of the features.
 Both the pairwise plot (left) and histogram of residual differences (right) show that the correlations become much closer to those obtained when using all of the features as the percentage of subsampled features is increased.
 However, there is a consistent positive bias in the estimate, regardless of the number of subsamples used.
+This bias is small, because we are comparing the **raw** correlation values, and not the rescaled values.
+When the rescaled values (using the maximum correlation) are compared, the positive bias becomes larger, due to the differences in the maximum correlation.
 
 ```{r setup_pca_variancefig}
 figure_count = increment_count(figure_count, "f_pcavardifference")
@@ -1047,6 +1049,7 @@ We then created missing values (replaced value with NA) in each sample systemati
 ```{r compare_simple}
 supp_count = c("_" = 0)
 supp_count = increment_count(supp_count, "kt_pearson")
+supp_count = increment_count(supp_count, "ici_distribution")
 supp_count = increment_count(supp_count, "kt_distribution")
 loadd(positive_kt)
 loadd(positive_pearson)
@@ -1062,14 +1065,27 @@ ggplot(compare_df, aes(x = pearson, y = ici_kt)) + geom_point()
 We can also examine the full set of positive and negative correlations generated as we vary the number of missing entries between two positively correlated samples and two negatively correlated samples.
 These distributions are shown in `r paste_label("Figure S", supp_count, "kt_distribution")`.
 
-```{r kt_full_distribution}
+```{r ici_full_distribution}
 loadd(all_kt)
-ggplot(all_kt, aes(x = cor)) +
+ici_plot = ggplot(all_kt, aes(x = ici_kt)) +
   geom_histogram(bins = 100) +
-  facet_wrap(~ comp, ncol = 1, scales = "free") +
+  facet_wrap(~ comp, ncol = 1) +
   labs(x = "ICI-Kt Correlation", y = "count")
+ici_plot
 ```
 
+`r paste_label("Figure S", supp_count, "ici_distribution")`.
+ICI-Kendall-tau correlation as missing values are varied between two samples.
+
+```{r kt_full_distribution}
+kt_plot = ggplot(all_kt, aes(x = kendall)) +
+  geom_histogram(bins = 100) +
+  facet_wrap(~ comp, ncol = 1)
+kt_plot
+```
+
+`r paste_label("Figure S", supp_count, "kt_distribution")`.
+Kendall-tau correlation as missing values are varied between two samples and replaced with 0.
 
 ### Algorithmic Complexity
 
