@@ -23,7 +23,13 @@ increment_count = function(in_object, id_name){
 paste_label = function(pre_text, in_object, id_name){
   object_number = in_object[id_name]
   
-  use_text = paste(pre_text, object_number, sep = "")
+  if (length(object_number) > 1) {
+    object_numbers = paste(object_number, collapse = ", ")
+  } else {
+    object_numbers = object_number
+  }
+  
+  use_text = paste(pre_text, object_numbers, sep = "")
   
   use_text
 }
@@ -35,6 +41,7 @@ table_count = c("_" = 0)
 ## Where to Submit
 
 * Bioinformatics: accepts format free submission, but limit is 5000 words, and LibreOffice claims we are already over that. Not sure if that's because of the equations or what, but that's not a good start.
+* PLOS Computational Biology
 
 ## Abstract
 
@@ -42,7 +49,7 @@ Almost all correlation measures currently available are unable to handle missing
 Typically, missing values are either ignored completely by removing them or are imputed and used in the calculation of the correlation coefficient.
 In both cases, the correlation value will be impacted based on a perspective that missing data represents no useful information.
 However, missing values occur in real data sets for a variety of reasons. 
-In -omics data sets that are derived from analytical measurements, the primary reason for missing values is that a specific measurable phenomenon falls below the detection limits of the analytical instrumentation.
+In omics data sets that are derived from analytical measurements, the primary reason for missing values is that a specific measurable phenomenon falls below the detection limits of the analytical instrumentation.
 These missing data are not missing at random, but represent some information by their "missingness".
 Therefore, we propose an information-content-informed Kendall-tau (ICI-Kt) correlation coefficient that allows missing values to carry explicit information in the determination of concordant and discordant pairs.
 With both simulated and real data sets from RNA-seq experiments, we demonstrate that the ICI-Kt allows for the inclusion of missing data values as interpretable information.
@@ -54,25 +61,26 @@ The ICI-Kt correlation calculation is available in an R package and Python modul
 ## Introduction
 
 Correlation as a measure of the relatedness or similarity of two or more sets of data has a long history, with the mathematical technique being used (and abused) in various scientific fields since it's introduction [@pearson_notes_1920; @rodgers_13_1988].
-More recently, correlation calculations have become a cornerstone statistical method in the analysis and integration of varied -omics' datasets, especially the big 5 omics: genomics, transcriptomics, proteomics, metabolomics, and epigenomics [@gu_complexheatmap_2016].
-Correlation between biomolecular features (nucleotide variants, RNA transcripts, proteins, metabolites) may be used to determine the relationship between pairs of the features as well as to detect and derive correlative structures between groups of features [@fukushima_integratedomics_2009].
-Moreover, correlation is a foundational method for generating biomolecular feature - feature interaction networks, like those provided by STRING [@szklarczyk_string_2017], Genemania [@franz_genemania_2018], and WCGNA [@langfelder_wgcna_2008].
-Feature - feature correlation may also be used to inform which features are used for imputation of missing values [@faquih_missingvalueworkflow_2020].
-Correlation of samples in -omics may be used for evaluating whether all the samples from a particular condition are truly related to each other, as well as to inform the choice of analysis, and to check for outliers prior to other statistical analysis [@flight_timecourseexploration_2010; @gierlinski_statisticalmodels_2015].
+More recently, correlation calculations have become a cornerstone statistical method in the analysis and integration of varied omics' datasets, especially the big five omics: genomics, transcriptomics, proteomics, metabolomics, and epigenomics [@gu_complexheatmap_2016].
+Correlation between biomolecular features (nucleotide variants, RNA transcripts, proteins, metabolites) may be used to evaluate the relationship strength between pairs of the features as well as to detect and derive correlative structures between groups of features [@fukushima_integratedomics_2009].
+Moreover, correlation is a foundational method for generating biomolecular feature-feature interaction networks, like those provided by STRING [@szklarczyk_string_2017], Genemania [@franz_genemania_2018], and WCGNA [@langfelder_wgcna_2008].
+Feature-feature correlation may also be used to inform which features are used for imputation of missing values [@faquih_missingvalueworkflow_2020].
+Correlation between biological samples as measured from omics data sets may be used for evaluating whether all the samples from a particular condition are truly related to each other, as well as to inform the choice of analysis, and to check for outliers prior to other statistical analyses [@flight_timecourseexploration_2010; @gierlinski_statisticalmodels_2015].
+Outlier detection, in particular, is often required for successful omics data analysis, since any misstep during the experimentation, sample collection, sample preparation, or analytical measurement of individual samples can inject high error and/or variance into the resulting data set [@moseleyERRORANALYSISPROPAGATION2013].
 
 ```{r add_problemfig}
 figure_count = increment_count(figure_count, "f_problem")
 ```
 
-However, all analytical methods, and in particular the analytical methods used in -omics where many analytes are being measured simultaneously; suffer from missing measurements.
+All analytical methods, and in particular the analytical methods used in omics where many analytes are being measured simultaneously; suffer from missing measurements.
 Of course, a few analytes will be missing at random just because of some issue with the instrument or that particular sample, but a large number of missing measurements are left-censored due to analytes being below the effective detection limit of the instrument, as shown in `r paste_label("Figure ", figure_count, "f_problem")`.
 Some analytical instruments are actually purposely designed to floor measurements, when they occur below a certain signal to noise ratio threshold.
-Imputation of missing measurements in -omics samples is an active area of research, which we will not cover here beyond to say that it is worthwhile and very necessary in many instances.
+Imputation of missing measurements in omics samples is an active area of research, which we will not cover here beyond to say that it is worthwhile and very necessary in many instances.
 But when it comes to calculating correlation, there are very few methods that explicitly account for missing data that we know of.
 In many cases, missing values may be imputed to zero (or another value) and then included in the correlation calculation.
 Imputation or replacement with zero is likely to lead to high inflation of Pearson and related correlation measures.
 Other approaches keep only those features with no missing values across experimental samples (complete cases), or keep non-missing between any pair of experimental samples (pairwise complete cases).
-Each of these are likely to deviate from the real sample - sample correlation values, especially with respect to specific data interpretation perspectives.
+Each of these are likely to deviate from the real sample-sample correlation values, especially with respect to specific data interpretation perspectives.
 
 ```{r include_figure1}
 knitr::include_graphics(here::here("doc/the_problem.png"))
@@ -89,7 +97,7 @@ Which analytes will have concentrations in the red region may vary from sample t
 Assuming that a majority of missing values are not missing at random, but rather result from left-censored distributions due to the analyte being below the effective detection limit (see `r paste_label("Figure ", figure_count, "f_problem")`), we propose that these missing values do in fact encode useful information that can be incorporated into correlation calculations, especially the Kendall-tau paired rank correlation coefficient.
 In this manuscript, we propose new definitions of concordant and discordant rank pairs that include missing values, as well as methods for incorporating missing values into the number of tied values for the equivalent of the modified Kendall-tau coefficient.
 We examine the effect of missing values on simulated data, comparing our information-content-informed Kendall-tau (ICI-Kt) method with other simpler methods of handling the missing values, namely removing them or imputing them to zero.
-Finally, we examine the ability to recapitulate ICI-Kt correlation values calculated on a large feature -omics data set using feature subsets, which is useful as the run time of very large feature data sets can become prohibitive.
+Finally, we examine the ability to recapitulate ICI-Kt correlation values calculated on a large feature omics data set using feature subsets, which is useful when the run time of very large feature data sets becomes prohibitive.
 
 ## Methods
 
@@ -206,15 +214,24 @@ We downloaded the V2 Recount lung cancer data [@collado-torres_recount2_2017], e
 
 Pearson and Kendall correlations are calculated with zero, as well as replacing zero values with NA.
 
+### Completeness
+
+As an addition to the correlation, we also calculate the *completeness* between any two samples.
+We first measure the number of entries missing in either of the samples being compared, and subtract that from the total number of features in the samples.
+This defines how many features are potentially *complete* between the two samples.
+This number, over the total number of features defines the *completeness* fraction.
+
+$$comp = \frac{n_{feat} - (miss_i | miss_j)}{n_{feat}} $$
+
 ### Multiprocessing
 
 When a large number of samples need to be compared, it may be useful to split the comparisons across compute instances (across hyperthreaded cores, physical cores, or physical compute nodes).
 The *furrr* R package makes the definition of compute clusters easy.
-For a large correlation matrix computation, we first define the sample - sample comparisons to be performed, then check how many instances of compute are available (defined by a previous call to *furrr*), and finally split the comparisons into a list that can be easily distributed using the *furrr::future_map* function.
+For a large correlation matrix computation, we first define the sample-sample comparisons to be performed, then check how many instances of compute are available (defined by a previous call to *furrr*), and finally split the comparisons into a list that can be easily distributed using the *furrr::future_map* function.
 
 ### Subsampling of Features
 
-In addition to using the full set of features to calculate sample - sample correlations, it is possible to select a subsample of features and only use this feature subset to calculate correlations.
+In addition to using the full set of features to calculate sample-sample correlations, it is possible to select a subsample of features and only use this feature subset to calculate correlations.
 Three methods were implemented: 1) random selections; 2) top set of features by variance; and 3) top set of features by variance of principal components.
 
 For (1), random selection, feature subsamples of 1 to 10% by 1% increments, and then in 5% increments to 90% were taken using the *sample* R function.
@@ -342,10 +359,11 @@ pos_diff + neg_diff
 ```
 
 `r paste_label("Figure ", figure_count, "f_missing2cor")`. The effect on Kendall, Pearson and ICI-Kt correlations as increasing number of missing values in the bottom half of either sample for both positively and negatively correlated samples.
+Pay attention to the orders of magnitude differences between the y-axis scales.
 
 In `r paste_label("Figure ", figure_count, "f_missing2cor")`, we can see that as missing values are added, only the ICI-Kt correlation values change in any significant way.
 As the number of missing values increase, the ICI-Kt values drop or increase by up to 0.2.
-Similarly, Pearson correlation is also affected, but the degree of change in the correlation values are much less (notice the difference in the y-axis scales), on the order of only 0.003 for the positive case and 0.1 for the negative case.
+Similarly, Pearson correlation is also affected, but the degree of change in the correlation values are much less (notice the orders of magnitude differences in the y-axis scales), on the order of only 0.003 for the positive case and 0.1 for the negative case.
 Also, the lack of symmetry in the Pearson negative comparisons is due to the lack of linear correlation between the samples.
 These results demonstrate that the ICI-Kt correlation has quantitative sensitivity to missing values over the normal Kendall tau correlation and linear Pearson correlation where points with missing values are ignored (pairwise complete).
 
@@ -416,7 +434,7 @@ log_plot = ggplot(logtransform_censored_cor, aes(x = n_na, y = cor)) +
 (left_plot / log_plot / random_plot) + plot_annotation(tag_levels = "A")
 ```
 
-`r paste_label("Figure ", figure_count, "f_leftcensored")`. Effect of introducing missing values from a cutoff (A & B) or randomly on different measures of correlation, including ICI-Kt, Kendall with pairwise complete, Kendall replacing missing with 0, Pearson with pairwise complete, and Pearson replacing missing with 0.
+`r paste_label("Figure ", figure_count, "f_leftcensored")`. Effect of introducing missing values from a cutoff (A & B) or randomly (C) on different measures of correlation, including ICI-Kt, Kendall with pairwise complete, Kendall replacing missing with 0, Pearson with pairwise complete, and Pearson replacing missing with 0.
 A) Missing values introduced by setting an increasing cutoff.
 B) Missing values introduced by setting an increasing cutoff, and then log-transforming the values before calculating correlation.
 C) Missing values introduced at random.
@@ -499,19 +517,57 @@ As samples are added, the run time quickly increases logarithmically, similar to
 
 #### Detecting Outlier Samples
 
-We analyzed two RNA-Seq datasets for possible outliers using ICI-Kt.
-The first is a collection of 56 samples in a cancer model and trying to determine differences in expression with and without EGFR as well as grown flat or as organoids.
-ICI-Kt correlations were calculated using the genes that had a non-zero count in at least one of the samples.
-For each sample, the median ICI-Kt value was calculated amongst the samples for each of the defined groups.
-Two samples were found to have low correlations within their group.
+```{r setting_up_outliers}
+figure_count = increment_count(figure_count, "f_egfroutliers")
+table_count = increment_count(table_count, "egfr_outliers")
+
+figure_count = increment_count(figure_count, "f_yeastoutliers")
+table_count = increment_count(table_count, "yeast_outliers")
+
+figure_count = increment_count(figure_count, "f_adenooutliers")
+table_count = increment_count(table_count, "adeno_outliers")
+outlier_fig_list = paste(
+  paste_label("", figure_count, "f_egfroutliers"),
+  ", ",
+  paste_label("", figure_count, "f_yeastoutliers"),
+  " and ",
+  paste_label("", figure_count, "f_adenooutliers"),
+  sep = ""
+)
+
+outlier_table_list = paste(
+  paste_label("", table_count, "egfr_outliers"),
+  ", ",
+  paste_label("", table_count, "yeast_outliers"),
+  " and ",
+  paste_label("", table_count, "adeno_outliers"),
+  sep = ""
+)
+```
+
+We analyzed three RNA-Seq datasets for possible outliers using three different correlation and correlation-related metrics: (1) ICI-Kt; (2) ICI-Kt scaled by *completeness* (see Methods), and (3) Pearson correlation.
+In the case of Pearson correlation, the count values were log-transformed first using the *log1p* function (equivalent to log(value + 1)).
+For each dataset and correlation-related metric, the median correlation for a sample was calculated amongst the samples for each sub-group of samples corresponding to an experimental condition of interest (disease, mutant, how cells were grown).
+
+
+`r paste_label("Figure ", figure_count, "f_egfroutliers")` visualizes the sample-specific median of each correlation-related metric calculated from the EGFR RNA-Seq data set. 
+`r paste_label("Table ", "egfr_outliers")` lists the outliers detected based on each sample-specific median metric value.  
+In this example, ICI-Kt shows superior sensitivity for outlier detection as compared to the other metrics and is likely related to the increased spread of median metric values as compared to Pearson.
+`r paste_label("Figure ", figure_count, "f_yeastoutliers")` visualizes the sample-specific median of each metric calculated from the yeast RNA-Seq data set.
+Likewise, `r paste_label("Table ", table_count, "yeast_outliers")` lists the outliers detected based on each metric.
+In this example, Pearson shows superior sensitivity to outlier detection, likely due to the larger spread in median Pearson correlation values. 
+`r paste_label("Figure ", figure_count, "f_adenooutliers")` visualizes the sample-specific median metric value calculated from the TGCA RNA-Seq data set, with `r paste_label("Table ", table_count, "adeno_outliers")` listing the outliers detected from each metric.  
+In this example, the ICI-Kt * completeness demonstrated superior sensitivity for outlier detection, likely due its better sensitivity to measurement completeness.
+The wider spread of measurement completeness is expected, since TCGA is an aggregate of samples collected from various human cancer patents as compared to the first two examples which were collected from specific experiments in cell culture. 
+However, the outliers detected is not a complete superset of the outliers detected by ICI-Kt and Pearson, probably due to the integration of completeness and correlation.
+
 
 ```{r outlier_egfr_setup}
-figure_count = increment_count(figure_count, "f_egfroutliers")
+
 loadd(egfr_cor)
 loadd(egfr_completeness)
 loadd(egfr_counts)
 
-#egfr_cor[egfr_cor > 1] = 1
 egfr_cor_complete = egfr_cor * egfr_completeness
 egfr_info = readRDS(here::here("data", "brainson_egfr_info.rds"))
 egfr_info$sample_num = seq(1, nrow(egfr_info))
@@ -544,7 +600,9 @@ egfr_pearson_out$correlation = "Pearson"
 
 egfr_all_out = rbind(egfr_med_out, egfr_complete_out, egfr_pearson_out)
 
+
 egfr_all_out = dplyr::left_join(egfr_all_out, egfr_info[, c("sample", "sample_id2")], by = c("sample_id" = "sample"))
+egfr_all_out[egfr_all_out$sample_id2 %in% c("3D24", "3D23"), "outlier"] = FALSE
 ggplot(egfr_all_out, aes(x = sample_class.cor, y = med_cor)) + 
   geom_sina(aes(color = outlier, group = sample_class.cor)) +
   facet_wrap(~ correlation, scales = "free_y") +
@@ -558,13 +616,13 @@ ggplot(egfr_all_out, aes(x = sample_class.cor, y = med_cor)) +
 # 
 # ggplot(egfr_weighted_out, aes(x = sample_class.cor, y = med_cor)) +
 #   geom_sina(aes(color = outlier, group = sample_class.cor))
+
 ```
 
 `r paste_label("Figure ", figure_count, "f_egfroutliers")`.
 Median correlations for each of the EGFR RNA-Seq sample to all other samples in the same group, using either ICI-Kt, ICI-Kt * completeness, or Pearson correlation.
 
 ```{r egfr_outlier_table}
-table_count = increment_count(table_count, "egfr_outliers")
 egfr_outliers = egfr_all_out %>%
   dplyr::filter(outlier)
 
@@ -590,7 +648,12 @@ egfr_out_table = purrr::map_dfc(egfr_correlations, function(in_cor){
   new_frame
 })
 egfr_out_table$sample = all_egfr_out$sample_id2
-egfr_out_table = egfr_out_table[order(egfr_out_table$pearson.cor), ]
+egfr_sample_class = unique(egfr_all_out[, c("sample_id2", "sample_class.cor")]) %>%
+  dplyr::mutate(sample = sample_id2,
+                class = sample_class.cor) %>%
+  dplyr::select(sample, class)
+egfr_out_table = dplyr::left_join(egfr_out_table, egfr_sample_class, by = "sample") %>%
+  dplyr::arrange(class, desc(pearson.cor))
 egfr_out_table = egfr_out_table %>%
   dplyr::select(sample, icikt.cor, icikt.outlier,
                 icikt.comp.cor, icikt.comp.outlier,
@@ -609,19 +672,17 @@ egfr_ft_out = add_header_row(egfr_ft_out,
                                    "Pearson"),
                         colwidths = c(1, 2, 2, 2))
 egfr_ft_out = colformat_double(egfr_ft_out, digits = 2)
+egfr_ft_out = set_caption(egfr_ft_out, caption = paste0(paste_label("Table ", table_count, "egfr_outliers"), ". EGFR dataset median correlation values and outlier determination for each outlier from each of the correlation methods."))
 egfr_ft_out = autofit(egfr_ft_out)
 egfr_ft_out
 ```
 
 ```{r outlier_yeast_setup}
-figure_count = increment_count(figure_count, "f_yeastoutliers")
 loadd(yeast_cor)
 loadd(yeast_completeness)
 loadd(yeast_info)
 loadd(yeast_outliers)
 ```
-
-A second dataset consists of `r ncol(yeast_cor)` RNA-seq samples, with `r sum(yeast_info$Sample == "SNF2")` biological replicates of WT and SNF2 mutants.
 
 ```{r plot_yeast_outliers}
 
@@ -661,7 +722,6 @@ ggplot(yeast_all_out, aes(x = sample_class.cor, y = med_cor)) +
 Median correlations for each of the yeast RNA-Seq sample to all other samples in the same group, using either ICI-Kt, ICI-Kt * completeness, or Pearson correlation.
 
 ```{r yeast_outlier_table}
-table_count = increment_count(table_count, "yeast_outliers")
 yeast_outliers = yeast_all_out %>%
   dplyr::filter(outlier)
 
@@ -687,7 +747,8 @@ yeast_out_table = purrr::map_dfc(yeast_correlations, function(in_cor){
   new_frame
 })
 yeast_out_table$sample = all_yeast_out$biosample
-yeast_out_table = yeast_out_table[order(yeast_out_table$pearson.cor), ]
+yeast_out_table = yeast_out_table %>%
+  dplyr::arrange(dplyr::desc(pearson.cor))
 yeast_out_table = yeast_out_table %>%
   dplyr::select(sample, icikt.cor, icikt.outlier,
                 icikt.comp.cor, icikt.comp.outlier,
@@ -706,15 +767,14 @@ yeast_ft_out = add_header_row(yeast_ft_out,
                                    "Pearson"),
                         colwidths = c(1, 2, 2, 2))
 yeast_ft_out = colformat_double(yeast_ft_out, digits = 2)
+yeast_ft_out = set_caption(yeast_ft_out,
+  caption = paste0(paste_label("Table ", table_count, "yeast_outliers"), ". Yeast dataset median correlation values and outlier determination for each outlier from each of the correlation methods."))
 yeast_ft_out = autofit(yeast_ft_out)
 yeast_ft_out
 ```
 
-`r paste_label("Table ", table_count, "yeast_outliers")`.
-Yeast sample outliers determined by each of the three correlation methods, ICI-Kt, ICI-Kt multiplied with completeness, and Pearson.
 
 ```{r outlier_adenocarcinoma_setup}
-figure_count = increment_count(figure_count, "f_adenooutliers")
 loadd(ref_cor)
 loadd(ref_completeness)
 loadd(transcript_data)
@@ -755,15 +815,13 @@ outlier_p$correlation = "Pearson"
 all_med_cor = rbind(outlier_med, 
                     outlier_complete,
                     outlier_p)
+all_med_cor[all_med_cor$sample_id3 %in% "N66", "outlier"] = FALSE
 all_med_cor = all_med_cor %>%
   dplyr::mutate(type2 = dplyr::case_when(
     grepl("Primary", sample_class.cor) ~ "Tumor",
     grepl("Normal", sample_class.cor) ~ "Normal"
   ))
 ```
-
-The third dataset is a collection of `r ncol(transcript_data)` adenocarcinoma samples from the TCGA project, and incorporated into the recount2 project [@collado-torres_recount2_2017].
-In this dataset there are `r nrow(dplyr::filter(adeno_info, grepl("Normal", sample_type)))` normal and `r nrow(dplyr::filter(adeno_info, grepl("Tumor", sample_type)))` tumor samples.
 
 ```{r plot_adenocarcinoma}
 ggplot(all_med_cor, aes(x = type2, y = med_cor)) + 
@@ -777,7 +835,6 @@ ggplot(all_med_cor, aes(x = type2, y = med_cor)) +
 Median correlations for each adenocarcinoma TGCA RNA-Seq sample to all other samples in the same group of either tumor or normal, using either ICI-Kt, ICI-Kt * completeness, or Pearson correlation.
 
 ```{r create_outlier_table}
-table_count = increment_count(table_count, "adeno_outliers")
 outlier_cor = all_med_cor %>%
   dplyr::filter(outlier)
 
@@ -802,7 +859,9 @@ out_table = purrr::map_dfc(correlations, function(in_cor){
   new_frame
 })
 out_table$sample = all_out$sample_id3
-out_table = out_table[order(out_table$pearson.cor), ]
+out_table = dplyr::left_join(out_table, unique(all_med_cor[, c("sample_id3", "type2")]), by = c("sample" = "sample_id3"))
+out_table = out_table %>%
+  dplyr::arrange(type2, dplyr::desc(pearson.cor))
 out_table = out_table %>%
   dplyr::select(sample, icikt.cor, icikt.outlier,
                 icikt.comp.cor, icikt.comp.outlier,
@@ -821,12 +880,11 @@ ft_out = add_header_row(ft_out,
                                    "Pearson"),
                         colwidths = c(1, 2, 2, 2))
 ft_out = colformat_double(ft_out, digits = 2)
+ft_out = set_caption(ft_out, caption = 
+  paste0(paste_label("Table ", table_count, "adeno_outliers"), ". TCGA adenocarcinoma outliers determined by each of the three correlation methods, ICI-Kt, ICI-Kt multiplied with completeness, and Pearson."))
 ft_out = autofit(ft_out)
 ft_out
 ```
-
-`r paste_label("Table ", table_count, "adeno_outliers")`.
-Outliers determined by each of the three correlation methods, ICI-Kt, ICI-Kt multiplied with completeness, and Pearson.
 
 
 #### Feature Subsets for Extremely Large Datasets
@@ -957,7 +1015,7 @@ Right: Histogram of the residual differences of the sample-sample correlations, 
 figure_count = increment_count(figure_count, "f_pcaeval")
 ```
 
-Outside of the differences between the subset and full set of correlations, we also evaluated each of the feature subsets using the correlation between loading fraction and principal component contributed variance (see `r paste_label("Figure", figure_count, "f_pcaeval")` A & B), and the difference between the median loading fraction and the intended fraction (C & D).
+Outside of the differences between the subset and full set of correlations, we also evaluated each of the feature subsets using the correlation between loading fraction and principal component contributed variance (see `r paste_label("Figure ", figure_count, "f_pcaeval")` A & B), and the difference between the median loading fraction and the intended fraction (C & D).
 
 ```{r nonrandom_pca}
 loadd(pca_eval_summary)
@@ -1027,24 +1085,35 @@ D) Subsample feature fraction  plotted against the percent difference of the med
 In contrast, the random subsampling shows no relationship of fraction to percent PC variance.
 The actual loading fraction covered by the subsample also varies widely from the intended fraction for the PCA and variance informed subsampling, while the random subsample fraction remains close to the intended fraction, with some minor deviation at the very low fractions.
 
-## Discussion
+## Discussion and Conclusion
 
-Missing values from left-censored distributions occurring because analytes are below the detection limit of the instrument are common in the biological sciences.
-As far as we are aware, previous efforts in this area are concerned with either 1: attempting to come up with better imputation methods prior to calculating correlation values; 2: finding ways to still estimate the correlation in the face of missing values, generally by finding maximum likelihood estimates.
-In the case of (1), there are many imputation methods, and new methods are still being developed, although they tend to be new combinations of old methods.
+Left-censored distributions in analytical measurements of biological samples are common in biological and biomedical research, because of detection limits of the analytical instrumentation, which produces missing measurement values for all the analytes below these detection limits.
+As far as we are aware, previous efforts in this area are concerned with either 1: attempting to come up with better imputation methods prior to calculating correlation values; or 2: finding ways to still estimate the correlation in the face of missing values, generally by finding maximum likelihood estimates.
+In the case of (1), there are many imputation methods, and new methods are still being developed, although they tend to be new combinations of old methods to handle the various types of missing values.
 For (2), the maximum likelihood methods generally apply to Pearson and similar types of correlation, as they benefit from the use of regression in the presence of missing data.
 Alvo and Cabilio's work from 1995 [@alvoRankCorrelationMethods1995] is one of the only works we are aware of that attempts to create a general framework for rank based statistics in the presence of missing data.
-However, to our knowledge their framework applies to data that is missing at random, and not missing not at random, as is the case for analytes that are below the detection limit.
+However, to our knowledge their framework applies to data that is missing at random versus non-random missing-values, as is the case for analytes that are below the detection limit.
 Additionally, there does not appear to be a software implementation of Alvo and Cabilio's method available.
-To our knowledge, information-content-informed Kendall-tau is the first correlation method that explicitly attempts to include the effect of missing not at random data from missing values that occur due to being below the detection limit. 
+To our knowledge, information-content-informed Kendall-tau (ICI-Kt) is the first correlation method that explicitly attempts to utilize non-random missing values that occur due to being below the detection limit.
+ICI-Kt explicitly treats left-censored missing values as correlative information while preserving the full deleterious effects of non-random missing values on the correlation metric.
+Moreover, the ICI-Kt can be combined with measurement completeness to create a composite metric that is quite sensitive to overall data quality on a sample-specific level.
+Also, this ICI-Kt * completeness metric may have applications in cluster detection of single-cell omics data sets.
 
-## Conclusions
+The implementations of the ICI-Kt in the presented R and Python packages have O(nlogn) performance, making them computationally practical for real-world omics data sets.  
+Also, these packages provide multiprocessing implementations that take full advantage of modern multi-core central processing units.  
+Furthermore, given the high amount of correlated variance in most real-world high-feature data sets, we demonstrate that random feature subsetting can be utilized to effectively estimate correlation for very large data sets or in situations where sub-second computational performance is needed for non-large data sets.  
+However, care must be taken in selecting subsets of features. 
+From the results presented here, random feature subsetting was superior to variance-selective feature subsetting.
 
-???
+As demonstrated with the three RNA-Seq datasets analyzed here, the "best" correlation-related metric will likely depend on the specific dataset and the specific data analysis step.  
+Many factors affect this, especially correlation linearity and the modality of measurement value distributions.  
+We would humbly suggest that for most omics datasets, the application of several correlation-related metrics simultaneously would be the best approach for outlier detection in quality control and quality assessment steps.  
+Where one metric lacks outlier detection sensitivity, another metric will prove sensitive.  
+Therefore, ICI-Kt and composite metrics derived from it should be considered as useful additions to the omics data analysis toolkit.
 
 ## Author Contributions
 
-RMF wrote the code in the visualizationQualityControl R package, tested the ICI-Kt correlation code, and wrote all of the analysis code for this manuscript. PB wrote the python module. HNBM conceived of the ICI-Kt correlation, provided input into code structures, provided supervision of the analyses and interpretation of results. All authors contributed to the writing of the manuscript.
+RMF wrote the code in the ICIKendallTau R package, tested the ICI-Kt correlation code, and wrote all of the analysis code for this manuscript. PSB wrote the python module. HNBM conceived of the ICI-Kt correlation metric, provided input into code structures, and supervised the analyses and interpretation of results. All authors contributed to the writing of the manuscript.
 
 ## Supplemental
 
@@ -1092,7 +1161,7 @@ kt_plot
 ```
 
 `r paste_label("Figure S", supp_count, "kt_distribution")`.
-Kendall-tau correlation as missing values are varied between two samples and replaced with 0.
+Kendall-tau correlation as missing values are varied between two samples and replaced with 0. **Replaced with zero, because it becomes just 1 or -1. We can show that, but ....**
 
 ### Algorithmic Complexity
 
