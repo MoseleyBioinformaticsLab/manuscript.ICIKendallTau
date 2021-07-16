@@ -231,6 +231,8 @@ the_plan <-
    yeast_cor = ici_kendalltau(t(yeast_counts))$cor,
    yeast_completeness = pairwise_completeness(t(yeast_counts)),
    yeast_pearson = cor(log1p(yeast_counts), use = "pairwise.complete.obs"),
+   yeast_pearson_matchpaper = do_yeast_matchpaper(yeast_counts),
+   yeast_pearson_remove0 = do_yeast_remove0(yeast_counts),
    yeast_outliers = outlier_fraction(t(log1p(yeast_counts[, yeast_info$biosample])), yeast_info$Sample),
    
    eval_random = target(
