@@ -225,15 +225,11 @@ the_plan <-
    
    egfr_weighted_cor = globally_it_weighted_pairwise_correlation(log1p(t(egfr_counts))),
    
-   
+   yeast_paper_outliers = c("WT.21", "WT.22", "WT.25", "WT.28", "WT.34", "WT.36",
+                            "SNF2.6", "SNF2.13", "SNF2.25", "SNF2.35"),
    yeast_counts = readRDS(here::here("data", "yeast_biocounts.rds")),
    yeast_info = readRDS(here::here("data", "yeast_bioreps_info.rds")),
-   yeast_cor = ici_kendalltau(t(yeast_counts))$cor,
-   yeast_completeness = pairwise_completeness(t(yeast_counts)),
-   yeast_pearson = cor(log1p(yeast_counts), use = "pairwise.complete.obs"),
-   yeast_pearson_matchpaper = do_yeast_matchpaper(yeast_counts),
-   yeast_pearson_remove0 = do_yeast_remove0(yeast_counts),
-   yeast_outliers = outlier_fraction(t(log1p(yeast_counts[, yeast_info$biosample])), yeast_info$Sample),
+   yeast_cor = run_yeast_everyway(yeast_counts),
    
    eval_random = target(
       evaluate_by_pca(select_random_fraction, transcript_pca),
