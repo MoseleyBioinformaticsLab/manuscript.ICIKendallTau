@@ -20,8 +20,8 @@ run_yeast_everyway = function(yeast_counts){
 
 calculate_yeast_medians = function(yeast_cor, yeast_info){
   out_med = purrr::imap(yeast_cor, function(in_cor, cor_id){
-    in_cor = in_cor[yeast_info$biosample, yeast_info$biosample]
-    in_med = visualizationQualityControl::median_correlations(in_cor, yeast_info$Sample)
+    in_cor = in_cor[yeast_info$sample_rep, yeast_info$sample_rep]
+    in_med = visualizationQualityControl::median_correlations(in_cor, yeast_info$sample)
     in_med$which = cor_id
     in_med
   })
