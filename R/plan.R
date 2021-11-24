@@ -231,6 +231,7 @@ the_plan <-
    yeast_counts = yeast_counts_info$counts,
    yeast_info = yeast_counts_info$info,
    yeast_cor = run_yeast_everyway(yeast_counts),
+   yeast_medians = calculate_yeast_medians(yeast_cor, yeast_info),
    
    eval_random = target(
       evaluate_by_pca(select_random_fraction, transcript_pca),
