@@ -226,9 +226,10 @@ the_plan <-
    egfr_weighted_cor = globally_it_weighted_pairwise_correlation(log1p(t(egfr_counts))),
    
    yeast_paper_outliers = c("WT.21", "WT.22", "WT.25", "WT.28", "WT.34", "WT.36",
-                            "SNF2.6", "SNF2.13", "SNF2.25", "SNF2.35"),
-   yeast_counts = readRDS(here::here("data", "yeast_biocounts.rds")),
-   yeast_info = readRDS(here::here("data", "yeast_bioreps_info.rds")),
+                            "SNF2.06", "SNF2.13", "SNF2.25", "SNF2.35"),
+   yeast_counts_info = readRDS(here::here("data", "yeast_counts_info.rds")),
+   yeast_counts = yeast_counts_info$counts,
+   yeast_info = yeast_counts_info$info,
    yeast_cor = run_yeast_everyway(yeast_counts),
    
    eval_random = target(

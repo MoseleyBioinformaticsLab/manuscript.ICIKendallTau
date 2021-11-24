@@ -3,4 +3,4 @@
 .RData
 .Ruserdata
 data/barton_preprocessed
-.rds
+*.rds
