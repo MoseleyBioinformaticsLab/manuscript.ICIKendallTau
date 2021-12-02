@@ -219,16 +219,17 @@ the_plan <-
    random_censored_cor = random_censor_correlate(left_censored_samples),
    logtransform_censored_cor = lt_left_censor_correlate(left_censored_samples),
    
-   egfr_counts = readRDS(here::here("data", "brainson_egfr_counts.rds")),
-   egfr_cor = ici_kendalltau(t(egfr_counts))$cor,
-   egfr_completeness = pairwise_completeness(t(egfr_counts)),
+   polycomb_counts_info = readRDS(here::here("data", "brainson_polycombrna.rds")),
+   polycomb_counts = remove_all_zeros(polycomb_counts_info$counts),
+   polycomb_cor = ici_kendalltau(t(polycomb_counts))$cor,
+   polycomb_completeness = pairwise_completeness(t(polycomb_counts)),
    
    egfr_weighted_cor = globally_it_weighted_pairwise_correlation(log1p(t(egfr_counts))),
    
    yeast_paper_outliers = c("WT.21", "WT.22", "WT.25", "WT.28", "WT.34", "WT.36",
                             "SNF2.06", "SNF2.13", "SNF2.25", "SNF2.35"),
    yeast_counts_info = readRDS(here::here("data", "yeast_counts_info.rds")),
-   yeast_counts = yeast_counts_info$counts,
+   yeast_counts = remove_all_zeros(yeast_counts_info$counts),
    yeast_info = yeast_counts_info$info,
    yeast_cor = run_yeast_everyway(yeast_counts),
    yeast_medians = calculate_yeast_medians(yeast_cor, yeast_info),
