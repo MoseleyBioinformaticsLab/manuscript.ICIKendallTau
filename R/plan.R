@@ -224,8 +224,6 @@ the_plan <-
    polycomb_cor = ici_kendalltau(t(polycomb_counts))$cor,
    polycomb_completeness = pairwise_completeness(t(polycomb_counts)),
    
-   egfr_weighted_cor = globally_it_weighted_pairwise_correlation(log1p(t(egfr_counts))),
-   
    yeast_paper_outliers = c("WT.21", "WT.22", "WT.25", "WT.28", "WT.34", "WT.36",
                             "SNF2.06", "SNF2.13", "SNF2.25", "SNF2.35"),
    yeast_counts_info = readRDS(here::here("data", "yeast_counts_info.rds")),
