@@ -1,4 +1,5 @@
-run_yeast_everyway = function(yeast_counts){
+run_yeast_everyway = function(yeast_counts, yeast_completeness){
+  
   ici_cor = ici_kendalltau(t(yeast_counts), global_na = c(NA, 0))$cor
   yeast_counts_na = yeast_counts
   yeast_counts_na[yeast_counts_na == 0] = NA
@@ -10,6 +11,7 @@ run_yeast_everyway = function(yeast_counts){
   pearson_log = cor(log_counts, method = "pearson", use = "pairwise.complete")
   
   cor_vals = list(icikt = ici_cor,
+                  icikt_complete = ici_cor * yeast_completeness,
                   pearson_base = pearson_base,
                   pearson_base_nozero = pearson_base_nozero,
                   pearson_log1p = pearson_log1p,

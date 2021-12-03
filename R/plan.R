@@ -228,9 +228,11 @@ the_plan <-
                             "SNF2.06", "SNF2.13", "SNF2.25", "SNF2.35"),
    yeast_counts_info = readRDS(here::here("data", "yeast_counts_info.rds")),
    yeast_counts = remove_all_zeros(yeast_counts_info$counts),
+   yeast_completeness = pairwise_completeness(t(yeast_counts)),
    yeast_info = yeast_counts_info$info,
-   yeast_cor = run_yeast_everyway(yeast_counts),
+   yeast_cor = run_yeast_everyway(yeast_counts, yeast_completeness),
    yeast_medians = calculate_yeast_medians(yeast_cor, yeast_info),
+   #yeast_medians_outlier = purrr::map(yeast_medians, add_outlier_status, yeast_paper_outliers),
    
    eval_random = target(
       evaluate_by_pca(select_random_fraction, transcript_pca),
