@@ -221,8 +221,13 @@ the_plan <-
    
    polycomb_counts_info = readRDS(here::here("data", "brainson_polycombrna.rds")),
    polycomb_counts = remove_all_zeros(polycomb_counts_info$counts),
-   polycomb_cor = ici_kendalltau(t(polycomb_counts))$cor,
    polycomb_completeness = pairwise_completeness(t(polycomb_counts)),
+   polycomb_cor = run_cor_everyway(polycomb_counts, polycomb_completeness),
+   polycomb_medians = calculate_cor_medians(polycomb_cor, polycomb_info$Sample_ID, polycomb_info$Sample.Type),
+   
+   polycomb_outliers = purrr::map(yeast_medians, function(.x){
+     determine_outliers(median_correlations = .x)
+   }),
    
    yeast_paper_outliers = c("WT.21", "WT.22", "WT.25", "WT.28", "WT.34", "WT.36",
                             "SNF2.06", "SNF2.13", "SNF2.25", "SNF2.35"),
@@ -230,8 +235,22 @@ the_plan <-
    yeast_counts = remove_all_zeros(yeast_counts_info$counts),
    yeast_completeness = pairwise_completeness(t(yeast_counts)),
    yeast_info = yeast_counts_info$info,
-   yeast_cor = run_yeast_everyway(yeast_counts, yeast_completeness),
-   yeast_medians = calculate_yeast_medians(yeast_cor, yeast_info),
+   yeast_cor = run_cor_everyway(yeast_counts, yeast_completeness),
+   yeast_medians = calculate_cor_medians(yeast_cor, yeast_info$sample_rep, yeast_info$sample),
+   
+   yeast_outliers = purrr::map(yeast_medians, function(.x){
+     determine_outliers(median_correlations = .x)
+   }),
+   
+   transcript_completeness = pairwise_completeness(t(transcript_data)),
+   transcript_cor = run_cor_everyway(transcript_data, transcript_completeness),
+   transcript_info = readRDS(here::here("data", "transcript_info.rds")),
+   transcript_medians = calculate_cor_medians(transcript_cor, transcript_info$sample_id2, transcript_info$tissue_type),
+   
+   transcript_outliers = purrr::map(transcript_medians, function(.x){
+     determine_outliers(median_correlations = .x)
+   }),
+   
    #yeast_medians_outlier = purrr::map(yeast_medians, add_outlier_status, yeast_paper_outliers),
    
    eval_random = target(
