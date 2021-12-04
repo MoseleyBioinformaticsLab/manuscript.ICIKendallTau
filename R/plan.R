@@ -226,7 +226,7 @@ the_plan <-
    polycomb_cor = run_cor_everyway(polycomb_counts, polycomb_completeness),
    polycomb_medians = calculate_cor_medians(polycomb_cor, polycomb_info$Sample_ID, polycomb_info$Sample.Type),
    
-   polycomb_outliers = purrr::map(yeast_medians, function(.x){
+   polycomb_outliers = purrr::map(polycomb_medians, function(.x){
      determine_outliers(median_correlations = .x)
    }),
    
