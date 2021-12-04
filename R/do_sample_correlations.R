@@ -1,7 +1,7 @@
 run_cor_everyway = function(sample_counts, sample_completeness){
   
   ici_cor = ici_kendalltau(t(sample_counts), global_na = c(NA, 0))$cor
-  ici_cor_kt = ici_kendalltau(t(sample_counts), global_na = c(NA), scale_max = FALSE, diag_good = FALSE)
+  ici_cor_kt = ici_kendalltau(t(sample_counts), global_na = c(NA), scale_max = FALSE, diag_good = FALSE)$cor
   sample_counts_na = sample_counts
   sample_counts_na[sample_counts_na == 0] = NA
   pearson_base_nozero = cor(sample_counts_na, method = "pearson", use = "pairwise.complete")
