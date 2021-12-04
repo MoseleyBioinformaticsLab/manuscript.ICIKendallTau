@@ -220,6 +220,7 @@ the_plan <-
    logtransform_censored_cor = lt_left_censor_correlate(left_censored_samples),
    
    polycomb_counts_info = readRDS(here::here("data", "brainson_polycombrna.rds")),
+   polycomb_info = polycomb_counts_info$info,
    polycomb_counts = remove_all_zeros(polycomb_counts_info$counts),
    polycomb_completeness = pairwise_completeness(t(polycomb_counts)),
    polycomb_cor = run_cor_everyway(polycomb_counts, polycomb_completeness),
