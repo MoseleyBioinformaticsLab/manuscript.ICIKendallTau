@@ -1,0 +1,92 @@
+---
+title: 'Supplemental Materials'
+author: 'Robert M Flight, Praneeth S Bhatt, and Hunter NB Moseley'
+date: '`r Sys.time()`'
+output: 
+  rmarkdown::word_document
+bibliography: '`r here::here("doc/icikt_references.json")`'
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r load_yeast_outliers}
+loadd(yeast_outliers)
+yeast_outliers_use = purrr::map_df(yeast_outliers[c("icikt", "icikt_complete", "pearson_log", "pearson_base_nozero")], ~ .x) %>%
+  dplyr::mutate(method = dplyr::case_when(
+    which == "icikt" ~ "ICI-Kt",
+    which == "icikt_complete" ~ "ICI-Kt * Completeness",
+    which == "pearson_log" ~ "Pearson",
+    which == "pearson_base_nozero" ~ "Pearson Original"
+  ))
+```
+
+```{r plot_yeast_outliers}
+ggplot(yeast_outliers_use, aes(x = sample_class, y = med_cor, group = sample_class, color = outlier)) + 
+  geom_sina() +
+  facet_wrap(~ method, scales = "free_y", nrow = 1) +
+  theme(legend.position = c(0.4, 0.2)) +
+  labs(x = "Sample Type", y = "Median Correlation")
+```
+
+`r paste_label("Figure ", figure_count, "f_yeastoutliers")`.
+Median correlations for each of the yeast RNA-Seq sample to all other samples in the same group, using either ICI-Kt, ICI-Kt * completeness, or Pearson correlation.
+
+```{r yeast_outlier_table}
+yeast_isoutlier = yeast_outliers_use %>%
+  dplyr::filter(outlier)
+
+yeast_out_samples = data.frame(sample_id = unique(yeast_isoutlier$sample_id))
+
+yeast_correlations = split(yeast_outliers_use, yeast_outliers_use$method)
+yeast_out_table = purrr::map_dfc(yeast_correlations, function(in_cor){
+  tmp_table = dplyr::left_join(yeast_out_samples, in_cor, by = "sample_id")
+  tmp_table = tmp_table %>%
+    dplyr::mutate(outlier2 = dplyr::case_when(
+      outlier ~ "X",
+      !outlier ~ " "
+    ))
+  new_frame = data.frame(outlier = tmp_table$outlier2,
+                         cor = tmp_table$med_cor)
+  if (tmp_table$method[1] == "ICI-Kt") {
+    names(new_frame) = paste0("icikt.", names(new_frame))
+  } else if (tmp_table$method[1] == "ICI-Kt * Completeness") {
+    names(new_frame) = paste0("icikt.comp.", names(new_frame))
+  } else if (tmp_table$method[1] == "Pearson") {
+    names(new_frame) = paste0("pearson.", names(new_frame))
+  } else if (tmp_table$method[1] == "Pearson Original") {
+    names(new_frame) = paste0("pearson.org.", names(new_frame))
+  }
+  new_frame
+})
+yeast_out_table$sample = yeast_out_samples$sample_id
+yeast_out_table = dplyr::left_join(yeast_out_table, unique(yeast_isoutlier[, c("sample_id", "sample_class")]), by = c("sample" = "sample_id"))
+yeast_out_table = yeast_out_table %>%
+  dplyr::group_by(sample_class) %>%
+  dplyr::arrange(dplyr::desc(pearson.cor), .by_group = TRUE) %>%
+  dplyr::ungroup()
+yeast_out_table = yeast_out_table %>%
+  dplyr::select(sample, icikt.cor, icikt.outlier,
+                icikt.comp.cor, icikt.comp.outlier,
+                pearson.cor, pearson.outlier,
+                pearson.org.cor, pearson.org.outlier)
+yeast_ft_out = flextable(yeast_out_table)
+yeast_ft_out = set_header_labels(yeast_ft_out,
+          sample = "Sample",
+          icikt.cor = "Correlation",
+          icikt.outlier = "Outlier",
+          icikt.comp.cor = "Correlation",
+          icikt.comp.outlier = "Outlier",
+          pearson.cor = "Correlation",
+          pearson.outlier = "Outlier",
+          pearson.org.cor = "Correlation",
+          pearson.org.outlier = "Outlier")
+yeast_ft_out = add_header_row(yeast_ft_out,
+                        values = c("", "ICI-Kt", "ICI-Kt * Completeness",
+                                   "Pearson", "Pearson Original"),
+                        colwidths = c(1, 2, 2, 2, 2))
+yeast_ft_out = colformat_double(yeast_ft_out, digits = 2)
+yeast_ft_out = set_caption(yeast_ft_out,
+  caption = paste0(paste_label("Table ", table_count, "yeast_outliers"), ". Yeast dataset median correlation values and outlier determination for each outlier from each of the correlation methods."))
+yeast_ft_out = autofit(yeast_ft_out)
+yeast_ft_out
+```
