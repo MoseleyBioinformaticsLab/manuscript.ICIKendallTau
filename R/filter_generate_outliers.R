@@ -1,10 +1,10 @@
 filter_generate_outliers = function(counts, info, keep_num, sample_col, class_col){
-  counts = readRDS(here::here("data", "brainson_rnaseq201901_counts.rds"))
-  info = readRDS(here::here("data", "brainson_rnaseq201901_info.rds"))
-  keep_num = 1
-  sample_col = "sample"
-  class_col = "tumor"
-  
+  # counts = readRDS(here::here("data", "brainson_rnaseq201901_counts.rds"))
+  # info = readRDS(here::here("data", "brainson_rnaseq201901_info.rds"))
+  # keep_num = 1
+  # sample_col = "sample"
+  # class_col = "tumor"
+  # 
   counts_filter = t(keep_non_zero_percentage(t(counts), sample_classes = info[[class_col]],
                                              keep_num = keep_num))
   counts_completeness = pairwise_completeness(t(counts_filter))
