@@ -219,51 +219,31 @@ the_plan <-
    random_censored_cor = random_censor_correlate(left_censored_samples),
    logtransform_censored_cor = lt_left_censor_correlate(left_censored_samples),
    
-   polycomb_counts_info = readRDS(here::here("data", "brainson_polycombrna.rds")),
-   polycomb_info = polycomb_counts_info$info,
-   polycomb_counts = remove_all_zeros(polycomb_counts_info$counts),
-   polycomb_completeness = pairwise_completeness(t(polycomb_counts)),
-   polycomb_cor = run_cor_everyway(polycomb_counts, polycomb_completeness),
-   polycomb_medians = calculate_cor_medians(polycomb_cor, polycomb_info$Sample_ID, polycomb_info$Sample.Type),
-   
-   polycomb_outliers = purrr::map(polycomb_medians, function(.x){
-     determine_outliers(median_correlations = .x)
-   }),
    
    brainsonrnaseq_counts = readRDS(here::here("data", "brainson_rnaseq201901_counts.rds")),
    brainsonrnaseq_info = readRDS(here::here("data", "brainson_rnaseq201901_info.rds")),
-   brainsonrnaseq_counts_nz = remove_all_zeros(brainsonrnaseq_counts),
-   brainsonrnaseq_completeness = pairwise_completeness(t(brainsonrnaseq_counts_nz)),
-   brainsonrnaseq_cor = run_cor_everyway(brainsonrnaseq_counts_nz, brainsonrnaseq_completeness),
-   brainsonrnaseq_medians = calculate_cor_medians(brainsonrnaseq_cor, brainsonrnaseq_info$sample, brainsonrnaseq_info$tumor),
-   
-   brainsonrnaseq_outliers = purrr::map(brainsonrnaseq_medians, function(.x){
-     determine_outliers(median_correlations = .x)
-   }),
+   brainsonrnaseq_outliers_1 = filter_generate_outliers(brainsonrnaseq_counts, brainsonrnaseq_info, 1, "sample", "tumor"),
+   brainsonrnaseq_outliers_25 = filter_generate_outliers(brainsonrnaseq_counts, brainsonrnaseq_info, 0.25, "sample", "tumor"),
+   brainsonrnaseq_outliers_50 = filter_generate_outliers(brainsonrnaseq_counts, brainsonrnaseq_info, 0.5, "sample", "tumor"),
    
    yeast_paper_outliers = c("WT.21", "WT.22", "WT.25", "WT.28", "WT.34", "WT.36",
                             "SNF2.06", "SNF2.13", "SNF2.25", "SNF2.35"),
    yeast_counts_info = readRDS(here::here("data", "yeast_counts_info.rds")),
-   yeast_counts = remove_all_zeros(yeast_counts_info$counts),
-   yeast_completeness = pairwise_completeness(t(yeast_counts)),
-   yeast_info = yeast_counts_info$info,
-   yeast_cor = run_cor_everyway(yeast_counts, yeast_completeness),
-   yeast_medians = calculate_cor_medians(yeast_cor, yeast_info$sample_rep, yeast_info$sample),
+   yeast_outliers_1 = filter_generate_outliers(yeast_counts_info$counts, yeast_counts_info$info, 1,
+                                               "sample_rep", "sample"),
+   yeast_outliers_50 = filter_generate_outliers(yeast_counts_info$counts, yeast_counts_info$info, 0.5,
+                                               "sample_rep", "sample"),
+   yeast_outliers_25 = filter_generate_outliers(yeast_counts_info$counts, yeast_counts_info$info, 0.25,
+                                               "sample_rep", "sample"),
    
-   yeast_outliers = purrr::map(yeast_medians, function(.x){
-     determine_outliers(median_correlations = .x)
-   }),
-   
-   transcript_completeness = pairwise_completeness(t(transcript_data)),
-   transcript_cor = run_cor_everyway(transcript_data, transcript_completeness),
-   transcript_info = readRDS(here::here("data", "transcript_info.rds")),
-   transcript_medians = calculate_cor_medians(transcript_cor, transcript_info$sample_id2, transcript_info$tissue_type),
-   
-   transcript_outliers = purrr::map(transcript_medians, function(.x){
-     determine_outliers(median_correlations = .x)
-   }),
-   
-   #yeast_medians_outlier = purrr::map(yeast_medians, add_outlier_status, yeast_paper_outliers),
+   adeno_info = readRDS(here::here("data", "transcript_info.rds")),
+   adeno_data = transcript_data,
+   adeno_outliers_1 = filter_generate_outliers(adeno_data, adeno_info, 1,
+                                               "sample_id2", "tissue_type"),
+   adeno_outliers_25 = filter_generate_outliers(adeno_data, adeno_info, 0.25,
+                                               "sample_id2", "tissue_type"),
+   adeno_outliers_50 = filter_generate_outliers(adeno_data, adeno_info, 0.5,
+                                               "sample_id2", "tissue_type"),
    
    eval_random = target(
       evaluate_by_pca(select_random_fraction, transcript_pca),
