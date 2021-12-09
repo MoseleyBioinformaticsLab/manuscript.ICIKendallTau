@@ -230,6 +230,17 @@ the_plan <-
      determine_outliers(median_correlations = .x)
    }),
    
+   brainsonrnaseq_counts = readRDS(here::here("data", "brainson_rnaseq201901_counts.rds")),
+   brainsonrnaseq_info = readRDS(here::here("data", "brainson_rnaseq201901_info.rds")),
+   brainsonrnaseq_counts = remove_all_zeros(brainsonrnaseq_counts),
+   brainsonrnaseq_completeness = pairwise_completeness(t(brainsonrnaseq_counts)),
+   brainsonrnaseq_cor = run_cor_everyway(brainsonrnaseq_counts, brainsonrnaseq_completeness),
+   brainsonrnaseq_medians = calculate_cor_medians(brainsonrnaseq_cor, brainsonrnaseq_info$sample, brainsonrnaseq_info$tumor),
+   
+   brainsonrnaseq_outliers = purrr::map(brainsonrnaseq_medians, function(.x){
+     determine_outliers(median_correlations = .x)
+   }),
+   
    yeast_paper_outliers = c("WT.21", "WT.22", "WT.25", "WT.28", "WT.34", "WT.36",
                             "SNF2.06", "SNF2.13", "SNF2.25", "SNF2.35"),
    yeast_counts_info = readRDS(here::here("data", "yeast_counts_info.rds")),
