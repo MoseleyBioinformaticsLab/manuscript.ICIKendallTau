@@ -232,9 +232,9 @@ the_plan <-
    
    brainsonrnaseq_counts = readRDS(here::here("data", "brainson_rnaseq201901_counts.rds")),
    brainsonrnaseq_info = readRDS(here::here("data", "brainson_rnaseq201901_info.rds")),
-   brainsonrnaseq_counts = remove_all_zeros(brainsonrnaseq_counts),
-   brainsonrnaseq_completeness = pairwise_completeness(t(brainsonrnaseq_counts)),
-   brainsonrnaseq_cor = run_cor_everyway(brainsonrnaseq_counts, brainsonrnaseq_completeness),
+   brainsonrnaseq_counts_nz = remove_all_zeros(brainsonrnaseq_counts),
+   brainsonrnaseq_completeness = pairwise_completeness(t(brainsonrnaseq_counts_nz)),
+   brainsonrnaseq_cor = run_cor_everyway(brainsonrnaseq_counts_nz, brainsonrnaseq_completeness),
    brainsonrnaseq_medians = calculate_cor_medians(brainsonrnaseq_cor, brainsonrnaseq_info$sample, brainsonrnaseq_info$tumor),
    
    brainsonrnaseq_outliers = purrr::map(brainsonrnaseq_medians, function(.x){
