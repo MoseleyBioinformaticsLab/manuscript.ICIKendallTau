@@ -226,6 +226,10 @@ the_plan <-
    brainsonrnaseq_outliers_25 = filter_generate_outliers(brainsonrnaseq_counts, brainsonrnaseq_info, 0.25, "sample", "tumor"),
    brainsonrnaseq_outliers_50 = filter_generate_outliers(brainsonrnaseq_counts, brainsonrnaseq_info, 0.5, "sample", "tumor"),
    
+   brainsonrnaseq_outliers_1_alt = filter_generate_outliers(brainsonrnaseq_counts, brainsonrnaseq_info, 1, "sample", c("type", "tumor")),
+   brainsonrnaseq_outliers_25_alt = filter_generate_outliers(brainsonrnaseq_counts, brainsonrnaseq_info, 0.25, "sample", c("type", "tumor")),
+   brainsonrnaseq_outliers_50_alt = filter_generate_outliers(brainsonrnaseq_counts, brainsonrnaseq_info, 0.5, "sample", c("type", "tumor")),
+   
    yeast_paper_outliers = c("WT.21", "WT.22", "WT.25", "WT.28", "WT.34", "WT.36",
                             "Snf2.06", "Snf2.13", "Snf2.25", "Snf2.35"),
    yeast_counts_info = readRDS(here::here("data", "yeast_counts_info.rds")),
