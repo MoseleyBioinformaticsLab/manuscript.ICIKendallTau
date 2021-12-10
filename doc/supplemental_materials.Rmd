@@ -9,84 +9,261 @@ editor_options:
   chunk_output_type: console
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, fig.width = 8, fig.height = 6)
+
+increment_count = function(in_object, id_name){
+  n_obj = length(in_object)
+  use_number = max(in_object) + 1
+  in_object = c(in_object, use_number)
+  names(in_object)[n_obj + 1] = id_name
+  in_object
+}
+
+paste_label = function(pre_text, in_object, id_name){
+  object_number = in_object[id_name]
+  
+  if (length(object_number) > 1) {
+    object_numbers = paste(object_number, collapse = ", ")
+  } else {
+    object_numbers = object_number
+  }
+  
+  use_text = paste(pre_text, object_numbers, sep = "")
+  
+  use_text
+}
+
+figure_count = c("_" = 0)
+table_count = c("_" = 0)
+```
+
+## Gierlinski Yeast Replicate Outliers
+
+Gierlinski et al [@gierlinski_statisticalmodels_2015] proposed a combination of median sample-sample correlation, gene count outlier fraction, and a chi-square test of read coverage per gene to score each biological replicate from a group of samples.
+Outside of defining this combined score, they do not describe the actual criteria of saying a replicate is "bad".
+In this work, we used **only** the sample-sample median correlation to identify "bad" or "outlier" samples, using the boxplot.stats function to determine outliers, where an outlier is defined as samples that are > 1.5x away from the limits of the box defining the distribution.
+
+Here, we calculated Pearson correlation using the raw counts, and with only those genes that had non-zero reads in both samples.
+This version of Pearson correlation recreates the median sample-sample correlations observed in the original report.
+
+Finally, we note the actual samples recorded as outliers by Gierlinski and coworkers, noted as "Manuscript".
+
 ```{r load_yeast_outliers}
-loadd(yeast_outliers)
-yeast_outliers_use = purrr::map_df(yeast_outliers[c("icikt", "icikt_complete", "pearson_log", "pearson_base_nozero")], ~ .x) %>%
-  dplyr::mutate(method = dplyr::case_when(
-    which == "icikt" ~ "ICI-Kt",
-    which == "icikt_complete" ~ "ICI-Kt * Completeness",
-    which == "pearson_log" ~ "Pearson",
-    which == "pearson_base_nozero" ~ "Pearson Original"
-  ))
+figure_count = increment_count(figure_count, "f_yeast_manuscript")
+loadd(yeast_outliers_1)
+loadd(yeast_paper_outliers)
+tmp_out = yeast_outliers_1$pearson_base_nozero
+tmp_out$outlier = FALSE
+tmp_out[tmp_out$sample_id %in% yeast_paper_outliers, "outlier"] = TRUE
+tmp_out$which = "manuscript"
+yeast_outliers_1$manuscript = tmp_out
+yeast_data = compare_outlier_tables(yeast_outliers_1,
+                                    c("icikt" = "ICI-Kt",
+                                      "icikt_complete" = "ICI-Kt * Completeness",
+                                      "pearson_base_nozero" = "Pearson",
+                                      "manuscript" = "Manuscript"),
+                                    "manuscript")
+yeast_plot = yeast_data$plot_data
 ```
 
 ```{r plot_yeast_outliers}
-ggplot(yeast_outliers_use, aes(x = sample_class, y = med_cor, group = sample_class, color = outlier)) + 
+ggplot(yeast_plot, aes(x = sample_class, y = med_cor, group = sample_class, color = outlier)) + 
   geom_sina() +
   facet_wrap(~ method, scales = "free_y", nrow = 1) +
   theme(legend.position = c(0.4, 0.2)) +
   labs(x = "Sample Type", y = "Median Correlation")
 ```
 
-`r paste_label("Figure ", figure_count, "f_yeastoutliers")`.
-Median correlations for each of the yeast RNA-Seq sample to all other samples in the same group, using either ICI-Kt, ICI-Kt * completeness, or Pearson correlation.
+`r paste_label("Figure S", figure_count, "f_yeast_manuscript")`.
+Median correlations for each of the yeast RNA-Seq sample to all other samples in the same group, using either ICI-Kt, ICI-Kt * completeness, Pearson correlation, or from the Gierlinski manuscript.
 
 ```{r yeast_outlier_table}
-yeast_isoutlier = yeast_outliers_use %>%
-  dplyr::filter(outlier)
-
-yeast_out_samples = data.frame(sample_id = unique(yeast_isoutlier$sample_id))
-
-yeast_correlations = split(yeast_outliers_use, yeast_outliers_use$method)
-yeast_out_table = purrr::map_dfc(yeast_correlations, function(in_cor){
-  tmp_table = dplyr::left_join(yeast_out_samples, in_cor, by = "sample_id")
-  tmp_table = tmp_table %>%
-    dplyr::mutate(outlier2 = dplyr::case_when(
-      outlier ~ "X",
-      !outlier ~ " "
-    ))
-  new_frame = data.frame(outlier = tmp_table$outlier2,
-                         cor = tmp_table$med_cor)
-  if (tmp_table$method[1] == "ICI-Kt") {
-    names(new_frame) = paste0("icikt.", names(new_frame))
-  } else if (tmp_table$method[1] == "ICI-Kt * Completeness") {
-    names(new_frame) = paste0("icikt.comp.", names(new_frame))
-  } else if (tmp_table$method[1] == "Pearson") {
-    names(new_frame) = paste0("pearson.", names(new_frame))
-  } else if (tmp_table$method[1] == "Pearson Original") {
-    names(new_frame) = paste0("pearson.org.", names(new_frame))
-  }
-  new_frame
-})
-yeast_out_table$sample = yeast_out_samples$sample_id
-yeast_out_table = dplyr::left_join(yeast_out_table, unique(yeast_isoutlier[, c("sample_id", "sample_class")]), by = c("sample" = "sample_id"))
-yeast_out_table = yeast_out_table %>%
-  dplyr::group_by(sample_class) %>%
-  dplyr::arrange(dplyr::desc(pearson.cor), .by_group = TRUE) %>%
-  dplyr::ungroup()
-yeast_out_table = yeast_out_table %>%
-  dplyr::select(sample, icikt.cor, icikt.outlier,
-                icikt.comp.cor, icikt.comp.outlier,
-                pearson.cor, pearson.outlier,
-                pearson.org.cor, pearson.org.outlier)
-yeast_ft_out = flextable(yeast_out_table)
-yeast_ft_out = set_header_labels(yeast_ft_out,
-          sample = "Sample",
-          icikt.cor = "Correlation",
-          icikt.outlier = "Outlier",
-          icikt.comp.cor = "Correlation",
-          icikt.comp.outlier = "Outlier",
-          pearson.cor = "Correlation",
-          pearson.outlier = "Outlier",
-          pearson.org.cor = "Correlation",
-          pearson.org.outlier = "Outlier")
-yeast_ft_out = add_header_row(yeast_ft_out,
-                        values = c("", "ICI-Kt", "ICI-Kt * Completeness",
-                                   "Pearson", "Pearson Original"),
-                        colwidths = c(1, 2, 2, 2, 2))
-yeast_ft_out = colformat_double(yeast_ft_out, digits = 2)
-yeast_ft_out = set_caption(yeast_ft_out,
-  caption = paste0(paste_label("Table ", table_count, "yeast_outliers"), ". Yeast dataset median correlation values and outlier determination for each outlier from each of the correlation methods."))
+table_count = increment_count(table_count, "t_yeast_manuscript")
+yeast_ft_out = set_caption(yeast_data$table,
+  caption = paste0(paste_label("Table S", table_count, "t_yeast_manuscript"), ". Yeast dataset median correlation values and outlier determination for each outlier from each of the correlation methods."))
 yeast_ft_out = autofit(yeast_ft_out)
 yeast_ft_out
+```
+
+In `r paste_label("Figure S", figure_count, "f_yeast_manuscript")` and `r paste_label("Table S", table_count, "t_yeast_manuscript")` we can see how the determination of outliers was not made solely on the basis of correlation alone, but on a combination of factors that lead to some of the higher correlating samples (using raw counts and Pearson correlaion) being considered outliers where lower correlating samples were not listed as being outliers.
+
+Regardless, using ICI-Kt or ICI-Kt * Completeness in this instance, the outliers using the simple distribution summary statistics and an outlier having to be > 1.5 median error, the outliers are mostly a superset of the outliers determined by Gierlinski et al, with the exception of three samples specific to their data: Snf2.24, WT.22, and WT.28.
+
+It should be noted that it seems that Gierlinski et al used an eyeball cutoff for the outliers based on the combined score of correlation, outlier fraction, and read coverage chi-square fitness, with samples having a combined log-score > -2.8 (evaluated by RMF eyeball on a zoomed in graph and a ruler), a value that is never stated in the manuscript, and which seems arbitrary from the data.
+
+## Effect of Increasing Presence in Samples
+
+As one way to increase the reliability that genes are present across many samples, we can impose a condition that a gene must have non-zero values across in more than a certain fraction of samples in each condition.
+
+### Yeast Samples
+
+```{r yeast_fractions}
+loadd(yeast_outliers_1)
+loadd(yeast_outliers_25)
+loadd(yeast_outliers_50)
+
+yeast_outs = list(
+  x_01 = yeast_outliers_1$icikt_complete,
+  x_025 = yeast_outliers_25$icikt_complete,
+  x_050 = yeast_outliers_50$icikt_complete
+)
+yeast_outs = purrr::imap(yeast_outs, function(in_out, in_name){
+  in_out$which = in_name
+  in_out
+})
+
+yeast_out_compare = compare_outlier_tables(yeast_outs,
+                                    c("x_01" = "1 Sample",
+                                      "x_025" = "25% of Class",
+                                      "x_050" = "50% of Class"),
+                                    "x_050")
+yeast_out_plot = yeast_out_compare$plot_data
+```
+
+```{r yeast_fractions_plot}
+ggplot(yeast_out_plot, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
+  geom_sina() +
+  facet_wrap(~ method, nrow = 1)
+```
+
+```{r yeast_fractions_table}
+table_count = increment_count(table_count, "t_yeast_out")
+yeast_ft_out = set_caption(yeast_out_compare$table,
+  caption = paste0(paste_label("Table S", table_count, "t_yeast_out"), ". Yeast dataset median correlation values and outlier determination for each outlier using a different percentage of samples."))
+yeast_ft_out = autofit(yeast_ft_out)
+yeast_ft_out
+```
+
+### Brainson Samples
+
+```{r brainsonrnaseq_fractions}
+loadd(brainsonrnaseq_outliers_1)
+loadd(brainsonrnaseq_outliers_25)
+loadd(brainsonrnaseq_outliers_50)
+
+brainsonrnaseq_outs = list(
+  x_01 = brainsonrnaseq_outliers_1$icikt_complete,
+  x_025 = brainsonrnaseq_outliers_25$icikt_complete,
+  x_050 = brainsonrnaseq_outliers_50$icikt_complete
+)
+brainsonrnaseq_outs = purrr::imap(brainsonrnaseq_outs, function(in_out, in_name){
+  in_out$which = in_name
+  in_out
+})
+
+brainsonrnaseq_out_compare = compare_outlier_tables(brainsonrnaseq_outs,
+                                    c("x_01" = "1 Sample",
+                                      "x_025" = "25% of Class",
+                                      "x_050" = "50% of Class"),
+                                    "x_050")
+brainsonrnaseq_out_plot = brainsonrnaseq_out_compare$plot_data
+```
+
+```{r brainsonrnaseq_fractions_plot}
+ggplot(brainsonrnaseq_out_plot, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
+  geom_sina() +
+  facet_wrap(~ method, nrow = 1)
+```
+
+```{r brainsonrnaseq_fractions_table}
+table_count = increment_count(table_count, "t_brainsonrnaseq_out")
+brainsonrnaseq_ft_out = set_caption(brainsonrnaseq_out_compare$table,
+  caption = paste0(paste_label("Table S", table_count, "t_brainsonrnaseq_out"), ". brainsonrnaseq dataset median correlation values and outlier determination for each outlier using a different percentage of samples."))
+brainsonrnaseq_ft_out = autofit(brainsonrnaseq_ft_out)
+brainsonrnaseq_ft_out
+```
+
+This is weird.
+The outliers didn't disappear, like we saw earlier.
+Why is that?
+
+#### Check Presence Levels Alternative Filtering
+
+We can verify what the presence levels are in the filtering we are interested in when we filter using the genotypes.
+
+```{r check_presence_levels}
+loadd(brainsonrnaseq_counts)
+loadd(brainsonrnaseq_info)
+
+genotype_counts = t(keep_non_zero_percentage(t(brainsonrnaseq_counts), sample_classes = brainsonrnaseq_info$type, keep_num = 0.5))
+
+dim(genotype_counts)
+
+split_type = split(brainsonrnaseq_info$sample, brainsonrnaseq_info$type)
+
+type_presence = purrr::imap_dfr(split_type, function(in_samples, in_type){
+  tmp_mat = genotype_counts[, in_samples]
+  gene_counts = purrr::map_dfr(rownames(tmp_mat), function(in_row){
+    data.frame(type = in_type, gene = in_row, perc = sum(tmp_mat[in_row, ] > 0) / ncol(tmp_mat))
+  })
+})
+
+type_max_min_presence = type_presence %>%
+  dplyr::group_by(gene) %>%
+  dplyr::summarise(min = min(perc), max = max(perc)) %>%
+  tidyr::pivot_longer(cols = c("max", "min"), names_to = "which", values_to = "percent")
+
+ggplot(type_max_min_presence, aes(x = percent)) + 
+  geom_histogram() +
+  facet_wrap(~ which, ncol = 1)
+
+split_tumor = split(brainsonrnaseq_info$sample, brainsonrnaseq_info$tumor)
+
+tumor_presence = purrr::imap_dfr(split_tumor, function(in_samples, in_tumor){
+  tmp_mat = genotype_counts[, in_samples]
+  gene_counts = purrr::map_dfr(rownames(tmp_mat), function(in_row){
+    data.frame(tumor = in_tumor, gene = in_row, perc = sum(tmp_mat[in_row, ] > 0) / ncol(tmp_mat) * 100)
+  })
+})
+
+tumor_max_min_presence = tumor_presence %>%
+  dplyr::group_by(gene) %>%
+  dplyr::summarise(min = min(perc), max = max(perc)) %>%
+  tidyr::pivot_longer(cols = c("max", "min"), names_to = "which", values_to = "percent")
+
+ggplot(tumor_max_min_presence, aes(x = percent)) +
+  geom_histogram() +
+  facet_wrap(~ which, ncol = 1)
+```
+
+So, here is the likely answer.
+Pushing to a 50% minimum for the "type" of sample ends up pushing the 
+What happens if we redo the outliers, but filter on type and then median correlation by tumor?
+
+```{r brainsonrnaseq_fractions_alt}
+loadd(brainsonrnaseq_outliers_1_alt)
+loadd(brainsonrnaseq_outliers_25_alt)
+loadd(brainsonrnaseq_outliers_50_alt)
+
+brainsonrnaseq_alts = list(
+  x_01 = brainsonrnaseq_outliers_1_alt$icikt,
+  x_025 = brainsonrnaseq_outliers_25_alt$icikt,
+  x_050 = brainsonrnaseq_outliers_50_alt$icikt
+)
+brainsonrnaseq_alts = purrr::imap(brainsonrnaseq_alts, function(in_out, in_name){
+  in_out$which = in_name
+  in_out
+})
+
+brainsonrnaseq_alt_compare = compare_outlier_tables(brainsonrnaseq_alts,
+                                    c("x_01" = "1 Sample",
+                                      "x_025" = "25% of Class",
+                                      "x_050" = "50% of Class"),
+                                    "x_050")
+brainsonrnaseq_alt_plot = brainsonrnaseq_alt_compare$plot_data
+```
+
+```{r brainsonrnaseq_fractions_plot_alt}
+ggplot(brainsonrnaseq_alt_plot, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
+  geom_sina() +
+  facet_wrap(~ method, nrow = 1)
+```
+
+```{r brainsonrnaseq_fractions_table_alt}
+table_count = increment_count(table_count, "t_brainsonrnaseq_alt")
+brainsonrnaseq_ft_alt = set_caption(brainsonrnaseq_alt_compare$table,
+  caption = paste0(paste_label("Table S", table_count, "t_brainsonrnaseq_alt"), ". brainsonrnaseq dataset median correlation values and outlier determination for each outlier using a different percentage of samples."))
+brainsonrnaseq_ft_alt = autofit(brainsonrnaseq_ft_alt)
+brainsonrnaseq_ft_alt
 ```
