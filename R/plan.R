@@ -225,6 +225,8 @@ the_plan <-
    brainsonrnaseq_outliers_1 = filter_generate_outliers(brainsonrnaseq_counts, brainsonrnaseq_info, 1, "sample", "tumor"),
    brainsonrnaseq_outliers_25 = filter_generate_outliers(brainsonrnaseq_counts, brainsonrnaseq_info, 0.25, "sample", "tumor"),
    brainsonrnaseq_outliers_50 = filter_generate_outliers(brainsonrnaseq_counts, brainsonrnaseq_info, 0.5, "sample", "tumor"),
+   brainsonrnaseq_outliers_75 = filter_generate_outliers(brainsonrnaseq_counts, brainsonrnaseq_info, 0.75, "sample", "tumor"),
+   brainsonrnaseq_outliers_100 = filter_generate_outliers(brainsonrnaseq_counts, brainsonrnaseq_info, 0.99, "sample", "tumor"),
    
    brainsonrnaseq_outliers_1_alt = filter_generate_outliers(brainsonrnaseq_counts, brainsonrnaseq_info, 1, "sample", c("type", "tumor")),
    brainsonrnaseq_outliers_25_alt = filter_generate_outliers(brainsonrnaseq_counts, brainsonrnaseq_info, 0.25, "sample", c("type", "tumor")),
