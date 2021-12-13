@@ -174,9 +174,6 @@ brainsonrnaseq_ft_out = autofit(brainsonrnaseq_ft_out)
 brainsonrnaseq_ft_out
 ```
 
-This is weird.
-The outliers didn't disappear, like we saw earlier.
-Why is that?
 
 #### Check Presence Levels Alternative Filtering
 
@@ -228,7 +225,8 @@ ggplot(tumor_max_min_presence, aes(x = percent)) +
 ```
 
 So, here is the likely answer.
-Pushing to a 50% minimum for the "type" of sample ends up pushing the 
+Pushing to a 50% minimum for the "type" of sample ends up pushing the minimum of presence in tumors to 100%.
+
 What happens if we redo the outliers, but filter on type and then median correlation by tumor?
 
 ```{r brainsonrnaseq_fractions_alt}
@@ -237,9 +235,9 @@ loadd(brainsonrnaseq_outliers_25_alt)
 loadd(brainsonrnaseq_outliers_50_alt)
 
 brainsonrnaseq_alts = list(
-  x_01 = brainsonrnaseq_outliers_1_alt$icikt,
-  x_025 = brainsonrnaseq_outliers_25_alt$icikt,
-  x_050 = brainsonrnaseq_outliers_50_alt$icikt
+  x_01 = brainsonrnaseq_outliers_1_alt$icikt_complete,
+  x_025 = brainsonrnaseq_outliers_25_alt$icikt_complete,
+  x_050 = brainsonrnaseq_outliers_50_alt$icikt_complete
 )
 brainsonrnaseq_alts = purrr::imap(brainsonrnaseq_alts, function(in_out, in_name){
   in_out$which = in_name
