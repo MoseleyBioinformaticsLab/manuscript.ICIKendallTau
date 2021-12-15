@@ -1,24 +1,45 @@
-compare_outlier_tables = function(outlier_list, mapping_list, sort_var){
-  # drake::loadd(yeast_outliers)
-  # outlier_list = yeast_outliers
-  # sort_var = "pearson_log"
-  # mapping_list = c("icikt" = "ICI-Kt", 
-                   # "icikt_complete" = "ICI-Kt * Completeness",
-                   # "pearson_log" = "Pearson")
-  outliers_use = purrr::map_df(names(mapping_list), function(in_id){
-    #message(in_id)
-    tmp_out = outlier_list[[in_id]]
-    tmp_out$method = mapping_list[[in_id]]
-    tmp_out
-  })
+add_method = function(outlier_df, map_method = c("icikt" = "ICI-Kt",
+                                                 "icikt_complete" = "ICI-Kt * Completeness",
+                                                 "pearson_base" = "Pearson Base",
+                                                 "pearson_base_nozero" = "Pearson No Zeros",
+                                                 "pearson_log1p" = "Pearson Log(x + 1)",
+                                                 "pearson_log" = "Pearson Log(x)",
+                                                 "kt_base" = "Kendall-tau")){
+  outlier_df$method = ""
+  outlier_df = outlier_df[outlier_df$which %in% names(map_method), ]
+  for (imap in names(map_method)) {
+    match_loc = outlier_df$which %in% imap
+    outlier_df[match_loc, "method"] = map_method[imap]
+  }
+  outlier_df
+}
+
+compare_outlier_tables = function(outlier_list, keep_compare, sort_var, map_method = c("icikt" = "ICI-Kt",
+                                                                                       "icikt_complete" = "ICI-Kt * Completeness",
+                                                                                       "pearson_base" = "Pearson Base",
+                                                                                       "pearson_base_nozero" = "Pearson No Zeros",
+                                                                                       "pearson_log1p" = "Pearson Log(x + 1)",
+                                                                                       "pearson_log" = "Pearson Log(x)",
+                                                                                       "kt_base" = "Kendall-tau")){
   
-  isoutlier = outliers_use %>%
+  # drake::loadd(yeast_outliers_1)
+  # outlier_list = yeast_outliers_1$outliers
+  # sort_var = "pearson_log"
+  # keep_compare = c("icikt", "icikt_complete", "pearson_log")
+  # 
+  
+  outlier_list = add_method(outlier_list, map_method = map_method)
+  outlier_list = outlier_list %>%
+    dplyr::filter(which %in% keep_compare)
+  
+  isoutlier = outlier_list %>%
     dplyr::filter(outlier)
   
   out_samples = data.frame(sample_id = unique(isoutlier$sample_id))
   
   # reordering by the one we want
-  order_tmp = outlier_list[[sort_var]] %>%
+  order_tmp = outlier_list %>%
+    dplyr::filter(which %in% sort_var) %>%
     dplyr::filter(sample_id %in% out_samples$sample_id)
   order_split = split(order_tmp, order_tmp$sample_class)
   order_isorder = purrr::map_df(order_split, function(in_split){
@@ -27,7 +48,7 @@ compare_outlier_tables = function(outlier_list, mapping_list, sort_var){
   })
   
   # creating the main table
-  out_by_method = split(outliers_use, outliers_use$method)
+  out_by_method = split(outlier_list, outlier_list$method)
   out_table = purrr::map_dfc(out_by_method, function(in_method){
     tmp_table = dplyr::left_join(out_samples, in_method, by = "sample_id")
     tmp_table = tmp_table %>%
@@ -57,9 +78,10 @@ compare_outlier_tables = function(outlier_list, mapping_list, sort_var){
     }
   })
   names(new_labels) = names(out_table)
+  
   ft_out = set_header_labels(ft_out,
                               values = new_labels)
-  header_list = mapping_list
+  header_list = map_method[keep_compare]
   names(header_list) = NULL
   header_list = c("", header_list)
   ft_out = add_header_row(ft_out,
