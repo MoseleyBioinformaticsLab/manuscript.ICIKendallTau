@@ -10,7 +10,7 @@ editor_options:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, fig.width = 8, fig.height = 6)
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, fig.width = 8, fig.height = 6, fig.keep = "all")
 
 increment_count = function(in_object, id_name){
   n_obj = length(in_object)
@@ -51,28 +51,37 @@ Finally, we note the actual samples recorded as outliers by Gierlinski and cowor
 
 ```{r load_yeast_outliers}
 figure_count = increment_count(figure_count, "f_yeast_manuscript")
-loadd(yeast_outliers_1)
-loadd(yeast_paper_outliers)
-tmp_out = yeast_outliers_1$pearson_base_nozero
-tmp_out$outlier = FALSE
-tmp_out[tmp_out$sample_id %in% yeast_paper_outliers, "outlier"] = TRUE
-tmp_out$which = "manuscript"
-yeast_outliers_1$manuscript = tmp_out
-yeast_data = compare_outlier_tables(yeast_outliers_1,
-                                    c("icikt" = "ICI-Kt",
-                                      "icikt_complete" = "ICI-Kt * Completeness",
-                                      "pearson_base_nozero" = "Pearson",
-                                      "manuscript" = "Manuscript"),
-                                    "manuscript")
-yeast_plot = yeast_data$plot_data
+
+all_yeast = purrr::map_df(c("yeast_outliers_1",
+                            "yeast_outliers_25",
+                            "yeast_outliers_50"), function(.x){
+                              tmp = readd(.x, character_only = TRUE)
+                              tmp$outliers
+                            })
+
+all_yeast = add_method(all_yeast)
 ```
 
-```{r plot_yeast_outliers}
-ggplot(yeast_plot, aes(x = sample_class, y = med_cor, group = sample_class, color = outlier)) + 
+```{r yeast_by_method}
+ggplot(all_yeast, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) + 
   geom_sina() +
-  facet_wrap(~ method, scales = "free_y", nrow = 1) +
-  theme(legend.position = c(0.4, 0.2)) +
-  labs(x = "Sample Type", y = "Median Correlation")
+  facet_grid(keep_num ~ method)
+```
+
+```{r yeast_by_fraction}
+ggplot(all_yeast, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
+  geom_sina() +
+  facet_grid(method ~ keep_num)
+```
+
+```{r plot_differences}
+yeast_summary = calculate_variation(all_yeast)
+yeast_diffs = calculate_differences(yeast_summary)
+
+ggplot(yeast_diffs, aes(x = keep_num, y = diff)) + 
+  geom_col() +
+  facet_grid(which_diff ~ method) +
+  labs(x = "Keep Fraction", y = "WT / Snf2 Differences")
 ```
 
 `r paste_label("Figure S", figure_count, "f_yeast_manuscript")`.
@@ -141,30 +150,68 @@ yeast_ft_out
 loadd(brainsonrnaseq_outliers_1)
 loadd(brainsonrnaseq_outliers_25)
 loadd(brainsonrnaseq_outliers_50)
+loadd(brainsonrnaseq_outliers_75)
+loadd(brainsonrnaseq_outliers_100)
 
-brainsonrnaseq_outs = list(
+brainsonrnaseq_outs_ic = list(
   x_01 = brainsonrnaseq_outliers_1$icikt_complete,
   x_025 = brainsonrnaseq_outliers_25$icikt_complete,
-  x_050 = brainsonrnaseq_outliers_50$icikt_complete
+  x_050 = brainsonrnaseq_outliers_50$icikt_complete,
+  x_075 = brainsonrnaseq_outliers_75$icikt_complete,
+  x_100 = brainsonrnaseq_outliers_100$icikt_complete
 )
-brainsonrnaseq_outs = purrr::imap(brainsonrnaseq_outs, function(in_out, in_name){
+brainsonrnaseq_outs_ic = purrr::imap(brainsonrnaseq_outs_ic, function(in_out, in_name){
   in_out$which = in_name
   in_out
 })
 
-brainsonrnaseq_out_compare = compare_outlier_tables(brainsonrnaseq_outs,
+brainsonrnaseq_out_compare_ic = compare_outlier_tables(brainsonrnaseq_outs_ic,
                                     c("x_01" = "1 Sample",
                                       "x_025" = "25% of Class",
-                                      "x_050" = "50% of Class"),
-                                    "x_050")
-brainsonrnaseq_out_plot = brainsonrnaseq_out_compare$plot_data
+                                      "x_050" = "50% of Class",
+                                      "x_075" = "75% of Class",
+                                      "x_100" = "100% of Class"),
+                                    "x_100")
+brainsonrnaseq_out_plot_ic = brainsonrnaseq_out_compare_ic$plot_data
 ```
 
-```{r brainsonrnaseq_fractions_plot}
-ggplot(brainsonrnaseq_out_plot, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
+```{r brainsonrnaseq_fractions_plot_ic}
+ggplot(brainsonrnaseq_out_plot_ic, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
   geom_sina() +
-  facet_wrap(~ method, nrow = 1)
+  facet_wrap(~ method, nrow = 1) +
+  labs(subtitle = "ICI-Kt * Completeness")
 ```
+
+```{r brainsonrnaseq_fractions_i}
+brainsonrnaseq_outs_i = list(
+  x_01 = brainsonrnaseq_outliers_1$icikt,
+  x_025 = brainsonrnaseq_outliers_25$icikt,
+  x_050 = brainsonrnaseq_outliers_50$icikt,
+  x_075 = brainsonrnaseq_outliers_75$icikt,
+  x_100 = brainsonrnaseq_outliers_100$icikt
+)
+brainsonrnaseq_outs_i = purrr::imap(brainsonrnaseq_outs_i, function(in_out, in_name){
+  in_out$which = in_name
+  in_out
+})
+
+brainsonrnaseq_out_compare_i = compare_outlier_tables(brainsonrnaseq_outs_i,
+                                    c("x_01" = "1 Sample",
+                                      "x_025" = "25% of Class",
+                                      "x_050" = "50% of Class",
+                                      "x_075" = "75% of Class",
+                                      "x_100" = "100% of Class"),
+                                    "x_100")
+brainsonrnaseq_out_plot_i = brainsonrnaseq_out_compare_i$plot_data
+```
+
+```{r brainsonrnaseq_fractions_plot_i}
+ggplot(brainsonrnaseq_out_plot_i, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
+  geom_sina() +
+  facet_wrap(~ method, nrow = 1) +
+  labs(subtitle = "ICI-Kt")
+```
+
 
 ```{r brainsonrnaseq_fractions_table}
 table_count = increment_count(table_count, "t_brainsonrnaseq_out")

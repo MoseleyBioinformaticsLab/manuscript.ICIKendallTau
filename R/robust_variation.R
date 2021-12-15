@@ -9,10 +9,10 @@ calculate_differences = function(median_stats, groups = NULL){
     groups = unique(median_stats$sample_class)
   }
   median_stats %>%
-    suppressMessages(dplyr::filter(sample_class %in% groups) %>%
+    dplyr::filter(sample_class %in% groups) %>%
     dplyr::group_by(method, keep_num) %>%
     dplyr::summarise(med_diff = median[1] - median[2], mad_diff = mad[1] - mad[2]) %>%
       tidyr::pivot_longer(cols = c(med_diff, mad_diff),
                           names_to = "which_diff",
-                          values_to = "diff"))
+                          values_to = "diff")
 }
