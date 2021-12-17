@@ -113,9 +113,15 @@ yeast_table = compare_outlier_tables(yeast_single2, compare_yeast, sort_var = "m
                                                  "manuscript" = "Manuscript"))
 
 table_count = increment_count(table_count, "yeast_outliers")
-yeast_ft_out = set_caption(yeast_table,
-  caption = paste0(paste_label("Table S", table_count, "yeast_outliers"), ". Yeast dataset median correlation values and outlier determination for each outlier from each of the correlation methods."), style = "paragraph")
-yeast_ft_out = autofit(yeast_ft_out)
+```
+
+`r paste_label("Table S", table_count, "yeast_outliers")`.
+Yeast dataset median correlation values and outlier determination for each outlier from each of the correlation methods.
+
+```{r yeast_table2}
+#yeast_ft_out = set_caption(yeast_table,
+  # caption = paste0(paste_label("Table S", table_count, "yeast_outliers"), ". Yeast dataset median correlation values and outlier determination for each outlier from each of the correlation methods."), style = "paragraph")
+yeast_ft_out = autofit(yeast_table)
 yeast_ft_out
 ```
 
@@ -161,9 +167,15 @@ This is due to having more genes with non-zero reads in general over the sorted 
 brainson_table = compare_outlier_tables(brainson_single, compare_brainson, sort_var = "pearson_log")
 
 table_count = increment_count(table_count, "brainson_outliers")
-brainson_ft_out = set_caption(brainson_table,
-  caption = paste0(paste_label("Table S", table_count, "brainson_outliers"), ". Brainson dataset median correlation values and outlier determination for each outlier from each of the correlation methods."))
-brainson_ft_out = autofit(brainson_ft_out)
+```
+
+`r paste_label("Table S", table_count, "brainson_outliers")`.
+Brainson dataset median correlation values and outlier determination for each outlier from each of the correlation methods.
+
+```{r brainson_table2}
+# brainson_ft_out = set_caption(brainson_table,
+#   caption = paste0(paste_label("Table S", table_count, "brainson_outliers"), ". Brainson dataset median correlation values and outlier determination for each outlier from each of the correlation methods."))
+brainson_ft_out = autofit(brainson_table)
 brainson_ft_out
 ```
 
@@ -215,9 +227,15 @@ TCGA Adenocarcinoma outliers using various measures of correlation.
 adeno_table = compare_outlier_tables(adeno_single, compare_adeno, sort_var = "pearson_log")
 
 table_count = increment_count(table_count, "adeno_outliers")
-adeno_ft_out = set_caption(adeno_table,
-  caption = paste0(paste_label("Table S", table_count, "adeno_outliers"), ". adeno dataset median correlation values and outlier determination for each outlier from each of the correlation methods."))
-adeno_ft_out = autofit(adeno_ft_out)
+```
+
+`r paste_label("Table S", table_count, "adeno_outliers")`.
+TCGA adenocarcinoma dataset median correlation values and outlier determination for each outlier from each of the correlation methods.
+
+```{r adeno_table2}
+# adeno_ft_out = set_caption(adeno_table,
+#   caption = paste0(paste_label("Table S", table_count, "adeno_outliers"), ". adeno dataset median correlation values and outlier determination for each outlier from each of the correlation methods."))
+adeno_ft_out = autofit(adeno_table)
 adeno_ft_out
 ```
 
@@ -237,8 +255,15 @@ adeno_variation_wide = adeno_variation %>%
   tidyr::pivot_wider(names_from = sample_class, values_from = mad) %>%
   flextable() %>%
   colformat_double(digits = 3) %>%
-  autofit() %>%
-  set_caption(caption = paste0(paste_label("Table S", table_count, "adeno_mad"), ". Adenocarcinoma median-absolute-deviations (MAD) for each group of sample median correlations in each type of tissue."), style = "paragraph")
+  autofit() 
+```
+
+`r paste_label("Table S", table_count, "adeno_mad")`.
+Adenocarcinoma median-absolute-deviations (MAD) for each group of sample median correlations in each type of tissue.
+
+```{r summarize_adeno2}
+# %>%
+#   set_caption(caption = paste0(paste_label("Table S", table_count, "adeno_mad"), ". Adenocarcinoma median-absolute-deviations (MAD) for each group of sample median correlations in each type of tissue."), style = "paragraph")
 adeno_variation_wide
 ```
 
