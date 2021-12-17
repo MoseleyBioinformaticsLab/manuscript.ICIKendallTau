@@ -14,6 +14,14 @@ add_method = function(outlier_df, map_method = c("icikt" = "ICI-Kt",
   outlier_df
 }
 
+perc_to_number = function(in_table){
+  in_table %>%
+  dplyr::mutate(keep_num = dplyr::case_when(
+    keep_num < 1 ~ paste0(keep_num * 100, "%"),
+    TRUE ~ as.character(keep_num)
+  ))
+}
+
 compare_outlier_tables = function(outlier_list, keep_compare, sort_var, map_method = c("icikt" = "ICI-Kt",
                                                                                        "icikt_complete" = "ICI-Kt * Completeness",
                                                                                        "pearson_base" = "Pearson Base",
@@ -26,7 +34,17 @@ compare_outlier_tables = function(outlier_list, keep_compare, sort_var, map_meth
   # outlier_list = yeast_outliers_1$outliers
   # sort_var = "pearson_log"
   # keep_compare = c("icikt", "icikt_complete", "pearson_log")
-  # 
+  # outlier_list = yeast_single2
+  # keep_compare = c("icikt", "icikt_complete", "pearson_log", "pearson_base_nozero", "manuscript")
+  # sort_var = "manuscript"
+  # map_method = c("icikt" = "ICI-Kt",
+  #                                                                                                                                                         "icikt_complete" = "ICI-Kt * Completeness",
+  #                                                                                                                                                         "pearson_base" = "Pearson Base",
+  #                                                                                                                                                         "pearson_base_nozero" = "Pearson No Zeros",
+  #                                                                                                                                                         "pearson_log1p" = "Pearson Log(x + 1)",
+  #                                                                                                                                                         "pearson_log" = "Pearson Log(x)",
+  #                                                                                                                                                         "kt_base" = "Kendall-tau",
+  #                                                                                                                                                         "manuscript" = "Manuscript")
   
   outlier_list = add_method(outlier_list, map_method = map_method)
   outlier_list = outlier_list %>%
@@ -48,9 +66,10 @@ compare_outlier_tables = function(outlier_list, keep_compare, sort_var, map_meth
   })
   
   # creating the main table
-  out_by_method = split(outlier_list, outlier_list$method)
-  out_table = purrr::map_dfc(out_by_method, function(in_method){
-    tmp_table = dplyr::left_join(out_samples, in_method, by = "sample_id")
+  out_by_which = split(outlier_list, outlier_list$which)
+  out_by_which = out_by_which[keep_compare]
+  out_table = purrr::map_dfc(out_by_which, function(in_which){
+    tmp_table = dplyr::left_join(out_samples, in_which, by = "sample_id")
     tmp_table = tmp_table %>%
       dplyr::mutate(outlier2 = dplyr::case_when(
         outlier ~ "X",
@@ -58,7 +77,7 @@ compare_outlier_tables = function(outlier_list, keep_compare, sort_var, map_meth
       ))
     new_frame = data.frame(outlier = tmp_table$outlier2,
                            cor = tmp_table$med_cor)
-    names(new_frame) = paste0(in_method$which[1], ".", names(new_frame))
+    names(new_frame) = paste0(in_which$which[1], ".", names(new_frame))
     
     new_frame
   })
@@ -79,15 +98,18 @@ compare_outlier_tables = function(outlier_list, keep_compare, sort_var, map_meth
   })
   names(new_labels) = names(out_table)
   
+  which_method = gsub("[.].*", "", names(out_table))
+  which_map = map_method[which_method]
+  names(which_map) = NULL
+  which_map[1] = ""
+  
+  rle_which = rle(which_map)
+  
   ft_out = set_header_labels(ft_out,
                               values = new_labels)
-  header_list = map_method[keep_compare]
-  names(header_list) = NULL
-  header_list = c("", header_list)
   ft_out = add_header_row(ft_out,
-                            values = header_list,
-                            colwidths = c(1, rep(2, length(mapping_list))))
+                            values = rle_which$values,
+                            colwidths = rle_which$lengths)
   ft_out = colformat_double(ft_out, digits = 2)
-  list(plot_data = outliers_use,
-       table = ft_out)
+  ft_out
 }
