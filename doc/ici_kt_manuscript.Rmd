@@ -531,8 +531,9 @@ outlier_table_list = paste(
 )
 ```
 
-We analyzed three RNA-Seq datasets for possible outliers using three different correlation and correlation-related metrics: (1) ICI-Kt; (2) ICI-Kt scaled by *completeness* (see Methods), and (3) Pearson correlation.
-In the case of Pearson correlation, the count values were log-transformed first using the *log1p* function (equivalent to log(value + 1)).
+We analyzed three RNA-Seq datasets for possible outliers using a variety of  different correlation and correlation-related metrics: (1) ICI-Kt; (2) ICI-Kt scaled by *completeness* (see Methods); (3) Pearson correlation; (4) Pearson using pairwise complete features; (4) Pearson on log(value + 1); (5) Pearson on log(value); and (6) Kendall-tau.
+We primarily concentrate on the ICI-Kt, ICI-Kt * completeness, and Pearson log(x + 1) here, but all outliers by method are shown in the Supplemental materials.
+Additionally, we compared how the outliers change if we require that a feature is present in at least a certain fraction of samples of a class with each different correlation measure (supplemental materials).
 For each dataset and correlation-related metric, the median correlation for a sample was calculated amongst the samples for each sub-group of samples corresponding to an experimental condition of interest (disease, mutant, how cells were grown).
 
 ```{r load_yeast_outliers}
