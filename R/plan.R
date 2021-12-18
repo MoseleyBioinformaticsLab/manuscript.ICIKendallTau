@@ -214,6 +214,16 @@ the_plan <-
       transform = map(select_random_fraction)
    ),
    
+   results_random_pearson = target(
+     random_2_reference(run_random_pearson, ref_pearson),
+     transform = map(run_random_pearson)
+   ),
+   
+   combined_random_pearson = target(
+     bind_rows(results_random_pearson),
+     transform = combine(results_random_pearson)
+   ),
+   
    left_censored_samples = create_lc_samples(),
    left_censored_cor = left_censor_correlate(left_censored_samples),
    random_censored_cor = random_censor_correlate(left_censored_samples),
