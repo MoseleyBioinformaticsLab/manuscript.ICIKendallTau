@@ -226,7 +226,7 @@ the_plan <-
    
    results_random_pearson_0 = target(
      random_2_reference(run_random_pearson_0, ref_pearson_0, "cor"),
-     transform = map(run_random_pearson)
+     transform = map(run_random_pearson_0)
    ),
    
    combined_random_pearson_0 = target(
@@ -246,12 +246,12 @@ the_plan <-
    
    results_random_kendall_0 = target(
      random_2_reference(run_random_kendall_0, ref_kendall_0, "cor"),
-     transform = map(run_random_kendall)
+     transform = map(run_random_kendall_0)
    ),
    
    combined_random_kendall_0 = target(
      bind_rows(results_random_kendall_0),
-     transform = combine(results_random_kendall)
+     transform = combine(results_random_kendall_0)
    ),
    
    left_censored_samples = create_lc_samples(),
