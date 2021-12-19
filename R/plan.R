@@ -224,6 +224,36 @@ the_plan <-
      transform = combine(results_random_pearson)
    ),
    
+   results_random_pearson_0 = target(
+     random_2_reference(run_random_pearson_0, ref_pearson_0, "cor"),
+     transform = map(run_random_pearson)
+   ),
+   
+   combined_random_pearson_0 = target(
+     bind_rows(results_random_pearson_0),
+     transform = combine(results_random_pearson)
+   ),
+   
+   results_random_kendall = target(
+     random_2_reference(run_random_kendall, ref_kendall, "cor"),
+     transform = map(run_random_kendall)
+   ),
+   
+   combined_random_kendall = target(
+     bind_rows(results_random_kendall),
+     transform = combine(results_random_kendall)
+   ),
+   
+   results_random_kendall_0 = target(
+     random_2_reference(run_random_kendall_0, ref_kendall_0, "cor"),
+     transform = map(run_random_kendall)
+   ),
+   
+   combined_random_kendall_0 = target(
+     bind_rows(results_random_kendall_0),
+     transform = combine(results_random_kendall)
+   ),
+   
    left_censored_samples = create_lc_samples(),
    left_censored_cor = left_censor_correlate(left_censored_samples),
    random_censored_cor = random_censor_correlate(left_censored_samples),
