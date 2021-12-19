@@ -1,6 +1,6 @@
-random_2_reference = function(in_cor, ref_cor){
-  tri_cor = extract_data(in_cor)
-  tri_ref = extract_data(ref_cor)
+random_2_reference = function(in_cor, ref_cor, which = "raw"){
+  tri_cor = extract_data(in_cor, which = which)
+  tri_ref = extract_data(ref_cor, which = which)
   
   diff_cor = tri_cor - tri_ref
   data.frame(median = median(diff_cor, na.rm = TRUE),

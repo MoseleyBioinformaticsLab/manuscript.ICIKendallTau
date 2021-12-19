@@ -215,7 +215,7 @@ the_plan <-
    ),
    
    results_random_pearson = target(
-     random_2_reference(run_random_pearson, ref_pearson),
+     random_2_reference(run_random_pearson, ref_pearson, "cor"),
      transform = map(run_random_pearson)
    ),
    
