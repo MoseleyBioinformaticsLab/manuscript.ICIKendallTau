@@ -16,6 +16,7 @@ library(patchwork)
 library(xfun)
 library(ggforce)
 library(flextable)
+library(documentNumbering)
 future::plan(multicore)
 
 theme_set(cowplot::theme_cowplot())

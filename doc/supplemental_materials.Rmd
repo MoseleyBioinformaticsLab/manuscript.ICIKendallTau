@@ -3,7 +3,8 @@ title: 'Supplemental Materials'
 author: 'Robert M Flight, Praneeth S Bhatt, and Hunter NB Moseley'
 date: '`r Sys.time()`'
 output: 
-  rmarkdown::word_document
+  rmarkdown::word_document:
+    keep_md: true
 bibliography: '`r here::here("doc/icikt_references.json")`'
 editor_options: 
   chunk_output_type: console
@@ -13,35 +14,18 @@ editor_options:
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, 
                       message = FALSE, fig.width = 8, 
                       fig.height = 6, fig.keep = "all",
+                      fig.process = dn_modify_path,
                       tab.cap.style = "paragraph",
                       tab.cap.pre = "",
                       tab.cap.sep = "")
 
 
-increment_count = function(in_object, id_name){
-  n_obj = length(in_object)
-  use_number = max(in_object) + 1
-  in_object = c(in_object, use_number)
-  names(in_object)[n_obj + 1] = id_name
-  in_object
-}
+supp_figure_count = dn_counter$new("Figure S", "_")
+supp_table_count = dn_counter$new("Table S", "_")
 
-paste_label = function(pre_text, in_object, id_name){
-  object_number = in_object[id_name]
-  
-  if (length(object_number) > 1) {
-    object_numbers = paste(object_number, collapse = ", ")
-  } else {
-    object_numbers = object_number
-  }
-  
-  use_text = paste(pre_text, object_numbers, sep = "")
-  
-  use_text
-}
-supp_figure_count = c("_" = 0)
-supp_table_count = c("_" = 0)
-
+supp_figure_count$increment("kt_pearson")
+supp_figure_count$increment("ici_distribution")
+supp_figure_count$increment("kt_distribution")
 ```
 
 ## Simulated Data
@@ -49,26 +33,31 @@ supp_table_count = c("_" = 0)
 The simplest simulated data set includes three samples, where two are perfectly correlated, and the third perfectly anti-correlated. 
 We then created missing values (replaced value with NA) in each sample systematically, and computed the ICI-Kt, Pearson, and Kendall-tau correlations.
 
-```{r compare_simple}
-supp_figure_count = increment_count(supp_figure_count, "kt_pearson")
-supp_figure_count = increment_count(supp_figure_count, "ici_distribution")
-supp_figure_count = increment_count(supp_figure_count, "kt_distribution")
-
+```{r compare_simple, counter_identifier = supp_figure_count$label_file("kt_pearson")}
 loadd(positive_kt)
 loadd(positive_pearson)
-positive_pearson[is.na(positive_pearson$cor), "cor"] = 0
+loadd(negative_kt)
+loadd(negative_pearson)
 
-compare_df = data.frame(ici_kt = positive_kt$cor,
-                        pearson = positive_pearson$cor)
-ggplot(compare_df, aes(x = pearson, y = ici_kt)) + geom_point()
+all_kt = rbind(positive_kt, negative_kt)
+all_pearson = rbind(positive_pearson, negative_pearson)
+all_pearson[is.na(all_pearson$cor), "cor"] = 0
+
+compare_df = data.frame(ici_kt = all_kt$cor,
+                        pearson = all_pearson$cor)
+ggplot(compare_df, aes(x = pearson, y = ici_kt)) + 
+  geom_point() +
+  labs(x = "Pearson", y = "ICI-Kt")
 ```
 
-`r paste_label("Figure S", supp_figure_count, "kt_pearson")`. Comparison of ICI-Kt and Pearson correlations.
+`r supp_figure_count$label_text("kt_pearson")`. Comparison of ICI-Kt and Pearson correlations for perfectly positive and negatively correlated samples, systematically replacing values with NA.
+NA values from Pearson were replaced with zero for this comparison.
 
 We can also examine the full set of positive and negative correlations generated as we vary the number of missing entries between two positively correlated samples and two negatively correlated samples.
-These distributions are shown in `r paste_label("Figure S", supp_figure_count, "kt_distribution")`.
+These distributions are shown in `r supp_figure_count$label_text("kt_distribution")`.
+We can see that the distributions from both ICI-Kt and Kendall-tau are the same, which is expected given we replaced missing values (NA) with zero *within* the ICI-Kt code, and replaced missing values (NA) with zero prior to calculating Kendall-tau correlations.
 
-```{r ici_full_distribution}
+```{r ici_full_distribution, counter_identifier = supp_figure_count$label_file("ici_distribution")}
 loadd(all_kt)
 ici_plot = ggplot(all_kt, aes(x = ici_kt)) +
   geom_histogram(bins = 100) +
@@ -77,32 +66,36 @@ ici_plot = ggplot(all_kt, aes(x = ici_kt)) +
 ici_plot
 ```
 
-`r paste_label("Figure S", supp_figure_count, "ici_distribution")`.
+`r supp_figure_count$label_text("ici_distribution")`.
 ICI-Kendall-tau correlation as missing values are varied between two samples.
 
-```{r kt_full_distribution}
+```{r kt_full_distribution, counter_identifier = supp_figure_count$label_file("kt_distribution")}
 kt_plot = ggplot(all_kt, aes(x = kendall)) +
   geom_histogram(bins = 100) +
   facet_wrap(~ comp, ncol = 1)
 kt_plot
 ```
 
-`r paste_label("Figure S", supp_figure_count, "kt_distribution")`.
-Kendall-tau correlation as missing values are varied between two samples and replaced with 0. **Replaced with zero, because it becomes just 1 or -1. We can show that, but ....**
+`r supp_figure_count$label_text("kt_distribution")`.
+Kendall-tau correlation as missing values are varied between two samples and replaced with 0 before calculating Kendall-tau.
 
 ## Algorithmic Complexity
 
+```{r increment_count_complexity}
+supp_figure_count$increment("complexity")
+```
 
 In addition to comparing their performance, we can check that the algorithmic complexity fits the theoretically expected complexity by fitting a regression line of the run time to the number of items.
-The run times and fitted lines for each method (R's Pearson, the ICI-Kt, and R's Kendall-tau) are shown in `r paste_label("Figure S", supp_figure_count, "supp_complexity")`.
+The run times and fitted lines for each method (R's Pearson, the ICI-Kt, and R's Kendall-tau) are shown in `r supp_figure_count$label_text("complexity")`.
 
-```{r plot_complexity}
+```{r plot_complexity, , counter_identifier = supp_figure_count$label_file("complexity")}
 single_core_perf = readRDS(here::here("doc", "single_core_perf.rds"))
 complex_figure = create_complexity_figure(single_core_perf)
 complex_figure
 ```
 
-`r paste_label("Figure S", supp_figure_count, "supp_complexity")`. Time in seconds needed as a function of the number of features, with a fitted line for the assumed complexity for each of the methods tested, including R's Pearson correlation, the ICI-Kt mergesort, and R's Kendall-tau correlation algorithm.
+`r supp_figure_count$label_text("complexity")`. 
+Time in seconds needed as a function of the number of features, with a fitted line for the assumed complexity for each of the methods tested, including R's Pearson correlation, the ICI-Kt mergesort, and R's Kendall-tau correlation algorithm.
 
 
 ## Outlier Samples
@@ -119,7 +112,7 @@ This version of Pearson correlation recreates the median sample-sample correlati
 Finally, we note the actual samples recorded as outliers by Gierlinski and coworkers, noted as "Manuscript".
 
 ```{r load_yeast_outliers}
-supp_figure_count = increment_count(supp_figure_count, "yeast_outliers")
+supp_figure_count$increment("yeast_outliers")
 
 loadd(yeast_paper_outliers)
 
@@ -146,9 +139,9 @@ yeast_single2 = rbind(yeast_single, tmp_yeast)
 compare_yeast = c("icikt", "icikt_complete", "pearson_log1p", "pearson_base_nozero", "manuscript")
 ```
 
-```{r yeast_single_plot}
+```{r yeast_single_plot, counter_identifier = supp_figure_count$label_file("yeast_outliers")}
 yeast_single2 %>%
-  add_method(map_method = c("icikt" = "ICI-Kt",
+  add_method(map_method = c("icikt" = "IK",
                                                  "icikt_complete" = "ICI-Kt * Completeness",
                                                  "pearson_base" = "Pearson Base",
                                                  "pearson_base_nozero" = "Pearson No Zeros",
@@ -162,7 +155,7 @@ yeast_single2 %>%
   facet_wrap(~ method, nrow = 1)
 ```
 
-`r paste_label("Figure S", supp_figure_count, "yeast_outliers")`.
+`r supp_figure_count$label_text("yeast_outliers")`.
 Median correlations for each of the yeast RNA-Seq sample to all other samples in the same group, using either ICI-Kt, ICI-Kt * completeness, Pearson correlation, or from the Gierlinski manuscript.
 
 
@@ -176,10 +169,10 @@ yeast_table = compare_outlier_tables(yeast_single2, compare_yeast, sort_var = "m
                                                  "kt_base" = "Kendall-tau",
                                                  "manuscript" = "Manuscript"))
 
-supp_table_count = increment_count(supp_table_count, "yeast_outliers")
+supp_table_count$increment("yeast_outliers")
 ```
 
-`r paste_label("Table S", supp_table_count, "yeast_outliers")`.
+`r supp_table_count$label_text("yeast_outliers")`.
 Yeast dataset median correlation values and outlier determination for each outlier from each of the correlation methods.
 
 ```{r yeast_table2}
@@ -189,7 +182,7 @@ yeast_ft_out = autofit(yeast_table)
 yeast_ft_out
 ```
 
-In `r paste_label("Figure S", supp_figure_count, "yeast_outliers")` and `r paste_label("Table S", supp_table_count, "yeast_outliers")` we can see how the determination of outliers was not made solely on the basis of correlation alone, but on a combination of factors that lead to some of the higher correlating samples (using raw counts and Pearson correlaion) being considered outliers where lower correlating samples were not listed as being outliers.
+In `r supp_figure_count$label_text("yeast_outliers")` and `r supp_table_count$label_text("yeast_outliers")` we can see how the determination of outliers was not made solely on the basis of correlation alone, but on a combination of factors that lead to some of the higher correlating samples (using raw counts and Pearson correlaion) being considered outliers where lower correlating samples were not listed as being outliers.
 
 Regardless, using ICI-Kt or ICI-Kt * Completeness in this instance, the outliers using the simple distribution summary statistics and an outlier having to be > 1.5 median error, the outliers are mostly a superset of the outliers determined by Gierlinski et al, with the exception of three samples specific to their data: Snf2.24, WT.22, and WT.28.
 
@@ -198,7 +191,8 @@ It should be noted that it seems that Gierlinski et al used an eyeball cutoff fo
 ## Brainson RNASeq Samples
 
 ```{r brainsonrnaseq_load}
-supp_figure_count = increment_count(supp_figure_count, "brainson_outliers")
+supp_figure_count$increment("brainson_outliers")
+supp_table_count$increment("brainson_outliers")
 all_brainson = purrr::map_df(c("brainsonrnaseq_outliers_1",
                             "brainsonrnaseq_outliers_25",
                             "brainsonrnaseq_outliers_50",
@@ -214,18 +208,36 @@ brainson_single = all_brainson %>%
 compare_brainson = c("icikt", "icikt_complete", "pearson_log1p")
 ```
 
+```{r show_brainson, counter_identifier = supp_figure_count$label_file("brainson_outliers")}
+brainson_single %>%
+  add_method() %>%
+  dplyr::filter(which %in% compare_brainson) %>%
+  ggplot(aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
+  geom_sina() +
+  facet_wrap(~ method, nrow = 1)
+```
 
-`r paste_label("Figure S", supp_figure_count, "brainson_outliers")` shows the effect of including the pairwise completeness measure, where the "total" tumor samples have a higher correlation than the "sorted" samples where a specific subset of cells were collected from each sample and sequenced.
+`r supp_figure_count$label_text("brainson_outliers")` shows the effect of including the pairwise completeness measure, where the "total" tumor samples have a higher correlation than the "sorted" samples where a specific subset of cells were collected from each sample and sequenced.
 This is due to having more genes with non-zero reads in general over the sorted samples.
 
+`r supp_table_count$label_text("brainson_outliers")`.
+Brainson dataset median correlation values and outlier determination for each outlier from each of the correlation methods.
 
-`r paste_label("Table S", supp_table_count, "brainson_outliers")` indicates the outliers determined with each correlation method.
+```{r brainson_table}
+brainson_table = compare_outlier_tables(brainson_single, compare_brainson, "pearson_log1p")
+autofit(brainson_table)
+```
+
+
+`r supp_table_count$label_text("brainson_outliers")` indicates the outliers determined with each correlation method.
 Discussions with the Brainson group have determined that some of the samples in the sorted group were run on different days with different technicians, which may explain the two sorted outliers.
 
 ## TCGA Adenocarcinoma
 
 ```{r adeno_load}
-supp_figure_count = increment_count(supp_figure_count, "adeno_outliers")
+supp_figure_count$increment("adeno_outliers")
+supp_table_count$increment("adeno_outliers")
+
 all_adeno = purrr::map_df(c("adeno_outliers_1",
                             "adeno_outliers_25",
                             "adeno_outliers_50"), function(.x){
@@ -251,20 +263,30 @@ all_adeno2 = dplyr::left_join(new_adeno, all_adeno, by = c("old_sample" = "sampl
 adeno_single = all_adeno2 %>%
   dplyr::filter(keep_num == "1")
 compare_adeno = c("icikt", "icikt_complete", "pearson_log1p")
-
-
 ```
 
-`r paste_label("Figure S", supp_figure_count, "adeno_outliers")`.
+```{r show_adeno_outliers, counter_identifier = supp_figure_count$label_file("adeno_outliers")}
+adeno_single %>%
+  add_method() %>%
+  dplyr::filter(which %in% compare_adeno) %>%
+  ggplot(aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
+  geom_sina() +
+  facet_wrap(~ method, nrow = 1)
+```
+
+`r supp_figure_count$label_text("adeno_outliers")`.
 TCGA Adenocarcinoma outliers using various measures of correlation.
 
-```{r adeno_table}
+`r supp_table_count$label_text("brainson_outliers")`.
+Brainson dataset median correlation values and outlier determination for each outlier from each of the correlation methods.
 
-supp_table_count = increment_count(supp_table_count, "adeno_outliers")
+```{r adeno_table}
+adeno_table = compare_outlier_tables(adeno_single, compare_adeno, "pearson_log1p")
+autofit(adeno_table)
 ```
 
 ```{r summarize_adeno}
-supp_table_count = increment_count(supp_table_count, "adeno_mad")
+supp_table_count$increment("adeno_mad")
 adeno_variation = adeno_single %>%
   add_method() %>%
   dplyr::filter(which %in% compare_adeno) %>%
@@ -282,52 +304,55 @@ adeno_variation_wide = adeno_variation %>%
   autofit() 
 ```
 
-`r paste_label("Table S", supp_table_count, "adeno_mad")`.
+`r supp_table_count$label_text("adeno_mad")`.
 Adenocarcinoma median-absolute-deviations (MAD) for each group of sample median correlations in each type of tissue.
 
 ```{r summarize_adeno2}
 # %>%
 #   set_caption(caption = paste0(paste_label("Table S", supp_table_count, "adeno_mad"), ". Adenocarcinoma median-absolute-deviations (MAD) for each group of sample median correlations in each type of tissue."), style = "paragraph")
-adeno_variation_wide
+autofit(adeno_variation_wide)
 ```
 
-As `r paste_label("Figure S", supp_figure_count, "adeno_outliers")` and `r paste_label("Table S", supp_table_count, "adeno_outliers")`, although there are not many outliers in these relatively large groups, Pearson correlation using log-tansformed values results in the most outliers.
+As `r supp_figure_count$label_text("adeno_outliers")` and `r supp_table_count$label_text("adeno_outliers")`, although there are not many outliers in these relatively large groups, Pearson correlation using log-transformed values results in the most outliers.
 Also of note is that ICI-Kt * Completeness is the only measure where the variance measure for both groups is similar.
 For both ICI-Kt and Pearson correlation, the tumor samples variance measures are `r adeno_ratios[["ICI-Kt"]]`x and `r adeno_ratios[["Pearson Log(x)"]]`x greater than normal, respectively.
 
 
 ## Effect of Increasing Presence in Samples
 
-One sure way to mess with the correlation values is to impose the condition that a gene has a non-zero count in a minimum percentage of the samples in one of the classes.
+One sure way to limit the effect of missing values on correlation values is to impose the condition that a gene has a non-zero count in a minimum percentage of the samples in one of the classes.
 In all of the example plots above, and the tables in the main manuscript text, a gene had to be present in at least **one sample**.
 Here, we explore what happens if we increase the number of samples required for a gene to be present in at 25% and 50% of a class for the yeast samples and adenocarcinoma samples, and 25%, 50%, 75% and all samples of a class for the Brainson samples.
 We also examine the effect using all possible correlation measures.
 
 ### Yeast Samples
 
-```{r yeast_by_method}
-supp_figure_count = increment_count(supp_figure_count, "yeast_by_method")
+```{r increment_count_yeast}
+supp_figure_count$increment("yeast_by_method")
+supp_figure_count$increment("yeast_by_keep_num")
+supp_figure_count$increment("yeast_differences")
+```
+
+```{r yeast_by_method, counter_identifier = supp_figure_count$label_file("yeast_by_method")}
 ggplot(all_yeast, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) + 
   geom_sina() +
   facet_grid(keep_num ~ method)
 ```
 
-`r paste_label("Figure S", supp_figure_count, "yeast_by_method")`.
+`r supp_figure_count$label_text("yeast_by_method")`.
 Median correlations by correlation method and applying different fractional cutoffs.
 
-```{r yeast_by_fraction}
-supp_figure_count = increment_count(supp_figure_count, "yeast_by_keep_num")
+```{r yeast_by_fraction, counter_identifier = supp_figure_count$label_file("yeast_by_keep_num")}
 ggplot(all_yeast, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
   geom_sina() +
   facet_grid(method ~ keep_num)
 ```
 
-`r paste_label("Figure S", supp_figure_count, "yeast_by_keep_num")`.
+`r supp_figure_count$label_text("yeast_by_keep_num")`.
 Median correlations by applying different fractional cutoffs and different correlation methods.
 
 
-```{r yeast_plot_differences}
-supp_figure_count = increment_count(supp_figure_count, "yeast_differences")
+```{r yeast_plot_differences, counter_identifier = supp_figure_count$label_file("yeast_differences")}
 yeast_summary = calculate_variation(all_yeast)
 yeast_diffs = calculate_differences(yeast_summary)
 
@@ -337,15 +362,19 @@ ggplot(yeast_diffs, aes(x = keep_num, y = diff)) +
   labs(x = "Keep Fraction", y = "WT / Snf2 Differences")
 ```
 
-`r paste_label("Figure S", supp_figure_count, "yeast_differences")`.
+`r supp_figure_count$label_text("yeast_differences")`.
 Difference between WT and Snf2 group medians and MAD for the different correlation methods and gene presence fractions.
 
 
 ### Brainson Samples
 
-```{r brainson_plot1}
-supp_figure_count = increment_count(supp_figure_count, "brainson_by_method")
+```{r increment_count_brainson}
+supp_figure_count$increment("brainson_by_method")
+supp_figure_count$increment("brainson_by_keep_num")
+supp_figure_count$increment("brainson_differences")
+```
 
+```{r brainson_plot1, , counter_identifier = supp_figure_count$label_file("brainson_by_method")}
 brainson_classes = c("sorted", "total")
 all_brainson_method = add_method(all_brainson) %>%
   dplyr::filter(sample_class %in% brainson_classes)
@@ -354,23 +383,21 @@ ggplot(all_brainson_method, aes(x = sample_class, y = med_cor, color = outlier, 
   facet_grid(keep_num ~ method)
 ```
 
-`r paste_label("Figure S", supp_figure_count, "brainson_by_method")`.
+`r supp_figure_count$label_text("brainson_by_method")`.
 Median correlations by correlation method and applying different fractional cutoffs for Brainson RNA-seq data.
 
 
-```{r brainson_plot2}
-supp_figure_count = increment_count(supp_figure_count, "brainson_by_keep_num")
+```{r brainson_plot2, counter_identifier = supp_figure_count$label_file("brainson_by_keep_num")}
 ggplot(all_brainson_method, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) + 
   geom_sina() +
   facet_grid(method ~ keep_num)
 ```
 
-`r paste_label("Figure S", supp_figure_count, "brainson_by_keep_num")`.
+`r supp_figure_count$label_text("brainson_by_keep_num")`.
 Median correlations by correlation method and applying different fractional cutoffs for Brainson RNA-seq data.
 
 
-```{r brainson_plot_differences}
-supp_figure_count = increment_count(supp_figure_count, "brainson_differences")
+```{r brainson_plot_differences, counter_identifier = supp_figure_count$label_file("brainson_differences")}
 brainson_summary = calculate_variation(all_brainson_method)
 brainson_diffs = calculate_differences(brainson_summary)
 
@@ -380,35 +407,38 @@ ggplot(brainson_diffs, aes(x = keep_num, y = diff)) +
   labs(x = "Keep Fraction", y = "Sorted / Total Differences")
 ```
 
-`r paste_label("Figure S", supp_figure_count, "brainson_differences")`.
+`r supp_figure_count$label_text("brainson_differences")`.
 Difference between sorted and total sample group medians and MAD for the different correlation methods and gene presence fractions.
 
 
 ### Adenocarcinoma
 
-```{r adeno_by_method}
+```{r increment_count_adeno}
+supp_figure_count$increment("adeno_by_method")
+supp_figure_count$increment("adeno_by_keep_num")
+supp_figure_count$increment("adeno_differences")
+```
+
+```{r adeno_by_method, counter_identifier = supp_figure_count$label_file("adeno_by_method")}
 adeno_method = add_method(all_adeno2)
-supp_figure_count = increment_count(supp_figure_count, "adeno_by_method")
 ggplot(adeno_method, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) + 
   geom_sina() +
   facet_grid(keep_num ~ method)
 ```
 
-`r paste_label("Figure S", supp_figure_count, "adeno_by_method")`. 
+`r supp_figure_count$label_text("adeno_by_method")`. 
 Median correlations by correlation method and applying different fractional cutoffs for TCGA adenocarcinoma RNA-seq data.
 
-```{r adeno_by_fraction}
-supp_figure_count = increment_count(supp_figure_count, "adeno_by_keep_num")
+```{r adeno_by_fraction, counter_identifier = supp_figure_count$label_file("adeno_by_keep_num")}
 ggplot(adeno_method, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
   geom_sina() +
   facet_grid(method ~ keep_num)
 ```
 
-`r paste_label("Figure S", supp_figure_count, "adeno_by_keep_num")`. 
+`r supp_figure_count$label_text("adeno_by_keep_num")`. 
 Median correlations by correlation method and applying different fractional cutoffs for TCGA adenocarcinoma RNA-seq data.
 
-```{r adeno_plot_differences}
-supp_figure_count = increment_count(supp_figure_count, "adeno_differences")
+```{r adeno_plot_differences, counter_identifier = supp_figure_count$label_file("adeno_differences")}
 adeno_summary = calculate_variation(adeno_method)
 adeno_diffs = calculate_differences(adeno_summary)
 
@@ -418,5 +448,7 @@ ggplot(adeno_diffs, aes(x = keep_num, y = diff)) +
   labs(x = "Keep Fraction", y = "Normal / Tumor Differences")
 ```
 
-`r paste_label("Figure S", supp_figure_count, "adeno_differences")`. 
+`r supp_figure_count$label_text("adeno_differences")`. 
 Difference of normal and tumor medians and MADs  by correlation method and applying different fractional cutoffs for TCGA adenocarcinoma RNA-seq data.
+
+## References
