@@ -267,7 +267,7 @@ The *true* correlation for each of the Kendall and Pearson correlations were cal
 figure_count$increment("missing2cor")
 ```
 
-```{r compare_realistic, fig.width = 8, fig.height = 8, counter_identifier = figure_count$label_file("missing2cor")}
+```{r compare_realistic, fig.width = 8, fig.height = 8, dn_id = figure_count$label_file("missing2cor")}
 loadd(realistic_sample_1)
 loadd(realistic_sample_2)
 loadd(realistic_neg_sample)
@@ -371,7 +371,7 @@ These results demonstrate that the ICI-Kt correlation has quantitative sensitivi
 figure_count$increment("leftcensored")
 ```
 
-```{r left_censored_vs_random, fig.height = 8, fig.width = 8, counter_identifier = figure_count$label_file("leftcensored")}
+```{r left_censored_vs_random, fig.height = 8, fig.width = 8, dn_id = figure_count$label_file("leftcensored")}
 figure_count$increment("f_leftcensored")
 loadd(left_censored_cor)
 left_censored_cor = left_censored_cor %>%
@@ -464,7 +464,7 @@ figure_count$increment("singleperf")
 Zoomed out (inset), the ICI-Kt appears as fast as using "pearson", but upon zooming in, it's possible to see that ICI-Kt is using increasing amounts of time much faster than "pearson".
 In fact, regressing the time to number of samples using a formula with the expected algorithmic complexity, "pearson" shows O(n), ICI-Kt is O(nlog(n)), and "kendall" is O(n^2) (see `r supp_figure_count$label_text("complexity")`).
 
-```{r show_performance_graph, counter_identifier = figure_count$label_file("singleperf")}
+```{r show_performance_graph, dn_id = figure_count$label_file("singleperf")}
 s_perf_plot = ggplot(single_core_perf, aes(x = n, y = time, color = method)) +
   geom_line(size = 2) + 
   coord_cartesian(ylim = c(NA, 0.002)) + 
@@ -502,7 +502,7 @@ For this, we ran with small numbers of samples **without** parallelization enabl
 figure_count$increment("multiperformance")
 ```
 
-```{r dependence_number, counter_identifier = figure_count$label_file("multiperformance")}
+```{r dependence_number, dn_id = figure_count$label_file("multiperformance")}
 
 loadd(combined_big)
 combined_big = combined_big %>%
@@ -550,7 +550,7 @@ For each dataset and correlation-related metric, the median correlation for a sa
 compare_yeast_main = c("icikt", "icikt_complete", "pearson_log1p")
 ```
 
-```{r yeast_outlier_figure, counter_identifier = figure_count$label_file("yeast_outliers")}
+```{r yeast_outlier_figure, dn_id = figure_count$label_file("yeast_outliers")}
 yeast_single %>%
   add_method() %>%
   dplyr::filter(which %in% compare_yeast_main) %>%
@@ -579,7 +579,7 @@ In this example, ICI-Kt shows superior sensitivity for outlier detection as comp
 We also note that these outliers seem to be a superset of the outliers noted by Gierlinski et al. (see `r supp_figure_count$label_text("yeast_outliers")` and `r supp_table_count$label_text("yeast_outliers")`).
 
 
-```{r brainsonseq_figure, counter_identifier = figure_count$label_file("brainson_outliers")}
+```{r brainsonseq_figure, dn_id = figure_count$label_file("brainson_outliers")}
 brainson_single %>%
   add_method() %>%
   dplyr::filter(which %in% compare_brainson) %>%
@@ -605,7 +605,7 @@ brainson_ft_out
 Likewise, `r table_count$label_text("brainson_outliers")` lists the outliers detected based on each metric.
 In this example, Pearson shows superior sensitivity to outlier detection, likely due to the larger spread in median Pearson correlation values.
 
-```{r adeno_figure, counter_identifier = figure_count$label_file("adeno_outliers")}
+```{r adeno_figure, dn_id = figure_count$label_file("adeno_outliers")}
 adeno_single %>%
   add_method() %>%
   dplyr::filter(which %in% compare_adeno) %>%
@@ -647,7 +647,7 @@ loadd(ref_cor)
 figure_count$increment("icisubsampling")
 ```
 
-```{r load_ici_timings, fig.height = 8, fig.width = 5, counter_identifier = figure_count$label_file("icisubsampling")}
+```{r load_ici_timings, fig.height = 8, fig.width = 5, dn_id = figure_count$label_file("icisubsampling")}
 
 loadd(run_random_select_random_fraction_0.01)
 loadd(run_random_select_random_fraction_0.1)
@@ -720,7 +720,7 @@ figure_count$increment("pcavardifference")
 In addition to the random feature subsamples, we also implemented feature selection methods based on loading contributions to each PC, as well as feature variances in the full data set (see Methods).
 As shown in `r figure_count$label_text("pcavardifference")`, both of these feature selection methods perform extremely poorly, even at the relatively large fraction of 50% of the features.
 
-```{r poor_pca_var, counter_identifier = figure_count$label_file("pcavardifference")}
+```{r poor_pca_var, dn_id = figure_count$label_file("pcavardifference")}
 loadd(run_nonrandom_select_nonrandom_fraction_0.5_var_select)
 loadd(run_nonrandom_select_nonrandom_fraction_0.5_pca_select)
 diff_var = data.frame(ref = extract_data(ref_cor),
@@ -764,7 +764,7 @@ figure_count$increment("pcaeval")
 
 Outside of the differences between the subset and full set of correlations, we also evaluated each of the feature subsets using the correlation between loading fraction and principal component contributed variance (see `r figure_count$label_text("pcaeval")` A & B), and the difference between the median loading fraction and the intended fraction (C & D).
 
-```{r nonrandom_pca, counter_identifier = figure_count$label_file("pcaeval")}
+```{r nonrandom_pca, dn_id = figure_count$label_file("pcaeval")}
 loadd(pca_eval_summary)
 pca_eval_summary = pca_eval_summary %>%
   dplyr::mutate(Method = dplyr::case_when(

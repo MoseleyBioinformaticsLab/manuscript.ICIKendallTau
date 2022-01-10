@@ -4,7 +4,7 @@ create_complexity_figure = function(single_core_perf){
   
   p_comp = ggplot(pearson, aes(x = n, y = time)) + geom_line() +
     geom_smooth(method = "lm", formula = y ~ (x)) +
-    labs(subtitle = "r_pearson, O(n)",
+    labs(subtitle = 'stats::cor(method = "pearson"), O(n)',
          x = "Number of Features",
          y = "time (s)")
   
@@ -13,7 +13,7 @@ create_complexity_figure = function(single_core_perf){
   
   k_comp = ggplot(kendall, aes(x = n, y = time)) + geom_line() +
     geom_smooth(method = "lm", formula = y ~ I(x^2)) +
-    labs(subtitle = "r_kendall, O(n^2)",
+    labs(subtitle = 'stats::cor(method = "kendall"), O(n^2)',
          x = "Number of Features",
          y = "time (s)")
   
@@ -22,7 +22,7 @@ create_complexity_figure = function(single_core_perf){
   
   ici_comp = ggplot(ici, aes(x = n, y = time)) + geom_line() +
     geom_smooth(method = "lm", formula = y ~ x * log(x)) +
-    labs(subtitle = "ici_kt, O(nlog(n))",
+    labs(subtitle = "ICIKendallTau::ici_kt(), O(nlog(n))",
          x = "Number of Features",
          y = "Time (s)")
   

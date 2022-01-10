@@ -280,15 +280,15 @@
     },
     "documentNumbering": {
       "Package": "documentNumbering",
-      "Version": "0.0.2",
+      "Version": "0.0.3",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "documentNumbering",
       "RemoteUsername": "rmflight",
       "RemoteRef": "HEAD",
-      "RemoteSha": "45fe6ce3bc784bf97501ce3e3a41472f9a294d69",
-      "Hash": "2420c6c131ff9b0325e5c9c9d857a05a"
+      "RemoteSha": "868d414f40cae8f65c31fc2d42c9a4a007832a13",
+      "Hash": "8e601e6e14c55671edc199c4e29a6a95"
     },
     "dotenv": {
       "Package": "dotenv",
