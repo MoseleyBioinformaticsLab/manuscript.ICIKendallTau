@@ -16,7 +16,9 @@ knitr::opts_chunk$set(echo = FALSE,
                       message = FALSE, 
                       fig.width = 8, 
                       fig.height = 6, 
-                      fig.process = dn_modify_path)
+                      fig.process = dn_modify_path,
+                      dpi = 600,
+                      dev.args = list(png = list(type = "cairo")))
 
 figure_count = dn_counter$new("Figure ", "_")
 table_count = dn_counter$new("Table ", "_")
@@ -67,7 +69,7 @@ Imputation or replacement with zero is likely to lead to high inflation of Pears
 Other approaches keep only those features with no missing values across experimental samples (complete cases), or keep non-missing between any pair of experimental samples (pairwise complete cases).
 Each of these are likely to deviate from the real sample-sample correlation values, especially with respect to specific data interpretation perspectives.
 
-```{r include_figure1, counter_identifer = figure_count$label_file("problem")}
+```{r include_figure1, dn_id = figure_count$label_file("problem")}
 knitr::include_graphics(here::here("doc/the_problem.png"))
 ```
 
@@ -465,6 +467,13 @@ Zoomed out (inset), the ICI-Kt appears as fast as using "pearson", but upon zoom
 In fact, regressing the time to number of samples using a formula with the expected algorithmic complexity, "pearson" shows O(n), ICI-Kt is O(nlog(n)), and "kendall" is O(n^2) (see `r supp_figure_count$label_text("complexity")`).
 
 ```{r show_performance_graph, dn_id = figure_count$label_file("singleperf")}
+single_core_perf = single_core_perf %>%
+  dplyr::mutate(method2 = dplyr::case_when(
+    method %in% "ici_kt" ~ "ICIKendallTau::ici_kt()",
+    method %in% "r_pearson" ~ 'stats::cor(method = "pearson")',
+    method %in% "r_kendall" ~ 'stats::cor(method = "kendall")'
+  )) %>%
+  dplyr::mutate(method = method2)
 s_perf_plot = ggplot(single_core_perf, aes(x = n, y = time, color = method)) +
   geom_line(size = 2) + 
   coord_cartesian(ylim = c(NA, 0.002)) + 
@@ -472,9 +481,9 @@ s_perf_plot = ggplot(single_core_perf, aes(x = n, y = time, color = method)) +
   labs(x = "Number of Features", y = "Time (s)")
 #s_perf_plot
 
-mod_perf = dplyr::filter(single_core_perf, method %in% "ici_kt")
+mod_perf = dplyr::filter(single_core_perf, grepl("ici_kt", method))
 mod_perf$time = mod_perf$time + 0.015
-single_no_ici = dplyr::filter(single_core_perf, !(method %in% "ici_kt"))
+single_no_ici = dplyr::filter(single_core_perf, !(grepl("ici_kt", method)))
 core_perf2 = bind_rows(
   mod_perf,
   single_no_ici
@@ -556,7 +565,8 @@ yeast_single %>%
   dplyr::filter(which %in% compare_yeast_main) %>%
   ggplot(aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
   geom_sina() +
-  facet_wrap(~ method, nrow = 1)
+  facet_wrap(~ method, nrow = 1) +
+  labs(x = "Sample Class", y = "Median Correlation")
 ```
 
 `r figure_count$label_text("yeast_outliers")`.
@@ -585,7 +595,8 @@ brainson_single %>%
   dplyr::filter(which %in% compare_brainson) %>%
   ggplot(aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
   geom_sina() + 
-  facet_wrap(~ method, nrow = 1)
+  facet_wrap(~ method, nrow = 1) +
+  labs(x = "Sample Class", y = "Median Correlation")
 ```
 
 `r figure_count$label_text("brainson_outliers")`. 
@@ -611,7 +622,8 @@ adeno_single %>%
   dplyr::filter(which %in% compare_adeno) %>%
   ggplot(aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
   geom_sina() + 
-  facet_wrap(~ method, nrow = 1)
+  facet_wrap(~ method, nrow = 1) +
+  labs(x = "Sample Class", y = "Median Correlation")
 ```
 
 `r figure_count$label_text("adeno_outliers")`.

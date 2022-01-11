@@ -172,7 +172,7 @@ yeast_single2 %>%
 ```
 
 `r supp_figure_count$label_text("yeast_outliers")`.
-Median correlations for each of the yeast RNA-Seq sample to all other samples in the same group, using either ICI-Kt, ICI-Kt * completeness, Pearson correlation, or from the Gierlinski manuscript.
+Median correlations for each of the yeast RNA-Seq sample to all other samples in the same group, using different correlation measures on different data. Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; M: Manuscript; PL1: Pearson Log(x + 1); PN0: Pearson No Zeros.
 
 
 ```{r yeast_outlier_table}
@@ -183,6 +183,7 @@ supp_table_count$increment("yeast_outliers")
 
 `r supp_table_count$label_text("yeast_outliers")`.
 Yeast dataset median correlation values and outlier determination for each outlier from each of the correlation methods.
+Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; M: Manuscript; PL1: Pearson Log(x + 1); PN0: Pearson No Zeros.
 
 ```{r yeast_table2}
 #yeast_ft_out = set_caption(yeast_table,
@@ -226,6 +227,9 @@ brainson_single %>%
   facet_wrap(~ method, nrow = 1) +
   labs(x = "Sample Class", y = "Median Correlation")
 ```
+
+`r supp_figure_count$label_text("brainson_outliers")`.
+Median correlations for each of the Brainson RNA-Seq sample to all other samples in the same group, using different correlation measures on different data. 
 
 `r supp_figure_count$label_text("brainson_outliers")` shows the effect of including the pairwise completeness measure, where the "total" tumor samples have a higher correlation than the "sorted" samples where a specific subset of cells were collected from each sample and sequenced.
 This is due to having more genes with non-zero reads in general over the sorted samples.
@@ -281,7 +285,8 @@ adeno_single %>%
   dplyr::filter(which %in% compare_adeno) %>%
   ggplot(aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
   geom_sina() +
-  facet_wrap(~ method, nrow = 1)
+  facet_wrap(~ method, nrow = 1) +
+  labs(x = "Sample Class", y = "Median Correlation")
 ```
 
 `r supp_figure_count$label_text("adeno_outliers")`.
@@ -349,21 +354,24 @@ all_yeast2 = all_yeast %>%
   clear_outliers()
 ggplot(all_yeast2, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) + 
   geom_sina() +
-  facet_grid(keep_num ~ method)
+  facet_grid(keep_num ~ method) +
+  labs(x = "Sample Class", y = "Median Correlation")
 ```
 
 `r supp_figure_count$label_text("yeast_by_method")`.
 Median correlations by correlation method and applying different fractional cutoffs.
+Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; Kt: Kendall-tau; PB: Pearson Base (raw values); PL: Pearson Log(x); PL1: Pearson Log(x + 1); PN0: Pearson No Zeros.
 
 ```{r yeast_by_fraction, dn_id = supp_figure_count$label_file("yeast_by_keep_num")}
 ggplot(all_yeast2, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
   geom_sina() +
-  facet_grid(method ~ keep_num)
+  facet_grid(method ~ keep_num) +
+  labs(x = "Sample Class", y = "Median Correlation")
 ```
 
 `r supp_figure_count$label_text("yeast_by_keep_num")`.
 Median correlations by applying different fractional cutoffs and different correlation methods.
-
+Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; Kt: Kendall-tau; PB: Pearson Base (raw values); PL: Pearson Log(x); PL1: Pearson Log(x + 1); PN0: Pearson No Zeros.
 
 ```{r yeast_plot_differences, dn_id = supp_figure_count$label_file("yeast_differences")}
 yeast_summary = calculate_variation(all_yeast2)
@@ -378,7 +386,7 @@ ggplot(yeast_diffs, aes(x = keep_num, y = diff)) +
 
 `r supp_figure_count$label_text("yeast_differences")`.
 Difference between WT and Snf2 group medians and MAD for the different correlation methods and gene presence fractions.
-
+Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; Kt: Kendall-tau; PB: Pearson Base (raw values); PL: Pearson Log(x); PL1: Pearson Log(x + 1); PN0: Pearson No Zeros.
 
 ### Brainson Samples
 
@@ -401,7 +409,7 @@ ggplot(all_brainson_method, aes(x = sample_class, y = med_cor, color = outlier, 
 
 `r supp_figure_count$label_text("brainson_by_method")`.
 Median correlations by correlation method and applying different fractional cutoffs for Brainson RNA-seq data.
-
+Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; Kt: Kendall-tau; PB: Pearson Base (raw values); PL: Pearson Log(x); PL1: Pearson Log(x + 1); PN0: Pearson No Zeros.
 
 ```{r brainson_plot2, dn_id = supp_figure_count$label_file("brainson_by_keep_num")}
 ggplot(all_brainson_method, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) + 
@@ -412,7 +420,7 @@ ggplot(all_brainson_method, aes(x = sample_class, y = med_cor, color = outlier, 
 
 `r supp_figure_count$label_text("brainson_by_keep_num")`.
 Median correlations by correlation method and applying different fractional cutoffs for Brainson RNA-seq data.
-
+Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; Kt: Kendall-tau; PB: Pearson Base (raw values); PL: Pearson Log(x); PL1: Pearson Log(x + 1); PN0: Pearson No Zeros.
 
 ```{r brainson_plot_differences, dn_id = supp_figure_count$label_file("brainson_differences")}
 brainson_summary = calculate_variation(all_brainson_method)
@@ -427,7 +435,7 @@ ggplot(brainson_diffs, aes(x = keep_num, y = diff)) +
 
 `r supp_figure_count$label_text("brainson_differences")`.
 Difference between sorted and total sample group medians and MAD for the different correlation methods and gene presence fractions.
-
+Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; Kt: Kendall-tau; PB: Pearson Base (raw values); PL: Pearson Log(x); PL1: Pearson Log(x + 1); PN0: Pearson No Zeros.
 
 ### Adenocarcinoma
 
@@ -449,6 +457,7 @@ ggplot(adeno_method, aes(x = sample_class, y = med_cor, color = outlier, group =
 
 `r supp_figure_count$label_text("adeno_by_method")`. 
 Median correlations by correlation method and applying different fractional cutoffs for TCGA adenocarcinoma RNA-seq data.
+Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; Kt: Kendall-tau; PB: Pearson Base (raw values); PL: Pearson Log(x); PL1: Pearson Log(x + 1); PN0: Pearson No Zeros.
 
 ```{r adeno_by_fraction, dn_id = supp_figure_count$label_file("adeno_by_keep_num")}
 ggplot(adeno_method, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
@@ -459,6 +468,7 @@ ggplot(adeno_method, aes(x = sample_class, y = med_cor, color = outlier, group =
 
 `r supp_figure_count$label_text("adeno_by_keep_num")`. 
 Median correlations by correlation method and applying different fractional cutoffs for TCGA adenocarcinoma RNA-seq data.
+Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; Kt: Kendall-tau; PB: Pearson Base (raw values); PL: Pearson Log(x); PL1: Pearson Log(x + 1); PN0: Pearson No Zeros.
 
 ```{r adeno_plot_differences, dn_id = supp_figure_count$label_file("adeno_differences")}
 adeno_summary = calculate_variation(adeno_method)
@@ -473,5 +483,6 @@ ggplot(adeno_diffs, aes(x = keep_num, y = diff)) +
 
 `r supp_figure_count$label_text("adeno_differences")`. 
 Difference of normal and tumor medians and MADs  by correlation method and applying different fractional cutoffs for TCGA adenocarcinoma RNA-seq data.
+Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; Kt: Kendall-tau; PB: Pearson Base (raw values); PL: Pearson Log(x); PL1: Pearson Log(x + 1); PN0: Pearson No Zeros.
 
 ## References
