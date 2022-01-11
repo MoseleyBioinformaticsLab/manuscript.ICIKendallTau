@@ -42,7 +42,7 @@ With both simulated and real data sets from RNA-seq experiments, we demonstrate 
 Moreover, our implementation of ICI-Kt uses a mergesort-like algorithm that provides nlog(n) computational performance. 
 Finally, we show that approximate ICI-Kt values can be calculated using smaller subsets of large data sets with significant time savings, which has practical computational value when feature sizes are very large.
 
-The ICI-Kt correlation calculation is available in an R package and Python module on GitHub at https://github.com/moseleyBionformaticsLab/ICIKendallTau and XXX, respectively.
+The ICI-Kt correlation calculation is available in an R package and Python module on GitHub at https://github.com/moseleyBionformaticsLab/ICIKendallTau and https://github.com/moseleyBionformaticsLab/icikt, respectively.
 
 ## Introduction
 
