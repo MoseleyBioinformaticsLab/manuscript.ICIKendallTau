@@ -259,6 +259,10 @@ the_plan <-
    random_censored_cor = random_censor_correlate(left_censored_samples),
    logtransform_censored_cor = lt_left_censor_correlate(left_censored_samples),
    
+   subsample = sample(1000, 50),
+   left_sample_cor = left_censor_correlate(left_censored_samples[subsample, ]),
+   random_sample_cor = random_censor_correlate(left_censored_samples[subsample, ]),
+   logtransform_sample_cor = lt_left_censor_correlate(left_censored_samples[subsample, ]),
    
    brainsonrnaseq_counts = readRDS(here::here("data", "brainson_rnaseq201901_counts.rds")),
    brainsonrnaseq_info = readRDS(here::here("data", "brainson_rnaseq201901_info.rds")),

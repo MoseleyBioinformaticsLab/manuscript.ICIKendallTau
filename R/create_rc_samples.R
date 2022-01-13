@@ -21,18 +21,23 @@ left_censor_correlate = function(lc_samples, cut_values = seq(0, 1.5, by = 0.1))
     tmp_lc[tmp_lc < in_cut] = NA
     n_na = sum(is.na(tmp_lc))
     
-    ici_cor = ici_kt(tmp_lc[, 1], tmp_lc[, 2], perspective = "global")[1]
-    p_cor = cor(tmp_lc[, 1], tmp_lc[, 2], use = "pairwise.complete.obs", method = "pearson")
-    k_cor = cor(tmp_lc[, 1], tmp_lc[, 2], use = "pairwise.complete.obs", method = "kendall")
+    ici_cor = ici_kt(tmp_lc[, 1], tmp_lc[, 2], perspective = "global")
+    p_cor = cor.test(tmp_lc[, 1], tmp_lc[, 2], use = "pairwise.complete.obs", method = "pearson")
+    k_cor = cor.test(tmp_lc[, 1], tmp_lc[, 2], use = "pairwise.complete.obs", method = "kendall")
     tmp_lc[is.na(tmp_lc)] = 0
-    p_cor_0 = cor(tmp_lc[, 1], tmp_lc[, 2], method = "pearson")
-    k_cor_0 = cor(tmp_lc[, 1], tmp_lc[, 2], method = "kendall")
+    p_cor_0 = cor.test(tmp_lc[, 1], tmp_lc[, 2], method = "pearson")
+    k_cor_0 = cor.test(tmp_lc[, 1], tmp_lc[, 2], method = "kendall")
     
-    data.frame(cor = c(ici_cor,
-                       p_cor,
-                       k_cor,
-                       p_cor_0,
-                       k_cor_0),
+    data.frame(cor = c(ici_cor["tau"],
+                       p_cor$estimate,
+                       k_cor$estimate,
+                       p_cor_0$estimate,
+                       k_cor_0$estimate),
+               p_value = c(ici_cor["pvalue"],
+                           p_cor$p.value,
+                           k_cor$p.value,
+                           p_cor_0$p.value,
+                           k_cor_0$p.value),
                which = c("ici",
                          "pearson",
                          "kendall",
@@ -53,18 +58,23 @@ lt_left_censor_correlate = function(lc_samples, cut_values = seq(0, 1.5, by = 0.
     
     tmp_lc = log(tmp_lc)
     
-    ici_cor = ici_kt(tmp_lc[, 1], tmp_lc[, 2], perspective = "global")[1]
-    p_cor = cor(tmp_lc[, 1], tmp_lc[, 2], use = "pairwise.complete.obs", method = "pearson")
-    k_cor = cor(tmp_lc[, 1], tmp_lc[, 2], use = "pairwise.complete.obs", method = "kendall")
+    ici_cor = ici_kt(tmp_lc[, 1], tmp_lc[, 2], perspective = "global")
+    p_cor = cor.test(tmp_lc[, 1], tmp_lc[, 2], use = "pairwise.complete.obs", method = "pearson")
+    k_cor = cor.test(tmp_lc[, 1], tmp_lc[, 2], use = "pairwise.complete.obs", method = "kendall")
     tmp_lc[is.na(tmp_lc)] = 0
-    p_cor_0 = cor(tmp_lc[, 1], tmp_lc[, 2], method = "pearson")
-    k_cor_0 = cor(tmp_lc[, 1], tmp_lc[, 2], method = "kendall")
+    p_cor_0 = cor.test(tmp_lc[, 1], tmp_lc[, 2], method = "pearson")
+    k_cor_0 = cor.test(tmp_lc[, 1], tmp_lc[, 2], method = "kendall")
     
-    data.frame(cor = c(ici_cor,
-                       p_cor,
-                       k_cor,
-                       p_cor_0,
-                       k_cor_0),
+    data.frame(cor = c(ici_cor["tau"],
+                       p_cor$estimate,
+                       k_cor$estimate,
+                       p_cor_0$estimate,
+                       k_cor_0$estimate),
+               p_value = c(ici_cor["pvalue"],
+                           p_cor$p.value,
+                           k_cor$p.value,
+                           p_cor_0$p.value,
+                           k_cor_0$p.value),
                which = c("ici",
                          "pearson",
                          "kendall",
@@ -86,24 +96,29 @@ random_censor_correlate = function(lc_samples, n_na = seq(0, 250, 50), nrep = 10
       na_locs = sample(n_total, in_na)
       tmp_lc[na_locs] = NA
       
-      ici_cor = ici_kt(tmp_lc[, 1], tmp_lc[, 2], perspective = "global")[[1]]
-      p_cor = cor(tmp_lc[, 1], tmp_lc[, 2], use = "pairwise.complete.obs", method = "pearson")
-      k_cor = cor(tmp_lc[, 1], tmp_lc[, 2], use = "pairwise.complete.obs", method = "kendall")
+      ici_cor = ici_kt(tmp_lc[, 1], tmp_lc[, 2], perspective = "global")
+      p_cor = cor.test(tmp_lc[, 1], tmp_lc[, 2], use = "pairwise.complete.obs", method = "pearson")
+      k_cor = cor.test(tmp_lc[, 1], tmp_lc[, 2], use = "pairwise.complete.obs", method = "kendall")
       tmp_lc[is.na(tmp_lc)] = 0
-      p_cor_0 = cor(tmp_lc[, 1], tmp_lc[, 2], method = "pearson")
-      k_cor_0 = cor(tmp_lc[, 1], tmp_lc[, 2], method = "kendall")
+      p_cor_0 = cor.test(tmp_lc[, 1], tmp_lc[, 2], method = "pearson")
+      k_cor_0 = cor.test(tmp_lc[, 1], tmp_lc[, 2], method = "kendall")
       
-      tmp_frame = data.frame(cor = c(ici_cor,
-                                     p_cor,
-                                     k_cor,
-                                     p_cor_0,
-                                     k_cor_0),
+      tmp_frame = data.frame(cor = c(ici_cor["tau"],
+                                     p_cor$estimate,
+                                     k_cor$estimate,
+                                     p_cor_0$estimate,
+                                     k_cor_0$estimate),
+                             p_value = c(ici_cor["pvalue"],
+                                         p_cor$p.value,
+                                         k_cor$p.value,
+                                         p_cor_0$p.value,
+                                         k_cor_0$p.value),
                              which = c("ici",
                                        "pearson",
                                        "kendall",
                                        "pearson_0",
                                        "kendall_0"),
-                             n_na = in_na,
+                             n_na = n_na,
                              cutoff = 0)
       #tmp_frame$na_locs = list(na_locs)
       tmp_frame
