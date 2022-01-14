@@ -79,7 +79,7 @@ The true analyte concentration range covers the full range of the density distri
 An example density plot of the analyte concentrations for a single experimental sample is shown as a solid line, and the instrument response to concentration as a dashed line.
 Below certain analyte concentrations, highlighted as the red region, the instrument returns missing values, 0, or some other floored value.
 Above certain concentrations, highlighted as the yellow region, all values returned will also be identical (or flagged depending on the instrument).
-Which analytes will have concentrations in the red region may vary from sample to sample due to the overall sample composition, as well as natural variances within each experimental sample.
+Which analytes will have concentrations in the red region may vary from sample to sample due to the overall sample composition, as well as natural variances (non-systematic error) within each experimental sample.
 
 Assuming that a majority of missing values are not missing at random, but rather result from left-censored distributions due to the analyte being below the effective detection limit (see `r figure_count$label_text("problem")`), we propose that these missing values do in fact encode useful information that can be incorporated into correlation calculations, especially the Kendall-tau paired rank correlation coefficient.
 In this manuscript, we propose new definitions of concordant and discordant rank pairs that include missing values, as well as methods for incorporating missing values into the number of tied values for the equivalent of the modified Kendall-tau coefficient.
@@ -174,12 +174,16 @@ Therefore, we used 64 bit integers and floats where necessary in the Rcpp code.
 C++ (via *Rcpp* [@eddelbuettel_rcppseamless_2011; @eddelbuettel_seamlessbook_2013; @eddelbuettel_extendingrcpp_2018]) and R code implementations are in the src/kendallc.cpp and R/kendalltau.R files of the ICIKendallTau R package, hosted at https://github.com/MoseleyBioinformaticsLab/ICIKendallTau.
 The version of the package used in this manuscript is available on figshare.
 
-We also implemented a package in Python 3 with the same functionality and similar interface to the R package, hosted on GitHub (https://github.com/MoseleyBioinformaticsLab/icikt) and Python Package Index (https://pypi.org/project/icikt).
-Appropriate portions of the package were cythonized to achieve similar execution performance to the R package.
-
 When a large number of samples need to be compared, it may be useful to split the comparisons across compute instances (across hyperthreaded cores, physical cores, or physical compute nodes).
 The *furrr* R package makes the definition of compute clusters easy.
 For a large correlation matrix computation, we first define the sample-sample comparisons to be performed, then check how many instances of compute are available (defined by a previous call to *furrr*), and finally split the comparisons into a list that can be easily distributed using the *furrr::future_map* function.
+
+We also implemented a package in Python 3 with the same functionality and similar interface to the R package, hosted on GitHub (https://github.com/MoseleyBioinformaticsLab/icikt) and Python Package Index (https://pypi.org/project/icikt).
+Appropriate portions of the package were cythonized to achieve similar execution performance to the R package.
+We used the *multiprocessing* Python package to distribute the sample-sample comparisons calculations across cores with very little overhead.
+This package includes both an application programming interface (API) with equivalent parameter options to the R package implementation and a command line interface (CLI) for generating straight-forward correlation matrix analyses without the need to write Python scripts.
+
+
 Likewise, the *multiprocessing* python package makes it simple to distribute the sample-sample comparisons calculations across cores with very little overhead.
 
 ### Simulated Data Sets
