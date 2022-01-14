@@ -647,11 +647,6 @@ However, the outliers detected are not a complete superset of the outliers detec
 
 #### Feature Subsets for Extremely Large Datasets
 
-```{r pretty_print}
-pretty_print = function(in_val){
-  sprintf(in_val, fmt = '%#.1f')
-}
-```
 
 ```{r load_data}
 loadd(transcript_data)
