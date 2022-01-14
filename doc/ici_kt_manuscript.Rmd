@@ -720,6 +720,10 @@ However, there is a consistent positive bias in the estimate, regardless of the 
 This bias is small, because we are comparing the **raw** correlation values, and not the rescaled values.
 When the rescaled values (using the maximum correlation) are compared, the positive bias becomes larger, due to the differences in the maximum correlation (results not shown).
 
+We note here that the theoretical assumption of linearity seems to be important for enabling the use of feature subsets.
+In the case of Pearson correlation (see supp_figure_count$label_text("pearson_subsampling)), the differences in obtained correlation values are much, much larger, with differences decreasing much slower than ICI-Kt and Kendall-tau.
+In fact, the differences in the Pearson correlation subset differences standard deviations never get as small as those obtained using via ICI-Kt and Kendall-tau.
+
 ```{r setup_pca_variancefig}
 figure_count$increment("pcavardifference")
 ```
