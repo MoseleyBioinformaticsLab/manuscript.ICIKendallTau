@@ -231,7 +231,7 @@ the_plan <-
    
    combined_random_pearson_0 = target(
      bind_rows(results_random_pearson_0),
-     transform = combine(results_random_pearson)
+     transform = combine(results_random_pearson_0)
    ),
    
    results_random_kendall = target(
