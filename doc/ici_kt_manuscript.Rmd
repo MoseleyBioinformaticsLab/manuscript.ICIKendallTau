@@ -22,6 +22,7 @@ knitr::opts_chunk$set(echo = FALSE,
 
 figure_count = dn_counter$new("Figure ", "_")
 table_count = dn_counter$new("Table ", "_")
+table_width = 7.5
 ```
 
 ## Where to Submit
@@ -175,7 +176,7 @@ C++ (via *Rcpp* [@eddelbuettel_rcppseamless_2011; @eddelbuettel_seamlessbook_201
 The version of the package used in this manuscript is available on figshare.
 
 When a large number of samples need to be compared, it may be useful to split the comparisons across compute instances (across hyperthreaded cores, physical cores, or physical compute nodes).
-The *furrr* R package makes the definition of compute clusters easy.
+The *furrr* R package makes the definition of compute clusters easy [@vaughanFurrrApplyMapping2021].
 For a large correlation matrix computation, we first define the sample-sample comparisons to be performed, then check how many instances of compute are available (defined by a previous call to *furrr*), and finally split the comparisons into a list that can be easily distributed using the *furrr::future_map* function.
 
 We also implemented a package in Python 3 with the same functionality and similar interface to the R package, hosted on GitHub (https://github.com/MoseleyBioinformaticsLab/icikt) and Python Package Index (https://pypi.org/project/icikt).
@@ -183,8 +184,6 @@ Appropriate portions of the package were cythonized to achieve similar execution
 We used the *multiprocessing* Python package to distribute the sample-sample comparisons calculations across cores with very little overhead.
 This package includes both an application programming interface (API) with equivalent parameter options to the R package implementation and a command line interface (CLI) for generating straight-forward correlation matrix analyses without the need to write Python scripts.
 
-
-Likewise, the *multiprocessing* python package makes it simple to distribute the sample-sample comparisons calculations across cores with very little overhead.
 
 ### Simulated Data Sets
 
@@ -203,7 +202,7 @@ Missing values are created in these statistical samples via two methods: 1) by c
 This RNA-Seq dataset is from null and knock-in EGFR mice mutants.
 Genotypes include Null (no mutant-EGFR inducible expression), Heterozygous (only one copy of mutant-EGFR), Homozygous (two copies of mutant EGFR).
 For each mutant, they were also grown in different ways and sequenced: (1) 2D plates; (2) 3D organioids; (3) cells sorted and selected using FACS; (4) total tumor without sorting.
-**I think we still need more details from Brainson manuscript or presentation**.
+See [@chenCellularOriginsEGFRDriven2021] for the full experimental details.
 
 ### Yeast RNA-Seq Data Set
 
@@ -336,12 +335,16 @@ negative_df = rbind(realistic_negative_pearson,
                     realistic_negative_kendall,
                     realistic_negative_kt)
 
+use_rows = rep(FALSE, nrow(negative_df))
+use_rows[sample(length(use_rows), 10000)] = TRUE
 negative_df = negative_df %>%
   dplyr::mutate(perc_missing = n_na / max(n_na) * 100,
-                type = factor(type, levels = c("Kendall", "Pearson", "ICI-Kt"), ordered = TRUE))
+                type = factor(type, levels = c("Kendall", "Pearson", "ICI-Kt"), ordered = TRUE)) %>%
+  dplyr::filter(use_rows)
 positive_df = positive_df %>%
   dplyr::mutate(perc_missing = n_na / max(n_na) * 100,
-                type = factor(type, levels = c("Kendall", "Pearson", "ICI-Kt"), ordered = TRUE))
+                type = factor(type, levels = c("Kendall", "Pearson", "ICI-Kt"), ordered = TRUE)) %>%
+  dplyr::filter(use_rows)
 pos_diff = ggplot(positive_df, aes(x = n_na, y = diff)) + 
   geom_point() +
   facet_grid(type ~ ., scales = "free") +
@@ -363,6 +366,7 @@ pos_diff + neg_diff
 ```
 
 `r figure_count$label_text("missing2cor")`. The effect on Kendall, Pearson and ICI-Kt correlations as increasing number of missing values in the bottom half of either sample for both positively and negatively correlated samples.
+A subset of 10000 points was used for visualization.
 Pay attention to the orders of magnitude differences between the y-axis scales.
 
 In `r figure_count$label_text("missing2cor")`, we can see that as missing values are added, only the ICI-Kt correlation values change in any significant way.
@@ -570,7 +574,8 @@ yeast_single %>%
   ggplot(aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
   geom_sina() +
   facet_wrap(~ method, nrow = 1) +
-  labs(x = "Sample Class", y = "Median Correlation")
+  labs(x = "Sample Class", y = "Median Correlation") +
+  theme(legend.position = c(0.75, 0.2))
 ```
 
 `r figure_count$label_text("yeast_outliers")`.
@@ -582,7 +587,9 @@ Yeast dataset median correlation values and outlier determination for each outli
 
 ```{r yeast_outlier_table}
 yeast_table = compare_outlier_tables(yeast_single, compare_yeast_main, sort_var = "pearson_log1p")
-yeast_table = autofit(yeast_table)
+yeast_table = yeast_table %>%
+  autofit() %>%
+  fit_to_width(table_width)
 yeast_table
 ```
 
@@ -600,11 +607,12 @@ brainson_single %>%
   ggplot(aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
   geom_sina() + 
   facet_wrap(~ method, nrow = 1) +
-  labs(x = "Sample Class", y = "Median Correlation")
+  labs(x = "Sample Class", y = "Median Correlation") +
+  theme(legend.position = c(0.75, 0.2))
 ```
 
 `r figure_count$label_text("brainson_outliers")`. 
-Brainson RNA-seq sample outliers calculated from median correlations using ICI-Kt only, ICI-Kt with completeness, and Pearson using logged values.
+Median correlations for each of the Brainson RNA-Seq samples to all other samples in the same group, using either ICI-Kt, ICI-Kt * completeness or Pearson Log(x + 1) correlation.
 
 `r table_count$label_text("brainson_outliers")`.
 Brainson dataset median correlation values and outlier determination for each outlier from each of the correlation methods.
@@ -612,7 +620,9 @@ Brainson dataset median correlation values and outlier determination for each ou
 ```{r brainsonseq_table}
 brainson_table = compare_outlier_tables(brainson_single, compare_brainson, sort_var = "pearson_log1p")
 
-brainson_ft_out = autofit(brainson_table)
+brainson_ft_out = brainson_table #%>%
+#   autofit() %>%
+#   fit_to_width(table_width)
 brainson_ft_out
 ```
 
@@ -627,22 +637,25 @@ adeno_single %>%
   ggplot(aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
   geom_sina() + 
   facet_wrap(~ method, nrow = 1) +
-  labs(x = "Sample Class", y = "Median Correlation")
+  labs(x = "Sample Class", y = "Median Correlation") +
+  theme(legend.position = c(0.75, 0.2))
 ```
 
 `r figure_count$label_text("adeno_outliers")`.
-TCGA adenocarcinoma outliers using various measures of correlation.
+Median correlations for each of the TCGA adenocarcinoma RNA-Seq samples to all other samples in the same group, using either ICI-Kt, ICI-Kt * completeness or Pearson Log(x + 1) correlation.
 
 `r table_count$label_text("adeno_outliers")`.
 TCGA adenocarcinoma dataset median correlation values and outlier determination for each outlier from each of the correlation methods.
 
 ```{r adeno_table}
 adeno_table = compare_outlier_tables(adeno_single, compare_adeno, sort_var = "pearson_log1p")
-adeno_ft_out = autofit(adeno_table)
+adeno_ft_out = adeno_table %>%
+  autofit() %>%
+  fit_to_width(table_width)
 adeno_ft_out
 ```
 
-`r figure_count$label_text("adeno_outliers")` visualizes the sample-specific median metric value calculated from the TGCA RNA-Seq data set, with `r table_count$label_text("adeno_outliers")` listing the outliers detected from each metric.  
+`r figure_count$label_text("adeno_outliers")` visualizes the sample-specific median metric value calculated from the TGCA RNA-Seq data set, with `r table_count$label_text("adeno_outliers")` listing the outliers detected from each metric.
 In this example, the ICI-Kt * completeness correlation demonstrated superior sensitivity for outlier detection, likely due to its better sensitivity to measurement completeness.
 The wider spread of measurement completeness is expected, since TCGA is an aggregate of samples collected from various human cancer patents as compared to the first two examples which were collected from specific experiments in cell culture (`r supp_table_count$label_text("adeno_mad")`).
 The wider spread of measurement completeness is expected, since TCGA is an aggregate of samples collected from various human cancer patients as compared to the first two examples which were collected from specific experiments in cell culture. 
@@ -725,7 +738,7 @@ This bias is small, because we are comparing the **raw** correlation values, and
 When the rescaled values (using the maximum correlation) are compared, the positive bias becomes larger, due to the differences in the maximum correlation (results not shown).
 
 We note here that the theoretical assumption of linearity seems to be important for enabling the use of feature subsets.
-In the case of Pearson correlation (see supp_figure_count$label_text("pearson_subsampling)), the differences in obtained correlation values are much, much larger, with differences decreasing much slower than ICI-Kt and Kendall-tau.
+In the case of Pearson correlation (see `r supp_figure_count$label_text("pearson_subsampling")`), the differences in obtained correlation values are much, much larger, with differences decreasing much slower than ICI-Kt and Kendall-tau.
 In fact, the differences in the Pearson correlation subset differences standard deviations never get as small as those obtained using via ICI-Kt and Kendall-tau.
 
 ```{r setup_pca_variancefig}
@@ -854,17 +867,18 @@ As far as we are aware, previous efforts in this area are concerned with either 
 In the case of (1), there are many imputation methods, and new methods are still being developed, although they tend to be new combinations of old methods to handle the various types of missing values.
 For (2), the maximum likelihood methods generally apply to Pearson and similar types of correlation, as they benefit from the use of regression in the presence of missing data.
 Alvo and Cabilio's work from 1995 [@alvoRankCorrelationMethods1995] is one of the only works we are aware of that attempts to create a general framework for rank based statistics in the presence of missing data.
-However, to our knowledge their framework applies to data that is missing at random versus non-random missing-values, as is the case for analytes that are below the detection limit.
+However, in our understanding their framework applies to data that is missing at random versus non-random missing-values, as is the case for analytes that are below the detection limit.
 Additionally, there does not appear to be a software implementation of Alvo and Cabilio's method available.
-To our knowledge, information-content-informed Kendall-tau (ICI-Kt) is the first correlation method that explicitly attempts to utilize non-random missing values that occur due to being below the detection limit.
+As far as we know, information-content-informed Kendall-tau (ICI-Kt) is the first correlation method that explicitly attempts to utilize non-random missing values that occur due to being below the detection limit.
 ICI-Kt explicitly treats left-censored missing values as correlative information while preserving the full deleterious effects of non-random missing values on the correlation metric.
 Moreover, the ICI-Kt can be combined with measurement completeness to create a composite metric that is quite sensitive to overall data quality on a sample-specific level.
 Also, this ICI-Kt * completeness metric may have applications in cluster detection of single-cell omics data sets.
 
-The implementations of the ICI-Kt in the presented R and Python packages have O(nlogn) performance, making them computationally practical for real-world omics data sets.  
+The implementations of the ICI-Kt in the presented R and Python packages provide a rich set of options for customizing the correlation calculation for a variety of use-cases and interpretations.
+These packages handle missing data in log-transformed data in a safe manner and have O(nlogn) performance, making them computationally practical for real-world omics data sets.  
 Also, these packages provide multiprocessing implementations that take full advantage of modern multi-core central processing units.  
-Furthermore, given the high amount of correlated variance in most real-world high-feature data sets, we demonstrate that random feature subsetting can be utilized to effectively estimate correlation for very large data sets or in situations where sub-second computational performance is needed for non-large data sets.  
-However, care must be taken in selecting subsets of features. 
+Furthermore, given the high amount of correlated variance in most real-world high-feature data sets, we demonstrate that random feature subsetting can be utilized to effectively estimate correlation for very large data sets or in situations where sub-second computational performance is needed for non-large data sets.
+However, care must be taken in selecting subsets of features.
 From the results presented here, random feature subsetting was superior to variance-selective feature subsetting.
 
 As demonstrated with the three RNA-Seq datasets analyzed here, the "best" correlation-related metric will likely depend on the specific dataset and the specific data analysis step.  
@@ -883,5 +897,6 @@ All authors contributed to the writing of the manuscript.
 ## Acknowledgements
 
 The results shown here are in whole or part based upon data generated by the TCGA Research Network: https://www.cancer.gov/tcga.
+This work was supported in part by grants NSF 2020026 (PI Moseley), NSF ACI1626364 (Griffioen, Moseley), P30 CA177558 (PI Evers) via the Markey Cancer Center Biostatistics and Bioinformatics Shared Resource Facility (MCC BB-SRF), P20 GM121327 (PD St. Clair), and P42 ES007380 (PI Pennell) via the Data Management and Analysis Core (DMAC).
 
 ## References
