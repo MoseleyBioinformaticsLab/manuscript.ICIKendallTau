@@ -190,7 +190,9 @@ the_plan <-
                         type = "random",
                         frac = 1),
    ref_pearson = run_fractional_pearson(setup_pearson),
+   ref_pearson_log = run_fractional_pearson(setup_pearson, log_transform = TRUE),
    ref_pearson_0 = run_fractional_pearson(setup_pearson, replace_0 = TRUE),
+   ref_pearson_0_log = run_fractional_pearson(setup_pearson, log_transform = TRUE, replace_0 = TRUE),
    ref_kendall = run_fractional_kendall(setup_pearson),
    ref_kendall_0 = run_fractional_kendall(setup_pearson, replace_0 = TRUE),
    
@@ -199,9 +201,19 @@ the_plan <-
       transform = map(select_random_fraction)
    ),
    
+   run_random_pearson_log = target(
+     run_fractional_pearson(select_random_fraction, log_transform = TRUE),
+     transform = map(select_random_fraction)
+   ),
+   
    run_random_pearson_0 = target(
       run_fractional_pearson(select_random_fraction, replace_0 = TRUE),
       transform = map(select_random_fraction)
+   ),
+   
+   run_random_pearson_0_log = target(
+     run_fractional_pearson(select_random_fraction, log_transform = TRUE, replace_0 = TRUE),
+     transform = map(select_random_fraction)
    ),
    
    run_random_kendall = target(
@@ -224,6 +236,16 @@ the_plan <-
      transform = combine(results_random_pearson)
    ),
    
+   results_random_pearson_log = target(
+     random_2_reference(run_random_pearson_log, ref_pearson_log, "cor"),
+     transform = map(run_random_pearson_log)
+   ),
+   
+   combined_random_pearson_log = target(
+     bind_rows(results_random_pearson_log),
+     transform = combine(results_random_pearson_log)
+   ),
+   
    results_random_pearson_0 = target(
      random_2_reference(run_random_pearson_0, ref_pearson_0, "cor"),
      transform = map(run_random_pearson_0)
@@ -233,6 +255,17 @@ the_plan <-
      bind_rows(results_random_pearson_0),
      transform = combine(results_random_pearson_0)
    ),
+   
+   results_random_pearson_0_log = target(
+     random_2_reference(run_random_pearson_0_log, ref_pearson_0_log, "cor"),
+     transform = map(run_random_pearson_0_log)
+   ),
+   
+   combined_random_pearson_0_log = target(
+     bind_rows(results_random_pearson_0_log),
+     transform = combine(results_random_pearson_0_log)
+   ),
+   
    
    results_random_kendall = target(
      random_2_reference(run_random_kendall, ref_kendall, "cor"),
