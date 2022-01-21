@@ -336,7 +336,8 @@ negative_df = rbind(realistic_negative_pearson,
                     realistic_negative_kt)
 
 use_rows = rep(FALSE, nrow(negative_df))
-use_rows[sample(length(use_rows), 10000)] = TRUE
+n_subset = 10000
+use_rows[sample(length(use_rows), n_subset)] = TRUE
 negative_df = negative_df %>%
   dplyr::mutate(perc_missing = n_na / max(n_na) * 100,
                 type = factor(type, levels = c("Kendall", "Pearson", "ICI-Kt"), ordered = TRUE)) %>%
@@ -366,7 +367,7 @@ pos_diff + neg_diff
 ```
 
 `r figure_count$label_text("missing2cor")`. The effect on Kendall, Pearson and ICI-Kt correlations as increasing number of missing values in the bottom half of either sample for both positively and negatively correlated samples.
-A subset of 10000 points was used for visualization.
+A subset of `r format(n_subset, big.mark = ",", big.interval = 3L)` points was used for visualization.
 Pay attention to the orders of magnitude differences between the y-axis scales.
 
 In `r figure_count$label_text("missing2cor")`, we can see that as missing values are added, only the ICI-Kt correlation values change in any significant way.
@@ -738,8 +739,8 @@ This bias is small, because we are comparing the **raw** correlation values, and
 When the rescaled values (using the maximum correlation) are compared, the positive bias becomes larger, due to the differences in the maximum correlation (results not shown).
 
 We note here that the theoretical assumption of linearity seems to be important for enabling the use of feature subsets.
-In the case of Pearson correlation (see `r supp_figure_count$label_text("pearson_subsampling")`), the differences in obtained correlation values are much, much larger, with differences decreasing much slower than ICI-Kt and Kendall-tau.
-In fact, the differences in the Pearson correlation subset differences standard deviations never get as small as those obtained using via ICI-Kt and Kendall-tau.
+In the case of Pearson correlation (see `r supp_figure_count$label_text("pearson_subsampling")`), the deviations between feature subsample and full feature set correlation values are much, much larger, with deviations decreasing much slower as compared to ICI-Kt and Kendall-tau.
+In fact, the standard deviation of Pearson feature subsample correlations never get as small as those obtained from ICI-Kt and Kendall-tau.
 
 ```{r setup_pca_variancefig}
 figure_count$increment("pcavardifference")
@@ -851,8 +852,8 @@ eval_plot
 ```
 
 `r figure_count$label_text("pcaeval")`. 
-A) Random subsample of 0.5, with % principal component variance against the loading fraction. 
-B) Variance informed subsample of 0.5, % principal component variance against the loading fraction. 
+A) Random feature subsample of 0.5, with % principal component variance against the loading fraction. 
+B) Variance informed feature subsample of 0.5, % principal component variance against the loading fraction. 
 C) Subsample feature fraction plotted against the correlation of the loading fraction with PC variance for each type of subsampling.
 D) Subsample feature fraction  plotted against the percent difference of the median loading fraction to the intended loading fraction, which is also the subsample fraction.
 
@@ -867,7 +868,7 @@ As far as we are aware, previous efforts in this area are concerned with either 
 In the case of (1), there are many imputation methods, and new methods are still being developed, although they tend to be new combinations of old methods to handle the various types of missing values.
 For (2), the maximum likelihood methods generally apply to Pearson and similar types of correlation, as they benefit from the use of regression in the presence of missing data.
 Alvo and Cabilio's work from 1995 [@alvoRankCorrelationMethods1995] is one of the only works we are aware of that attempts to create a general framework for rank based statistics in the presence of missing data.
-However, in our understanding their framework applies to data that is missing at random versus non-random missing-values, as is the case for analytes that are below the detection limit.
+But, in our understanding their framework applies to data that is missing at random versus non-random missing-values, as is the case for analytes that are below the detection limit.
 Additionally, there does not appear to be a software implementation of Alvo and Cabilio's method available.
 As far as we know, information-content-informed Kendall-tau (ICI-Kt) is the first correlation method that explicitly attempts to utilize non-random missing values that occur due to being below the detection limit.
 ICI-Kt explicitly treats left-censored missing values as correlative information while preserving the full deleterious effects of non-random missing values on the correlation metric.
@@ -875,22 +876,23 @@ Moreover, the ICI-Kt can be combined with measurement completeness to create a c
 Also, this ICI-Kt * completeness metric may have applications in cluster detection of single-cell omics data sets.
 
 The implementations of the ICI-Kt in the presented R and Python packages provide a rich set of options for customizing the correlation calculation for a variety of use-cases and interpretations.
-These packages handle missing data in log-transformed data in a safe manner and have O(nlogn) performance, making them computationally practical for real-world omics data sets.  
-Also, these packages provide multiprocessing implementations that take full advantage of modern multi-core central processing units.  
+These packages handle missing values in log-transformed data in a safe manner and have O(nlogn) performance, making them computationally practical for real-world omics data sets.
+Also, these packages provide multiprocessing implementations that take full advantage of modern multi-core central processing units.
 Furthermore, given the high amount of correlated variance in most real-world high-feature data sets, we demonstrate that random feature subsetting can be utilized to effectively estimate correlation for very large data sets or in situations where sub-second computational performance is needed for non-large data sets.
+To our surprise, ICI-Kt was far superior to Pearson at estimating correlation values from subsamples of features.
 However, care must be taken in selecting subsets of features.
 From the results presented here, random feature subsetting was superior to variance-selective feature subsetting.
 
-As demonstrated with the three RNA-Seq datasets analyzed here, the "best" correlation-related metric will likely depend on the specific dataset and the specific data analysis step.  
-Many factors affect this, especially correlation linearity and the modality of measurement value distributions.  
-We would humbly suggest that for most omics datasets, the application of several correlation-related metrics simultaneously would be the best approach for outlier detection in quality control and quality assessment steps.  
-Where one metric lacks outlier detection sensitivity, another metric will prove sensitive.  
+As demonstrated with the three RNA-Seq datasets analyzed here, the "best" correlation-related metric will likely depend on the specific dataset and the specific data analysis step.
+Many factors affect this, especially correlation linearity and the modality of measurement value distributions.
+We would humbly suggest that for most omics datasets, the application of several correlation-related metrics simultaneously would be the best approach for outlier detection in quality control and quality assessment steps.
+Where one metric lacks outlier detection sensitivity, another metric will prove sensitive.
 Therefore, ICI-Kt and composite metrics derived from it should be considered as useful additions to the omics data analysis toolkit.
 
 ## Author Contributions
 
-RMF wrote the code in the ICIKendallTau R package, tested the ICI-Kt correlation code, and wrote all of the analysis code for this manuscript. PSB wrote the Python package. 
-HNBM conceived of the ICI-Kt correlation metric, provided input into code structures, and supervised the analyses and interpretation of results. 
+RMF wrote the code in the ICIKendallTau R package, tested the ICI-Kt correlation code, and wrote all of the analysis code for this manuscript. PSB wrote the Python package.
+HNBM conceived of the ICI-Kt correlation metric, provided input into code structures, and supervised the analyses and interpretation of results.
 All authors contributed to the writing of the manuscript.
 
 
