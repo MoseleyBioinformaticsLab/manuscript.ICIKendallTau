@@ -41,7 +41,7 @@ These missing data are not missing at random, but represent some information by 
 Therefore, we propose an information-content-informed Kendall-tau (ICI-Kt) correlation coefficient that allows missing values to carry explicit information in the determination of concordant and discordant pairs.
 With both simulated and real data sets from RNA-seq experiments, we demonstrate that the ICI-Kt allows for the inclusion of missing data values as interpretable information.
 Moreover, our implementation of ICI-Kt uses a mergesort-like algorithm that provides nlog(n) computational performance. 
-Finally, we show that approximate ICI-Kt values can be calculated using smaller subsets of large data sets with significant time savings, which has practical computational value when feature sizes are very large.
+Finally, we show that approximate ICI-Kt correlations can be calculated using smaller feature subsets of large data sets with significant time savings, which has practical computational value when feature sizes are very large.
 
 The ICI-Kt correlation calculation is available in an R package and Python module on GitHub at https://github.com/moseleyBionformaticsLab/ICIKendallTau and https://github.com/moseleyBionformaticsLab/icikt, respectively.
 
@@ -54,7 +54,7 @@ Moreover, feature-feature correlations can be used to evaluate a dataset based o
 Moreover, correlation is a foundational method for generating biomolecular feature-feature interaction networks, like those provided by STRING [@szklarczyk_string_2017], Genemania [@franz_genemania_2018], and WCGNA [@langfelder_wgcna_2008].
 Feature-feature correlation may also be used to inform which features are used for imputation of missing values [@faquih_missingvalueworkflow_2020].
 Correlation between biological samples as measured from omics data sets may be used for evaluating whether all the samples from a particular condition are truly related to each other, as well as to inform the choice of analysis, and to check for outliers prior to other statistical analyses [@flight_timecourseexploration_2010; @gierlinski_statisticalmodels_2015].
-Outlier detection, in particular, is often required for successful omics data analysis, since any misstep during the experimentation, sample collection, sample preparation, or analytical measurement of individual samples can inject high error and/or variance into the resulting data set [@moseleyERRORANALYSISPROPAGATION2013; @gierlinski_statisticalmodels_2015].
+Outlier detection, in particular, is often required for successful omics data analysis, since any misstep during the experimentation, sample collection, sample preparation, or analytical measurement of individual samples can inject high error and/or variance into the resulting data set [@moseleyErrorAnalysisPropagation2013; @gierlinski_statisticalmodels_2015].
 
 ```{r add_problemfig}
 figure_count$increment("problem")
