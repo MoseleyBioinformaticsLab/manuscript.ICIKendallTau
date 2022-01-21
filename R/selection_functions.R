@@ -56,14 +56,20 @@ run_fractional_correlation = function(in_data){
   cor
 }
 
-run_fractional_pearson = function(in_data, replace_0 = FALSE){
-  if (replace_0) {
-    tmp_data = in_data$data
-    tmp_data[is.na(tmp_data)] = 0
-    in_data$data = tmp_data
+run_fractional_pearson = function(in_data, log_transform = TRUE, replace_0 = FALSE){
+  if (log_transform) {
+    use_data = log(in_data$data)
+  } else {
+    use_data = in_data$data
   }
+  if (replace_0) {
+    tmp_data = use_data
+    tmp_data[is.na(tmp_data)] = 0
+    use_data = tmp_data
+  }
+  
   t1 = Sys.time()
-  out_cor = cor(in_data$data, method = "pearson", use = "pairwise.complete.obs")
+  out_cor = cor(use_data, method = "pearson", use = "pairwise.complete.obs")
   t2 = Sys.time()
   t_res = as.numeric(difftime(t2, t1, units = "secs"))
   res = list(cor = out_cor,
