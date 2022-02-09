@@ -56,7 +56,7 @@ run_fractional_correlation = function(in_data){
   cor
 }
 
-run_fractional_pearson = function(in_data, log_transform = TRUE, replace_0 = FALSE){
+run_fractional_pearson = function(in_data, log_transform = FALSE, replace_0 = FALSE){
   if (log_transform) {
     use_data = log(in_data$data)
   } else {
