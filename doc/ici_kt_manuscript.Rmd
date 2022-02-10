@@ -239,6 +239,11 @@ For (2), selection by variance, feature variances across samples were calculated
 For (3), selection by variance of the principal components, principal component analysis (PCA) decomposition was performed on the full data set, the variance contribution of each PC calculated, and then the percent variance for each principal component (PC) is used to determine the number of features with high loadings to select from the given PC.
 In this feature subsampling approach, weaker PCs contribute proportionately fewer features to the feature subset.
 
+Correlation values calculated using Pearson correlation were calculated on log-transformed values in two ways: 
+(1) just using the log-transformed values and leaving missing (NA) values as missing (Pearson);
+(2) after log-transforming values, any missing (NA) were replaced with 0 (Pearson 0). This should be fine as the non-zero entries are all greater than 1.
+For both Pearson methods, only features that are non-missing in both samples being compared are used for the correlation.
+
 ### Principal Component Evaluation of Subsample Coverage
 
 The principal component decomposition of the full adenocarcinoma dataset was used to define the loadings for each principal component.
@@ -734,13 +739,12 @@ However, given that there may still be cases where the number of comparisons are
 
 `r figure_count$label_text("icisubsampling")` compares the sample-sample correlations from a random percent subsample of features to those obtained using all of the features.
 Both the pairwise plot (left) and histogram of residual differences (right) show that the correlations become much closer to those obtained when using all of the features as the percentage of subsampled features is increased.
-However, there is a consistent positive bias in the estimate, regardless of the number of subsamples used.
+However, there is a consistent positive bias in the estimate, regardless of the number of subsamples used (see also `r supp_figure_count$label_text("icikt_subsampling")`.
 This bias is small, because we are comparing the **raw** correlation values, and not the rescaled values.
 When the rescaled values (using the maximum correlation) are compared, the positive bias becomes larger, due to the differences in the maximum correlation (results not shown).
 
-We note here that the theoretical assumption of linearity seems to be important for enabling the use of feature subsets.
-In the case of Pearson correlation (see `r supp_figure_count$label_text("pearson_subsampling")`), the deviations between feature subsample and full feature set correlation values are much, much larger, with deviations decreasing much slower as compared to ICI-Kt and Kendall-tau.
-In fact, the standard deviation of Pearson feature subsample correlations never get as small as those obtained from ICI-Kt and Kendall-tau.
+For the Pearson and Kendall correlation methods, the subsampled correlation results are almost identical to the ICI-Kt, with slightly higher residual differences for both Pearson and Kendall over ICI-Kt, and then lower residuals if the missing values (NA)  from log-transformation of zeros are replaced with zero (see `r supp_figure_count$label_text(c("pearson_subsampling", "pearson_sub_overrange", "pearson_subsampling_0", "pearson_sub_overrange_0", "kendall_subsampling", "kendall_overrange", "compare_overrange"))`).
+
 
 ```{r setup_pca_variancefig}
 figure_count$increment("pcavardifference")
@@ -879,7 +883,6 @@ The implementations of the ICI-Kt in the presented R and Python packages provide
 These packages handle missing values in log-transformed data in a safe manner and have O(nlogn) performance, making them computationally practical for real-world omics data sets.
 Also, these packages provide multiprocessing implementations that take full advantage of modern multi-core central processing units.
 Furthermore, given the high amount of correlated variance in most real-world high-feature data sets, we demonstrate that random feature subsetting can be utilized to effectively estimate correlation for very large data sets or in situations where sub-second computational performance is needed for non-large data sets.
-To our surprise, ICI-Kt was far superior to Pearson at estimating correlation values from subsamples of features.
 However, care must be taken in selecting subsets of features.
 From the results presented here, random feature subsetting was superior to variance-selective feature subsetting.
 
