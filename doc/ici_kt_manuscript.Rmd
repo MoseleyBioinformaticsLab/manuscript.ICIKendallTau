@@ -593,10 +593,10 @@ Yeast dataset median correlation values and outlier determination for each outli
 
 ```{r yeast_outlier_table}
 yeast_table = compare_outlier_tables(yeast_single, compare_yeast_main, sort_var = "pearson_log1p")
-yeast_table = yeast_table %>%
-  autofit() %>%
-  fit_to_width(table_width)
-yeast_table
+yeast_ft_out = yeast_table %>%
+  set_nice_widths() %>%
+  put_outlier_right()
+yeast_ft_out
 ```
 
 
@@ -626,10 +626,16 @@ Brainson dataset median correlation values and outlier determination for each ou
 ```{r brainsonseq_table}
 brainson_table = compare_outlier_tables(brainson_single, compare_brainson, sort_var = "pearson_log1p")
 
-brainson_ft_out = brainson_table #%>%
-#   autofit() %>%
-#   fit_to_width(table_width)
+brainson_ft_out = brainson_table %>%
+  set_nice_widths(sample_width = 1.5) %>%
+  put_outlier_right()
 brainson_ft_out
+```
+
+some placeholder text
+
+```{r check_widths}
+dim(brainson_ft_out)$widths
 ```
 
 `r figure_count$label_text("brainson_outliers")` visualizes the sample-specific median of each metric calculated from the polycomb RNA RNA-Seq data set.
@@ -656,8 +662,8 @@ TCGA adenocarcinoma dataset median correlation values and outlier determination 
 ```{r adeno_table}
 adeno_table = compare_outlier_tables(adeno_single, compare_adeno, sort_var = "pearson_log1p")
 adeno_ft_out = adeno_table %>%
-  autofit() %>%
-  fit_to_width(table_width)
+  set_nice_widths() %>%
+  put_outlier_right()
 adeno_ft_out
 ```
 
@@ -745,6 +751,46 @@ When the rescaled values (using the maximum correlation) are compared, the posit
 
 For the Pearson and Kendall correlation methods, the subsampled correlation results are almost identical to the ICI-Kt, with slightly higher residual differences for both Pearson and Kendall over ICI-Kt, and then lower residuals if the missing values (NA)  from log-transformation of zeros are replaced with zero (see `r supp_figure_count$label_text(c("pearson_subsampling", "pearson_sub_overrange", "pearson_subsampling_0", "pearson_sub_overrange_0", "kendall_subsampling", "kendall_overrange", "compare_overrange"))`).
 
+```{r setup_nonlog}
+figure_count$increment("pearson_nolog")
+```
+
+We also tested Pearson correlation subsets without log-transforming the count data first.
+As shown in `r figure_count$label_text("pearson_nolog")`, as well as `r supp_figure_count$label_text("pearson_subsampling_nolog")` and `r supp_figure_count$count("pearson_sub_overrange_nolog")`, when the transcriptomics data is not log-transformed, Pearson correlation using subsets of features deviates wildly from those obtained using the full data set, much more than ICI-Kt or any of the other methods used.
+
+```{r show_pearson_nolog, dn_id = figure_count$label_file("pearson_nolog")}
+combined_focus = all_combined %>%
+  dplyr::filter(method %in% c("ICI-Kt", "Pearson", "Pearson NoLog"))
+combined_focus_nolog = combined_focus %>%
+  dplyr::filter(!(method %in% "Pearson NoLog"))
+
+compare_focus = (ggplot(combined_focus, aes(x = fraction, y = median, color = method)) +
+                   geom_line() +
+                   scale_color_manual(values = use_colors) +
+                   labs(x = "Fraction of Features", y = "Median Correlation Differences") +
+                   theme(legend.position = "none")) /
+                   (ggplot(combined_focus, aes(x = fraction , y = sd, color = method)) +
+                      geom_line() +
+                      scale_color_manual(values = use_colors) +
+                      labs(x = "Fraction of Features", y = "Correlation Differences SD") +
+                      theme(legend.position = "none"))
+
+compare_focus_small = (ggplot(combined_focus_nolog, aes(x = fraction, y = median, color = method)) +
+  geom_line() +
+    scale_color_manual(values = use_colors) +
+  labs(x = "Fraction of Features", y = "Median Correlation Differences") +
+    theme(legend.position = c(0.6, 0.4))) /
+  (ggplot(combined_focus_nolog, aes(x = fraction, y = sd, color = method)) +
+  geom_line() +
+    scale_color_manual(values = use_colors) +
+  labs(x = "Fraction of Features", y = "Correlation Differences SD") +
+    theme(legend.position = "none"))
+
+compare_focus | compare_focus_small
+```
+`r figure_count$label_text("pearson_nolog")`.
+Median (top) and standard deviation (SD, bottom) of correlation differences using subsets as the fraction of features used increases, for different methods, including ICI-Kt, Pearson on log-transformed data (Pearson), and Pearson without log-transforming the data (Pearson NoLog).
+Left shows all three methods compared to each other, while the right omits Pearson NoLog to show the much smaller ranges of values for the other two methods in comparison to the Pearson NoLog.
 
 ```{r setup_pca_variancefig}
 figure_count$increment("pcavardifference")
@@ -894,7 +940,7 @@ Therefore, ICI-Kt and composite metrics derived from it should be considered as 
 
 ## Author Contributions
 
-RMF wrote the code in the ICIKendallTau R package, tested the ICI-Kt correlation code, and wrote all of the analysis code for this manuscript. PSB wrote the Python package.
+RMF wrote the code in the ICIKendallTau R package, tested the ICI-Kt correlation code, and wrote all of the analysis code for this manuscript. PSB wrote the icikt Python package.
 HNBM conceived of the ICI-Kt correlation metric, provided input into code structures, and supervised the analyses and interpretation of results.
 All authors contributed to the writing of the manuscript.
 
