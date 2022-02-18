@@ -87,7 +87,7 @@ We examine the effect of missing values on simulated data, comparing our informa
 We also evaluate the ability of ICI-Kt to capture outlier samples using three different RNA-seq datasets and comparing to a standard method using Pearson correlation.
 Finally, we examine the ability to recapitulate ICI-Kt correlation values calculated on a large feature omics data set using feature subsets, which is useful when the execution time of very large feature data sets becomes computationally prohibitive.
 
-All of the code used for this manuscript is available on figshare [].
+All of the code used for this manuscript is available on figshare [@flightrobertmManuscriptICIKendallTau2022].
 
 ## Methods
 
