@@ -22,7 +22,6 @@ knitr::opts_chunk$set(echo = FALSE,
 
 figure_count = dn_counter$new("Figure ", "_")
 table_count = dn_counter$new("Table ", "_")
-table_width = 7.5
 ```
 
 ## Where to Submit
@@ -70,7 +69,7 @@ Imputation or replacement with zero is likely to lead to high inflation of Pears
 Other approaches keep only those features with no missing values across experimental samples (complete cases), or keep non-missing between any pair of experimental samples (pairwise complete cases).
 Each of these are likely to deviate from the real sample-sample correlation values, especially with respect to specific data interpretation perspectives.
 
-```{r include_figure1, dn_id = figure_count$label_file("problem")}
+```{r problem, dn_id = figure_count}
 knitr::include_graphics(here::here("doc/the_problem.png"))
 ```
 
@@ -87,6 +86,8 @@ In this manuscript, we propose new definitions of concordant and discordant rank
 We examine the effect of missing values on simulated data, comparing our information-content-informed Kendall-tau (ICI-Kt) method with other simpler methods of handling the missing values, namely removing them or imputing them to zero.
 We also evaluate the ability of ICI-Kt to capture outlier samples using three different RNA-seq datasets and comparing to a standard method using Pearson correlation.
 Finally, we examine the ability to recapitulate ICI-Kt correlation values calculated on a large feature omics data set using feature subsets, which is useful when the execution time of very large feature data sets becomes computationally prohibitive.
+
+All of the code used for this manuscript is available on figshare [].
 
 ## Methods
 
@@ -167,20 +168,20 @@ Calculating a set of $tau_{max}$ values between all experimental samples, we can
 We produced an initial reference implementation in R [@rcoreteam_rlanguage_2020] where the various concordant and discordant pair definitions were written as simple logical tests to allow further exploration and validation of faster implementations.
 In practice, it is possible to replace the missing values with a value that is smaller than all of the values in the two sets of values under consideration, and then do tests of signs to define concordant and discordant pairs (see the definitions of concordant and discordant pairs above).
 
-After this initial implementation, we used the SciPy [@virtanen_scipy_2020] kendalltau code as a model to create a mergesort based implementation that has a complexity of O(nlog(n)), in comparison to the pairwise testing that has a complexity of O(n^2) [@knight_mergesortkendall_1966].
+After this initial implementation, we used the *SciPy* [@virtanen_scipy_2020] *kendalltau* code as a model to create a mergesort based implementation that has a complexity of O(nlog(n)), in comparison to the pairwise testing that has a complexity of O(n^2) [@knight_mergesortkendall_1966].
 This provides a 460X speedup of the runtime to compare two feature vectors with lengths of 40,000.
 In comparison to directly counting the concordant and discordant pairs, some of the values in the mergesort implementation can reach the 32 bit default limit in C++.
 Therefore, we used 64 bit integers and floats where necessary in the Rcpp code.
 
 C++ (via *Rcpp* [@eddelbuettel_rcppseamless_2011; @eddelbuettel_seamlessbook_2013; @eddelbuettel_extendingrcpp_2018]) and R code implementations are in the src/kendallc.cpp and R/kendalltau.R files of the ICIKendallTau R package, hosted at https://github.com/MoseleyBioinformaticsLab/ICIKendallTau.
-The version of the package used in this manuscript is available on figshare.
+The version of the package used in this manuscript is available on figshare [@flightICIKendallTau2022].
 
 When a large number of samples need to be compared, it may be useful to split the comparisons across compute instances (across hyperthreaded cores, physical cores, or physical compute nodes).
 The *furrr* R package makes the definition of compute clusters easy [@vaughanFurrrApplyMapping2021].
 For a large correlation matrix computation, we first define the sample-sample comparisons to be performed, then check how many instances of compute are available (defined by a previous call to *furrr*), and finally split the comparisons into a list that can be easily distributed using the *furrr::future_map* function.
 
 We also implemented a package in Python 3 with the same functionality and similar interface to the R package, hosted on GitHub (https://github.com/MoseleyBioinformaticsLab/icikt) and Python Package Index (https://pypi.org/project/icikt).
-Appropriate portions of the package were cythonized to achieve similar execution performance to the R package.
+Appropriate portions of the package were *cythonized* to achieve similar execution performance to the R package.
 We used the *multiprocessing* Python package to distribute the sample-sample comparisons calculations across cores with very little overhead.
 This package includes both an application programming interface (API) with equivalent parameter options to the R package implementation and a command line interface (CLI) for generating straight-forward correlation matrix analyses without the need to write Python scripts.
 
@@ -277,7 +278,7 @@ The *true* correlation for each of the Kendall and Pearson correlations were cal
 figure_count$increment("missing2cor")
 ```
 
-```{r compare_realistic, fig.width = 8, fig.height = 8, dn_id = figure_count$label_file("missing2cor")}
+```{r missing2cor, fig.width = 8, fig.height = 8, dn_id = figure_count}
 loadd(realistic_sample_1)
 loadd(realistic_sample_2)
 loadd(realistic_neg_sample)
@@ -387,7 +388,7 @@ These results demonstrate that the ICI-Kt correlation has quantitative sensitivi
 figure_count$increment("leftcensored")
 ```
 
-```{r left_censored_vs_random, fig.height = 8, fig.width = 8, dn_id = figure_count$label_file("leftcensored")}
+```{r leftcensored, fig.height = 8, fig.width = 8, dn_id = figure_count}
 figure_count$increment("f_leftcensored")
 loadd(left_censored_cor)
 left_censored_cor = left_censored_cor %>%
@@ -480,7 +481,7 @@ figure_count$increment("singleperf")
 Zoomed out (inset), the ICI-Kt appears as fast as using "pearson", but upon zooming in, it's possible to see that ICI-Kt is using increasing amounts of time much faster than "pearson".
 In fact, regressing the time to number of samples using a formula with the expected algorithmic complexity, "pearson" shows O(n), ICI-Kt is O(nlog(n)), and "kendall" is O(n^2) (see `r supp_figure_count$label_text("complexity")`).
 
-```{r show_performance_graph, dn_id = figure_count$label_file("singleperf")}
+```{r singleperf, dn_id = figure_count}
 single_core_perf = single_core_perf %>%
   dplyr::mutate(method2 = dplyr::case_when(
     method %in% "ici_kt" ~ "ICIKendallTau::ici_kt()",
@@ -525,7 +526,7 @@ For this, we ran with small numbers of samples **without** parallelization enabl
 figure_count$increment("multiperformance")
 ```
 
-```{r dependence_number, dn_id = figure_count$label_file("multiperformance")}
+```{r multiperformance, dn_id = figure_count}
 
 loadd(combined_big)
 combined_big = combined_big %>%
@@ -537,7 +538,8 @@ ggplot(combined_big, aes(x = n_sample, y = log2(time))) +
        y = "Log2(Time) (s)")
 ```
 
-`r figure_count$label_text("multiperformance")`. Time taken by ICI-Kt as a function of the number of samples with multi-processing at the R level, using 80 cores.
+`r figure_count$label_text("multiperformance")`. 
+Time taken by ICI-Kt as a function of the number of samples with multi-processing at the R level, using 80 cores.
 
 As samples are added, the run time quickly increases logarithmically, similar to increasing samples on a single core (see `r figure_count$label_text("multiperformance")`).
 
@@ -573,7 +575,7 @@ For each dataset and correlation-related metric, the median correlation for a sa
 compare_yeast_main = c("icikt", "icikt_complete", "pearson_log1p")
 ```
 
-```{r yeast_outlier_figure, dn_id = figure_count$label_file("yeast_outliers")}
+```{r yeast_outliers, dn_id = figure_count}
 yeast_single %>%
   add_method() %>%
   dplyr::filter(which %in% compare_yeast_main) %>%
@@ -606,7 +608,7 @@ In this example, ICI-Kt shows superior sensitivity for outlier detection as comp
 We also note that these outliers seem to be a superset of the outliers noted by Gierlinski et al. (see `r supp_figure_count$label_text("yeast_outliers")` and `r supp_table_count$label_text("yeast_outliers")`).
 
 
-```{r brainsonseq_figure, dn_id = figure_count$label_file("brainson_outliers")}
+```{r brainson_outliers, dn_id = figure_count}
 brainson_single %>%
   add_method() %>%
   dplyr::filter(which %in% compare_brainson) %>%
@@ -632,17 +634,11 @@ brainson_ft_out = brainson_table %>%
 brainson_ft_out
 ```
 
-some placeholder text
-
-```{r check_widths}
-dim(brainson_ft_out)$widths
-```
-
 `r figure_count$label_text("brainson_outliers")` visualizes the sample-specific median of each metric calculated from the polycomb RNA RNA-Seq data set.
 Likewise, `r table_count$label_text("brainson_outliers")` lists the outliers detected based on each metric.
 In this example, Pearson shows superior sensitivity to outlier detection, likely due to the larger spread in median Pearson correlation values.
 
-```{r adeno_figure, dn_id = figure_count$label_file("adeno_outliers")}
+```{r adeno_outliers, dn_id = figure_count}
 adeno_single %>%
   add_method() %>%
   dplyr::filter(which %in% compare_adeno) %>%
@@ -683,7 +679,7 @@ loadd(ref_cor)
 figure_count$increment("icisubsampling")
 ```
 
-```{r load_ici_timings, fig.height = 8, fig.width = 5, dn_id = figure_count$label_file("icisubsampling")}
+```{r icisubsampling, fig.height = 8, fig.width = 5, dn_id = figure_count}
 
 loadd(run_random_select_random_fraction_0.01)
 loadd(run_random_select_random_fraction_0.1)
@@ -739,7 +735,7 @@ Right: Histogram of the residual differences of the sample-sample correlations, 
 Given the length of time it takes to run the calculations for larger datasets (in particular RNA-Seq data), we wondered if "good enough" results could be obtained using subsamples of the features across the samples.
 Our starting data is the same set of stage I (I, Ia, and Ib) adenocarcinoma tumor and normal tissue RNA-Seq samples from the *recount2* project used for outlier detection, with `r nrow(transcript_data)` features that have a non-zero value in at least one sample, and `r ncol(transcript_data)` samples.
 
-In our original Rcpp implementation using pairwise comparisons, the adenocarcinoma pairwise comparisons took 6.7 hours, on an 80 core virtual machine.
+In our original *Rcpp* implementation using pairwise comparisons, the adenocarcinoma pairwise comparisons took 6.7 hours, on an 80 core virtual machine.
 With the mergesort implementation, that time was greatly reduced to just over a minute (69 seconds).
 However, given that there may still be cases where the number of comparisons are so large that run time is still a concern, we investigated the effect of estimating sample-sample correlations using a subset of the features.
 
@@ -756,9 +752,10 @@ figure_count$increment("pearson_nolog")
 ```
 
 We also tested Pearson correlation subsets without log-transforming the count data first.
-As shown in `r figure_count$label_text("pearson_nolog")`, as well as `r supp_figure_count$label_text("pearson_subsampling_nolog")` and `r supp_figure_count$count("pearson_sub_overrange_nolog")`, when the transcriptomics data is not log-transformed, Pearson correlation using subsets of features deviates wildly from those obtained using the full data set, much more than ICI-Kt or any of the other methods used.
+As shown in `r figure_count$label_text("pearson_nolog")`, as well as `r supp_figure_count$label_text("pearson_subsampling_nolog")` and `r supp_figure_count$just_count("pearson_sub_overrange_nolog")`, when the transcriptomics data is not log-transformed, Pearson correlation using subsets of features deviates wildly from those obtained using the full data set, much more than ICI-Kt or any of the other methods used.
 
-```{r show_pearson_nolog, dn_id = figure_count$label_file("pearson_nolog")}
+```{r pearson_nolog, fig.height = 10, fig.width = 10, dn_id = figure_count}
+focus_colors = use_colors[c("ICI-Kt", "Pearson", "Pearson NoLog")]
 combined_focus = all_combined %>%
   dplyr::filter(method %in% c("ICI-Kt", "Pearson", "Pearson NoLog"))
 combined_focus_nolog = combined_focus %>%
@@ -766,23 +763,23 @@ combined_focus_nolog = combined_focus %>%
 
 compare_focus = (ggplot(combined_focus, aes(x = fraction, y = median, color = method)) +
                    geom_line() +
-                   scale_color_manual(values = use_colors) +
+                   scale_color_manual(values = focus_colors) +
                    labs(x = "Fraction of Features", y = "Median Correlation Differences") +
                    theme(legend.position = "none")) /
                    (ggplot(combined_focus, aes(x = fraction , y = sd, color = method)) +
                       geom_line() +
-                      scale_color_manual(values = use_colors) +
+                      scale_color_manual(values = focus_colors) +
                       labs(x = "Fraction of Features", y = "Correlation Differences SD") +
                       theme(legend.position = "none"))
 
 compare_focus_small = (ggplot(combined_focus_nolog, aes(x = fraction, y = median, color = method)) +
   geom_line() +
-    scale_color_manual(values = use_colors) +
+    scale_color_manual(values = focus_colors) +
   labs(x = "Fraction of Features", y = "Median Correlation Differences") +
     theme(legend.position = c(0.6, 0.4))) /
   (ggplot(combined_focus_nolog, aes(x = fraction, y = sd, color = method)) +
   geom_line() +
-    scale_color_manual(values = use_colors) +
+    scale_color_manual(values = focus_colors) +
   labs(x = "Fraction of Features", y = "Correlation Differences SD") +
     theme(legend.position = "none"))
 
@@ -799,7 +796,7 @@ figure_count$increment("pcavardifference")
 In addition to the random feature subsamples, we also implemented feature selection methods based on loading contributions to each PC, as well as feature variances in the full data set (see Methods).
 As shown in `r figure_count$label_text("pcavardifference")`, both of these feature selection methods perform extremely poorly, even at the relatively large fraction of 50% of the features.
 
-```{r poor_pca_var, dn_id = figure_count$label_file("pcavardifference")}
+```{r pcavardifference, dn_id = figure_count}
 loadd(run_nonrandom_select_nonrandom_fraction_0.5_var_select)
 loadd(run_nonrandom_select_nonrandom_fraction_0.5_pca_select)
 diff_var = data.frame(ref = extract_data(ref_cor),
@@ -843,7 +840,7 @@ figure_count$increment("pcaeval")
 
 Outside of the differences between the subset and full set of correlations, we also evaluated each of the feature subsets using the correlation between loading fraction and principal component contributed variance (see `r figure_count$label_text("pcaeval")` A & B), and the difference between the median loading fraction and the intended fraction (C & D).
 
-```{r nonrandom_pca, dn_id = figure_count$label_file("pcaeval")}
+```{r pcaeval, dn_id = figure_count}
 loadd(pca_eval_summary)
 pca_eval_summary = pca_eval_summary %>%
   dplyr::mutate(Method = dplyr::case_when(
@@ -929,7 +926,8 @@ The implementations of the ICI-Kt in the presented R and Python packages provide
 These packages handle missing values in log-transformed data in a safe manner and have O(nlogn) performance, making them computationally practical for real-world omics data sets.
 Also, these packages provide multiprocessing implementations that take full advantage of modern multi-core central processing units.
 Furthermore, given the high amount of correlated variance in most real-world high-feature data sets, we demonstrate that random feature subsetting can be utilized to effectively estimate correlation for very large data sets or in situations where sub-second computational performance is needed for non-large data sets.
-However, care must be taken in selecting subsets of features.
+However, care must be taken both in transforming data if using a method with an expectation of linearity, and selecting subsets of features.
+When using Pearson correlation, the log-transformation of RNA-seq data is absolutely necessary when using feature subsets.
 From the results presented here, random feature subsetting was superior to variance-selective feature subsetting.
 
 As demonstrated with the three RNA-Seq datasets analyzed here, the "best" correlation-related metric will likely depend on the specific dataset and the specific data analysis step.

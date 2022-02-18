@@ -22,8 +22,8 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE,
                       dev.args = list(png = list(type = "cairo")))
 
 
-supp_figure_count = dn_counter$new("Figure S", "_")
-supp_table_count = dn_counter$new("Table S", "_")
+supp_figure_count = dn_counter$new("Figure ", "_", "S")
+supp_table_count = dn_counter$new("Table ", "_", "S")
 
 supp_figure_count$increment("kt_pearson")
 supp_figure_count$increment("ici_distribution")
@@ -35,7 +35,7 @@ supp_figure_count$increment("kt_distribution")
 The simplest simulated data set includes three samples, where two are perfectly correlated, and the third perfectly anti-correlated. 
 We then created missing values (replaced value with NA) in each sample systematically, and computed the ICI-Kt, Pearson, and Kendall-tau correlations.
 
-```{r compare_simple, dn_id = supp_figure_count$label_file("kt_pearson")}
+```{r kt_pearson, dn_id = supp_figure_count}
 loadd(positive_kt)
 loadd(positive_pearson)
 loadd(negative_kt)
@@ -62,7 +62,7 @@ We can also examine the full set of positive and negative correlations generated
 These distributions are shown in `r supp_figure_count$label_text("kt_distribution")`.
 We can see that the distributions from both ICI-Kt and Kendall-tau are the same, which is expected given we replaced missing values (NA) with zero *within* the ICI-Kt code, and replaced missing values (NA) with zero prior to calculating Kendall-tau correlations.
 
-```{r ici_full_distribution, dn_id = supp_figure_count$label_file("ici_distribution")}
+```{r ici_distribution, dn_id = supp_figure_count}
 loadd(all_kt)
 ici_plot = ggplot(all_kt, aes(x = ici_kt)) +
   geom_histogram(bins = 100) +
@@ -74,7 +74,7 @@ ici_plot
 `r supp_figure_count$label_text("ici_distribution")`.
 ICI-Kendall-tau correlation as missing values are varied between two samples.
 
-```{r kt_full_distribution, dn_id = supp_figure_count$label_file("kt_distribution")}
+```{r kt_distribution, dn_id = supp_figure_count}
 kt_plot = ggplot(all_kt, aes(x = kendall)) +
   geom_histogram(bins = 100) +
   facet_wrap(~ comp, ncol = 1) +
@@ -94,7 +94,7 @@ supp_figure_count$increment("complexity")
 In addition to comparing their performance, we can check that the algorithmic complexity fits the theoretically expected complexity by fitting a regression line of the run time to the number of items.
 The run times and fitted lines for each method (R's Pearson, the ICI-Kt, and R's Kendall-tau) are shown in `r supp_figure_count$label_text("complexity")`.
 
-```{r plot_complexity, dn_id = supp_figure_count$label_file("complexity")}
+```{r complexity, dn_id = supp_figure_count}
 single_core_perf = readRDS(here::here("doc", "single_core_perf.rds"))
 complex_figure = create_complexity_figure(single_core_perf)
 complex_figure
@@ -161,7 +161,7 @@ yeast_single2 = rbind(yeast_single, tmp_yeast)
 compare_yeast = c("icikt", "icikt_complete", "pearson_log1p", "pearson_base_nozero", "manuscript")
 ```
 
-```{r yeast_single_plot, dn_id = supp_figure_count$label_file("yeast_outliers")}
+```{r yeast_outliers, dn_id = supp_figure_count}
 yeast_single2 %>%
   add_method(map_method = manual_method) %>%
   dplyr::filter(which %in% compare_yeast) %>%
@@ -179,19 +179,6 @@ Median correlations for each of the yeast RNA-Seq sample to all other samples in
 yeast_table = compare_outlier_tables(yeast_single2, compare_yeast, sort_var = "manuscript", map_method = manual_method)
 
 supp_table_count$increment("yeast_outliers")
-```
-
-`r supp_table_count$label_text("yeast_outliers")`.
-Yeast dataset median correlation values and outlier determination for each outlier from each of the correlation methods.
-Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; M: Manuscript; PL1: Pearson Log(x + 1); PN0: Pearson No Zeros.
-
-```{r yeast_table2}
-#yeast_ft_out = set_caption(yeast_table,
-  # caption = paste0(paste_label("Table S", supp_table_count, "yeast_outliers"), ". Yeast dataset median correlation values and outlier determination for each outlier from each of the correlation methods."), style = "paragraph")
-yeast_ft_out = yeast_table %>%
-  set_nice_widths() %>%
-  put_outlier_right()
-yeast_ft_out
 ```
 
 In `r supp_figure_count$label_text("yeast_outliers")` and `r supp_table_count$label_text("yeast_outliers")` we can see how the determination of outliers was not made solely on the basis of correlation alone, but on a combination of factors that lead to some of the higher correlating samples (using raw counts and Pearson correlaion) being considered outliers where lower correlating samples were not listed as being outliers.
@@ -220,7 +207,7 @@ brainson_single = all_brainson %>%
 compare_brainson = c("icikt", "icikt_complete", "pearson_log1p")
 ```
 
-```{r show_brainson, dn_id = supp_figure_count$label_file("brainson_outliers")}
+```{r brainson_outliers, dn_id = supp_figure_count}
 brainson_single %>%
   add_method() %>%
   dplyr::filter(which %in% compare_brainson) %>%
@@ -284,7 +271,7 @@ adeno_single = all_adeno2 %>%
 compare_adeno = c("icikt", "icikt_complete", "pearson_log1p")
 ```
 
-```{r show_adeno_outliers, dn_id = supp_figure_count$label_file("adeno_outliers")}
+```{r adeno_outliers, dn_id = supp_figure_count}
 adeno_single %>%
   add_method() %>%
   dplyr::filter(which %in% compare_adeno) %>%
@@ -356,7 +343,7 @@ supp_figure_count$increment("yeast_by_keep_num")
 supp_figure_count$increment("yeast_differences")
 ```
 
-```{r yeast_by_method, dn_id = supp_figure_count$label_file("yeast_by_method")}
+```{r yeast_by_method, dn_id = supp_figure_count}
 all_yeast2 = all_yeast %>%
   add_method(other_method) %>%
   clear_outliers()
@@ -370,7 +357,7 @@ ggplot(all_yeast2, aes(x = sample_class, y = med_cor, color = outlier, group = s
 Median correlations by correlation method and applying different fractional cutoffs.
 Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; Kt: Kendall-tau; PB: Pearson Base (raw values); PL: Pearson Log(x); PL1: Pearson Log(x + 1); PN0: Pearson No Zeros.
 
-```{r yeast_by_fraction, dn_id = supp_figure_count$label_file("yeast_by_keep_num")}
+```{r yeast_by_keep_num, dn_id = supp_figure_count}
 ggplot(all_yeast2, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
   geom_sina() +
   facet_grid(method ~ keep_num) +
@@ -381,7 +368,7 @@ ggplot(all_yeast2, aes(x = sample_class, y = med_cor, color = outlier, group = s
 Median correlations by applying different fractional cutoffs and different correlation methods.
 Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; Kt: Kendall-tau; PB: Pearson Base (raw values); PL: Pearson Log(x); PL1: Pearson Log(x + 1); PN0: Pearson No Zeros.
 
-```{r yeast_plot_differences, dn_id = supp_figure_count$label_file("yeast_differences")}
+```{r yeast_differences, dn_id = supp_figure_count}
 yeast_summary = calculate_variation(all_yeast2)
 yeast_diffs = calculate_differences(yeast_summary)
 
@@ -404,7 +391,7 @@ supp_figure_count$increment("brainson_by_keep_num")
 supp_figure_count$increment("brainson_differences")
 ```
 
-```{r brainson_plot1, dn_id = supp_figure_count$label_file("brainson_by_method")}
+```{r brainson_by_method, dn_id = supp_figure_count}
 brainson_classes = c("sorted", "total")
 all_brainson_method = add_method(all_brainson, map_method = other_method) %>%
   dplyr::filter(sample_class %in% brainson_classes)
@@ -419,7 +406,7 @@ ggplot(all_brainson_method, aes(x = sample_class, y = med_cor, color = outlier, 
 Median correlations by correlation method and applying different fractional cutoffs for Brainson RNA-seq data.
 Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; Kt: Kendall-tau; PB: Pearson Base (raw values); PL: Pearson Log(x); PL1: Pearson Log(x + 1); PN0: Pearson No Zeros.
 
-```{r brainson_plot2, dn_id = supp_figure_count$label_file("brainson_by_keep_num")}
+```{r brainson_by_keep_num, dn_id = supp_figure_count}
 ggplot(all_brainson_method, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) + 
   geom_sina() +
   facet_grid(method ~ keep_num) +
@@ -430,7 +417,7 @@ ggplot(all_brainson_method, aes(x = sample_class, y = med_cor, color = outlier, 
 Median correlations by correlation method and applying different fractional cutoffs for Brainson RNA-seq data.
 Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; Kt: Kendall-tau; PB: Pearson Base (raw values); PL: Pearson Log(x); PL1: Pearson Log(x + 1); PN0: Pearson No Zeros.
 
-```{r brainson_plot_differences, dn_id = supp_figure_count$label_file("brainson_differences")}
+```{r brainson_differences, dn_id = supp_figure_count}
 brainson_summary = calculate_variation(all_brainson_method)
 brainson_diffs = calculate_differences(brainson_summary)
 
@@ -453,7 +440,7 @@ supp_figure_count$increment("adeno_by_keep_num")
 supp_figure_count$increment("adeno_differences")
 ```
 
-```{r adeno_by_method, dn_id = supp_figure_count$label_file("adeno_by_method")}
+```{r adeno_by_method, dn_id = supp_figure_count}
 adeno_method = add_method(all_adeno2, other_method) %>%
   clear_outliers()
 ggplot(adeno_method, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) + 
@@ -467,7 +454,7 @@ ggplot(adeno_method, aes(x = sample_class, y = med_cor, color = outlier, group =
 Median correlations by correlation method and applying different fractional cutoffs for TCGA adenocarcinoma RNA-seq data.
 Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; Kt: Kendall-tau; PB: Pearson Base (raw values); PL: Pearson Log(x); PL1: Pearson Log(x + 1); PN0: Pearson No Zeros.
 
-```{r adeno_by_fraction, dn_id = supp_figure_count$label_file("adeno_by_keep_num")}
+```{r adeno_by_keep_num, dn_id = supp_figure_count}
 ggplot(adeno_method, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
   geom_sina() +
   facet_grid(method ~ keep_num) +
@@ -478,7 +465,7 @@ ggplot(adeno_method, aes(x = sample_class, y = med_cor, color = outlier, group =
 Median correlations by correlation method and applying different fractional cutoffs for TCGA adenocarcinoma RNA-seq data.
 Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; Kt: Kendall-tau; PB: Pearson Base (raw values); PL: Pearson Log(x); PL1: Pearson Log(x + 1); PN0: Pearson No Zeros.
 
-```{r adeno_plot_differences, dn_id = supp_figure_count$label_file("adeno_differences")}
+```{r adeno_differences, dn_id = supp_figure_count}
 adeno_summary = calculate_variation(adeno_method)
 adeno_diffs = calculate_differences(adeno_summary)
 
@@ -501,7 +488,7 @@ Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Com
 supp_figure_count$increment("icikt_subsampling")
 ```
 
-```{r load_icikt_combined}
+```{r icikt_subsampling, dn_id = supp_figure_count}
 loadd(combined_random)
 
 icikt_overrange = 
@@ -527,7 +514,7 @@ supp_figure_count$increment("pearson_subsampling")
 ```
 
 
-```{r pearson_subsampling, fig.height = 8, fig.width = 8, dn_id = supp_figure_count$label_file("pearson_subsampling")}
+```{r pearson_subsampling, fig.height = 8, fig.width = 8, dn_id = supp_figure_count}
 
 loadd(run_random_pearson_log_select_random_fraction_0.01)
 loadd(run_random_pearson_log_select_random_fraction_0.1)
@@ -585,7 +572,7 @@ Right: Histogram of the residual differences of the sample-sample correlations, 
 supp_figure_count$increment("pearson_sub_overrange")
 ```
 
-```{r pearson_subsampling_range, dn_id = supp_figure_count$label_file("pearson_sub_overrange")}
+```{r pearson_sub_overrange, dn_id = supp_figure_count}
 loadd(combined_random_pearson_log)
 pearson_overrange = 
   (ggplot(combined_random_pearson_log, aes(x = fraction, y = median)) +
@@ -609,7 +596,7 @@ supp_figure_count$increment("pearson_subsampling_0")
 ```
 
 
-```{r pearson_subsampling_0, fig.height = 8, fig.width = 8, dn_id = supp_figure_count$label_file("pearson_subsampling_0")}
+```{r pearson_subsampling_0, fig.height = 8, fig.width = 8, dn_id = supp_figure_count}
 
 loadd(run_random_pearson_0_log_select_random_fraction_0.01)
 loadd(run_random_pearson_0_log_select_random_fraction_0.1)
@@ -667,7 +654,7 @@ Right: Histogram of the residual differences of the sample-sample correlations, 
 supp_figure_count$increment("pearson_sub_overrange_0")
 ```
 
-```{r pearson_subsampling_range_0, dn_id = supp_figure_count$label_file("pearson_sub_overrange_0")}
+```{r pearson_sub_overrange_0, dn_id = supp_figure_count}
 loadd(combined_random_pearson_0_log)
 pearson_0_overrange = 
   (ggplot(combined_random_pearson_0_log, aes(x = fraction, y = median)) +
@@ -691,7 +678,7 @@ supp_figure_count$increment("pearson_sub_overrange_nolog")
 ```
 
 
-```{r pearson_subsampling_nolog, fig.height = 8, fig.width = 8, dn_id = supp_figure_count$label_file("pearson_subsampling_nolog")}
+```{r pearson_subsampling_nolog, fig.height = 8, fig.width = 8, dn_id = supp_figure_count}
 nolog_limits = c(-0.6, 1)
 loadd(run_random_pearson_select_random_fraction_0.01)
 loadd(run_random_pearson_select_random_fraction_0.1)
@@ -745,7 +732,7 @@ Left: The sample-sample correlations using all features are plotted against the 
 Right: Histogram of the residual differences of the sample-sample correlations, where the difference is the (random subset - all features).
 
 
-```{r pearson_subsampling_range_nolog, dn_id = supp_figure_count$label_file("pearson_sub_overrange_nolog")}
+```{r pearson_sub_overrange_nolog, dn_id = supp_figure_count}
 loadd(combined_random_pearson)
 pearson_overrange_nolog = 
   (ggplot(combined_random_pearson, aes(x = fraction, y = median)) +
@@ -768,7 +755,7 @@ supp_figure_count$increment("kendall_subsampling")
 supp_figure_count$increment("kendall_overrange")
 ```
 
-```{r kendall_subsampling, fig.height = 8, fig.width = 8, dn_id = supp_figure_count$label_file("kendall_subsampling")}
+```{r kendall_subsampling, fig.height = 8, fig.width = 8, dn_id = supp_figure_count}
 
 loadd(run_random_kendall_select_random_fraction_0.01)
 loadd(run_random_kendall_select_random_fraction_0.1)
@@ -821,7 +808,7 @@ kendall_f1_f3
 Left: The sample-sample correlations using all features are plotted against the sample-sample correlations using a random subset. Red line indicates perfect agreement. 
 Right: Histogram of the residual differences of the sample-sample correlations, where the difference is the (random subset - all features).
 
-```{r kendall_subsampling_range, dn_id = supp_figure_count$label_file("kendall_overrange")}
+```{r kendall_overrange, dn_id = supp_figure_count}
 loadd(combined_random_kendall)
 loadd(combined_random_pearson_log)
 kendall_overrange = 
@@ -844,7 +831,7 @@ Median differences in correlation (top) and standard deviation of differences (b
 supp_figure_count$increment("compare_overrange")
 ```
 
-```{r compare_overrange, fig.height = 10, fig.width = 10, dn_id = supp_figure_count$label_file("compare_overrange")}
+```{r compare_overrange, fig.height = 10, fig.width = 10, dn_id = supp_figure_count}
 combined_random$method = "ICI-Kt"
 combined_random_pearson_log$method = "Pearson"
 combined_random_pearson_0_log$method = "Pearson 0"
