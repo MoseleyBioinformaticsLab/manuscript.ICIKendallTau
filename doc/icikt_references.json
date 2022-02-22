@@ -1704,7 +1704,7 @@
 		"citation-key": "schurchHowManyBiological2016"
 	},
 	{
-		"id": "christiancoleProfilingDifferentialGene2021",
+		"id": "coleProfilingDifferentialGene2021",
 		"type": "book",
 		"abstract": "Code base for profiling highly replicated differential gene expression RNA-seq.",
 		"genre": "Perl",
@@ -1715,16 +1715,20 @@
 		"URL": "https://github.com/bartongroup/profDGE48",
 		"author": [
 			{
-				"literal": "Christian Cole"
+				"family": "Cole",
+				"given": "Christian"
 			},
 			{
-				"literal": "Marek Gierlinski"
+				"family": "Gierlinski",
+				"given": "Marek"
 			},
 			{
-				"literal": "Pieta Schofield"
+				"family": "Schofield",
+				"given": "Pieta"
 			},
 			{
-				"literal": "Nicholas Schurch"
+				"family": "Schurch",
+				"given": "Nicholas"
 			}
 		],
 		"accessed": {
@@ -1745,7 +1749,7 @@
 				]
 			]
 		},
-		"citation-key": "christiancoleProfilingDifferentialGene2021"
+		"citation-key": "coleProfilingDifferentialGene2021"
 	},
 	{
 		"id": "bartonSNF2KnockoutYeast2015",
@@ -2041,7 +2045,7 @@
 		"author": [
 			{
 				"family": "Flight",
-				"given": "Robert M"
+				"given": "Robert M."
 			},
 			{
 				"family": "Moseley",
@@ -2059,16 +2063,18 @@
 		"citation-key": "flightICIKendallTau2022"
 	},
 	{
-		"id": "flightrobertmManuscriptICIKendallTau2022",
+		"id": "flightManuscriptICIKendallTau2022",
 		"type": "article",
 		"title": "manuscript.ICIKendallTau",
 		"URL": "https://dx.doi.org/10.6084/m9.figshare.19196645",
 		"author": [
 			{
-				"literal": "Flight, Robert M"
+				"family": "Flight",
+				"given": "Robert M."
 			},
 			{
-				"literal": "Moseley, Hunter NB"
+				"family": "Moseley",
+				"given": "Hunter N. B."
 			}
 		],
 		"issued": {
@@ -2079,6 +2085,6 @@
 				]
 			]
 		},
-		"citation-key": "flightrobertmManuscriptICIKendallTau2022"
+		"citation-key": "flightManuscriptICIKendallTau2022"
 	}
 ]

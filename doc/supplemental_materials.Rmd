@@ -108,7 +108,7 @@ Time in seconds needed as a function of the number of features, with a fitted li
 
 ### Gierlinski Yeast
 
-Gierlinski et al [@gierlinski_statisticalmodels_2015] proposed a combination of median sample-sample correlation, gene count outlier fraction, and a chi-square test of read coverage per gene to score each biological replicate from a group of samples.
+Gierliński et al [@gierlinski_statisticalmodels_2015] proposed a combination of median sample-sample correlation, gene count outlier fraction, and a chi-square test of read coverage per gene to score each biological replicate from a group of samples.
 Outside of defining this combined score, they do not describe the actual criteria of saying a replicate is "bad".
 In this work, we used **only** the sample-sample median correlation to identify "bad" or "outlier" samples, using the boxplot.stats function to determine outliers, where an outlier is defined as samples that are > 1.5x away from the limits of the box defining the distribution.
 

@@ -16,7 +16,6 @@ institute:
   - compeng: Department of Electrical and Computer Engineering, University of Kentucky, Lexington, KY 40506
   - ibi: Institute for Biomedical Informatics, University of Kentucky, Lexington, KY 40536, USA
   - tox: Department of Toxicology and Cancer Biology, University of Kentucky, Lexington, KY 40536, USA
-date: '`r Sys.time()`'
 output: 
   rmarkdown::word_document:
     keep_md: true
@@ -52,7 +51,7 @@ In omics data sets that are derived from analytical measurements, the primary re
 These missing data are not missing at random, but represent some information by their "missingness".
 Therefore, we propose an information-content-informed Kendall-tau (ICI-Kt) correlation coefficient that allows missing values to carry explicit information in the determination of concordant and discordant pairs.
 With both simulated and real data sets from RNA-seq experiments, we demonstrate that the ICI-Kt allows for the inclusion of missing data values as interpretable information.
-Moreover, our implementation of ICI-Kt uses a mergesort-like algorithm that provides nlog(n) computational performance. 
+Moreover, our implementation of ICI-Kt uses a mergesort-like algorithm that provides O(nlog(n)) computational performance. 
 Finally, we show that approximate ICI-Kt correlations can be calculated using smaller feature subsets of large data sets with significant time savings, which has practical computational value when feature sizes are very large.
 
 The ICI-Kt correlation calculation is available in an R package and Python module on GitHub at https://github.com/moseleyBionformaticsLab/ICIKendallTau and https://github.com/moseleyBionformaticsLab/icikt, respectively.
@@ -100,7 +99,7 @@ We examine the effect of missing values on simulated data, comparing our informa
 We also evaluate the ability of ICI-Kt to capture outlier samples using three different RNA-seq datasets and comparing to a standard method using Pearson correlation.
 Finally, we examine the ability to recapitulate ICI-Kt correlation values calculated on a large feature omics data set using feature subsets, which is useful when the execution time of very large feature data sets becomes computationally prohibitive.
 
-All of the code used for this manuscript is available on figshare [@flightrobertmManuscriptICIKendallTau2022].
+All of the code used for this manuscript is available on figshare [@flightManuscriptICIKendallTau2022].
 
 ## Methods
 
@@ -220,7 +219,7 @@ See [@chenCellularOriginsEGFRDriven2021] for the full experimental details.
 
 ### Yeast RNA-Seq Data Set
 
-Summarized gene level counts were obtained from a GitHub project maintained by the Barton group [@christiancoleProfilingDifferentialGene2021].
+Summarized gene level counts were obtained from a GitHub project maintained by the Barton group [@coleProfilingDifferentialGene2021].
 It should be noted that the data are also available from two figshare repositories [@bartonSNF2KnockoutYeast2015; @bartonWildtypeYeastGene2015].
 These data were generated and reported as part of two publications evaluating replicate data and differential gene expression [@gierlinski_statisticalmodels_2015; @schurchHowManyBiological2016].
 
@@ -253,7 +252,7 @@ For (2), selection by variance, feature variances across samples were calculated
 For (3), selection by variance of the principal components, principal component analysis (PCA) decomposition was performed on the full data set, the variance contribution of each PC calculated, and then the percent variance for each principal component (PC) is used to determine the number of features with high loadings to select from the given PC.
 In this feature subsampling approach, weaker PCs contribute proportionately fewer features to the feature subset.
 
-Pearson correlation values were calculated using both raw and log-transformed values, where the initial data had zero values replaced by NA (missing).
+Pearson correlation values were calculated using both raw and log-transformed values, where the starting data had zero values replaced by NA (missing).
 In both the raw and log-transformed cases, final missing values were handled by either:
 (1) missing (NA) values left as missing (Pearson);
 (2) missing (NA) values replaced with 0 (Pearson 0).
@@ -485,14 +484,14 @@ Likewise, Pearson correlation replacing missing with 0 shows a parabolic effect 
 
 ### Algorithmic Performance
 
-We compared the performance of our Rcpp mergesort implementation to the base R cor function using both "pearson" and "kendall" methods on a single core with increasing numbers of features.
+We compared the performance of our *Rcpp* *mergesort* implementation to the base R *cor* function using both "pearson" and "kendall" methods on a single core with increasing numbers of features.
 
 ```{r setup_perfplot}
 figure_count$increment("singleperf")
 ```
 
 `r figure_count$label_text("singleperf")` shows that the "kendall" method is the slowest by far.
-Zoomed out (inset), the ICI-Kt appears as fast as using "Pearson", but upon zooming in, it's possible to see that ICI-Kt is using increasing amounts of time much faster than "pearson".
+Zoomed out (inset), the ICI-Kt appears as fast as using "pearson", but upon zooming in, it's possible to see that ICI-Kt is using increasing amounts of time much faster than "pearson".
 In fact, regressing the time to number of samples using a formula with the expected algorithmic complexity, "pearson" shows O(n), ICI-Kt is O(nlog(n)), and "kendall" is O(n^2) (see `r supp_figure_count$label_text("complexity")`).
 
 ```{r singleperf, dn_id = figure_count}
@@ -527,7 +526,7 @@ inset_perf = ggplot(core_perf2, aes(x = n, y = time, color = method)) +
 s_perf_plot + inset_element(inset_perf, 0.1, 0.72, 1, 1)
 ```
 
-`r figure_count$label_text("singleperf")`. Comparison of the Rcpp mergesort ici_kt, and base R's correlation function using the "pearson" and "kendall" methods as the number of features are increased from 100 to 5000.
+`r figure_count$label_text("singleperf")`. Comparison of the *Rcpp* *mergesort* *ici_kt*, and base R's *cor* function using the "pearson" and "kendall" methods as the number of features are increased from 100 to 5000.
 Inset is the expanded view showing the full range of computation time in seconds.
 
 
@@ -581,8 +580,8 @@ outlier_table_text = table_count$label_text(c("yeast_outliers",
 ```
 
 We analyzed three RNA-Seq datasets for possible outliers using a variety of  different correlation and correlation-related metrics: (1) ICI-Kt; (2) ICI-Kt scaled by *completeness* (see Methods); (3) Pearson correlation; (4) Pearson using pairwise complete features; (5) Pearson on log(value + 1); (6) Pearson on log(value); and (7) Kendall-tau.
-We primarily concentrate on the ICI-Kt, ICI-Kt * completeness, and Pearson log(x + 1) here, but all outliers by method are shown in the Supplemental materials.
-Additionally, we compared how the outliers change if we require that a feature is present in at least a certain fraction of samples of a class with each different correlation measure (supplemental materials).
+We primarily concentrate on the ICI-Kt, ICI-Kt * completeness, and Pearson log(x + 1) here, but all outliers by method are shown in the Supplemental materials (`r supp_figure_count$label_text(c("yeast_outliers", "adeno_outliers"))`, `r supp_table_count$label_text(c("yeast_outliers", "brainson_outliers"))`).
+Additionally, we compared how the outliers change if we require that a feature is present in at least a certain fraction of samples of a class with each different correlation measure (`r supp_figure_count$label_text(c("yeast_by_method", "adeno_differences"))`).
 For each dataset and correlation-related metric, the median correlation for a sample was calculated amongst the samples for each sub-group of samples corresponding to an experimental condition of interest (disease, mutant, how cells were grown).
 
 ```{r load_yeast_outliers}
@@ -619,13 +618,14 @@ yeast_ft_out
 `r figure_count$label_text("yeast_outliers")` visualizes the sample-specific median of each correlation-related metric calculated from the Yeast RNA-Seq data set. 
 `r table_count$label_text("yeast_outliers")` lists the outliers detected based on each sample-specific median metric value.  
 In this example, ICI-Kt shows superior sensitivity for outlier detection as compared to the other metrics and is likely related to the increased spread of median metric values as compared to Pearson.
-We also note that these outliers seem to be a superset of the outliers noted by Gierlinski et al. (see `r supp_figure_count$label_text("yeast_outliers")` and `r supp_table_count$label_text("yeast_outliers")`).
+We also note that these outliers seem to be a superset of the outliers noted by Gierliński et al. (see `r supp_figure_count$label_text("yeast_outliers")` and `r supp_table_count$label_text("yeast_outliers")`).
 
 
 ```{r brainson_outliers, dn_id = figure_count}
+compare_brainson_main = c("icikt", "icikt_complete", "pearson_log1p")
 brainson_single %>%
   add_method() %>%
-  dplyr::filter(which %in% compare_brainson) %>%
+  dplyr::filter(which %in% compare_brainson_main) %>%
   ggplot(aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
   geom_sina() + 
   facet_wrap(~ method, nrow = 1) +
@@ -640,7 +640,7 @@ Median correlations for each of the Brainson RNA-Seq samples to all other sample
 Brainson dataset median correlation values and outlier determination for each outlier from each of the correlation methods.
 
 ```{r brainsonseq_table}
-brainson_table = compare_outlier_tables(brainson_single, compare_brainson, sort_var = "pearson_log1p")
+brainson_table = compare_outlier_tables(brainson_single, compare_brainson_main, sort_var = "pearson_log1p")
 
 brainson_ft_out = brainson_table %>%
   set_nice_widths(sample_width = 1.5) %>%
@@ -653,9 +653,10 @@ Likewise, `r table_count$label_text("brainson_outliers")` lists the outliers det
 In this example, Pearson shows superior sensitivity to outlier detection, likely due to the larger spread in median Pearson correlation values.
 
 ```{r adeno_outliers, dn_id = figure_count}
+compare_adeno_main = c("icikt", "icikt_complete", "pearson_log1p")
 adeno_single %>%
   add_method() %>%
-  dplyr::filter(which %in% compare_adeno) %>%
+  dplyr::filter(which %in% compare_adeno_main) %>%
   ggplot(aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
   geom_sina() + 
   facet_wrap(~ method, nrow = 1) +
@@ -670,7 +671,7 @@ Median correlations for each of the TCGA adenocarcinoma RNA-Seq samples to all o
 TCGA adenocarcinoma dataset median correlation values and outlier determination for each outlier from each of the correlation methods.
 
 ```{r adeno_table}
-adeno_table = compare_outlier_tables(adeno_single, compare_adeno, sort_var = "pearson_log1p")
+adeno_table = compare_outlier_tables(adeno_single, compare_adeno_main, sort_var = "pearson_log1p")
 adeno_ft_out = adeno_table %>%
   set_nice_widths() %>%
   put_outlier_right()
@@ -755,18 +756,18 @@ However, given that there may still be cases where the number of comparisons are
 
 `r figure_count$label_text("icisubsampling")` compares the sample-sample correlations from a random percent subsample of features to those obtained using all of the features.
 Both the pairwise plot (left) and histogram of residual differences (right) show that the correlations become much closer to those obtained when using all of the features as the percentage of subsampled features is increased.
-However, there is a consistent positive bias in the estimate, regardless of the number of subsamples used (see also `r supp_figure_count$label_text("icikt_subsampling")`.
+However, there is a consistent positive bias in the estimate, regardless of the number of subsamples used (see also `r supp_figure_count$label_text("icikt_subsampling")`).
 This bias is small, because we are comparing the **raw** correlation values, and not the rescaled values.
 When the rescaled values (using the maximum correlation) are compared, the positive bias becomes larger, due to the differences in the maximum correlation (results not shown).
 
-For the Pearson and Kendall correlation methods, the subsampled correlation results are almost identical to the ICI-Kt, with slightly higher residual differences for both Pearson and Kendall over ICI-Kt, and then lower residuals if the missing values (NA)  from log-transformation of zeros are replaced with zero (see `r supp_figure_count$label_text(c("pearson_subsampling", "pearson_sub_overrange", "pearson_subsampling_0", "pearson_sub_overrange_0", "kendall_subsampling", "kendall_overrange", "compare_overrange"))`).
+For the Pearson and Kendall correlation methods, the subsampled correlation results are almost identical to the ICI-Kt, with slightly higher residual differences for both Pearson and Kendall over ICI-Kt, and then lower residuals if the missing values (NA)  from log-transformation of zeros are replaced with zero (see `r supp_figure_count$label_text(c("pearson_subsampling", "compare_overrange"))`).
 
 ```{r setup_nonlog}
 figure_count$increment("pearson_nolog")
 ```
 
 We also tested Pearson correlation subsets without log-transforming the count data first.
-As shown in `r figure_count$label_text("pearson_nolog")`, as well as `r supp_figure_count$label_text("pearson_subsampling_nolog")` and `r supp_figure_count$just_count("pearson_sub_overrange_nolog")`, when the transcriptomics data is not log-transformed, Pearson correlation using subsets of features deviates wildly from those obtained using the full data set, much more than ICI-Kt or any of the other methods used.
+As shown in `r figure_count$label_text("pearson_nolog")`, as well as Figures `r supp_figure_count$just_count("pearson_subsampling_nolog")` and `r supp_figure_count$just_count("pearson_sub_overrange_nolog")`, when the transcriptomics data is not log-transformed, Pearson correlation using subsets of features deviates wildly from those obtained using the full data set, much more than ICI-Kt or any of the other methods used.
 
 ```{r pearson_nolog, fig.height = 10, fig.width = 10, dn_id = figure_count}
 focus_colors = use_colors[c("ICI-Kt", "Pearson", "Pearson NoLog")]
@@ -799,6 +800,7 @@ compare_focus_small = (ggplot(combined_focus_nolog, aes(x = fraction, y = median
 
 compare_focus | compare_focus_small
 ```
+
 `r figure_count$label_text("pearson_nolog")`.
 Median (top) and standard deviation (SD, bottom) of correlation differences using subsets as the fraction of features used increases, for different methods, including ICI-Kt, Pearson on log-transformed data (Pearson), and Pearson without log-transforming the data (Pearson NoLog).
 Left shows all three methods compared to each other, while the right omits Pearson NoLog to show the much smaller ranges of values for the other two methods in comparison to the Pearson NoLog.
