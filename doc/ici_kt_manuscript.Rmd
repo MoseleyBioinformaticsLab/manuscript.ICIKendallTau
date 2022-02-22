@@ -214,7 +214,7 @@ Missing values are created in these statistical samples via two methods: 1) by c
 
 This RNA-Seq dataset is from null and knock-in EGFR mice mutants.
 Genotypes include Null (no mutant-EGFR inducible expression), Heterozygous (only one copy of mutant-EGFR), Homozygous (two copies of mutant EGFR).
-For each mutant, they were also grown in different ways and sequenced: (1) 2D plates; (2) 3D organioids; (3) cells sorted and selected using FACS; (4) total tumor without sorting.
+For each mutant, they were also grown in different ways and sequenced: (1) 2D plates; (2) 3D organoids; (3) cells sorted and selected using FACS; (4) total tumor without sorting.
 See [@chenCellularOriginsEGFRDriven2021] for the full experimental details.
 
 ### Yeast RNA-Seq Data Set
@@ -478,8 +478,8 @@ The normal Kendall tau correlation with pairwise complete has a small decrease i
 The normal Kendall tau correlation replacing missing with 0 has identical behavior to the ICI-Kt correlation.
 The Pearson correlation with pairwise complete is constant over growing left-centered and random missingness.
 The Pearson correlation replacing missing with 0 demonstrates a small decrease in the correlation value with growing left-centered missingness due to the zero values causing some deviation from linearity while this metric drops precipitously with growing random missingness with a magnitude similar to the ICI-Kt and normal Kendall tau replacing missing with 0.
-Overall, the ICI-Kt and the normal Kendall tau replacing missing with zero have the desirable characteristics of maintaining the correlation with growing left-centered missing while sharply dropping the correlation with growing random missingness.
-In a naive treatment of the left-centred missing data, if the values below the cutoff are set to missing followed by log-transforming the values and subsequently setting missing values to 0, then the Kendall tau correlation replacing missing with 0 will show some very odd patterns at low intensity cutoffs due to the introduction of discordant pairs.
+Overall, the ICI-Kt and the normal Kendall-tau replacing missing with zero have the desirable characteristics of maintaining the correlation with growing left-centered missing while sharply dropping the correlation with growing random missingness.
+In a naive treatment of the left-centered missing data, if the values below the cutoff are set to missing followed by log-transforming the values and subsequently setting missing values to 0, then the Kendall tau correlation replacing missing with 0 will show some very odd patterns at low intensity cutoffs due to the introduction of discordant pairs.
 Likewise, Pearson correlation replacing missing with 0 shows a parabolic effect with increasing missing values.
 
 ### Algorithmic Performance
@@ -648,7 +648,7 @@ brainson_ft_out = brainson_table %>%
 brainson_ft_out
 ```
 
-`r figure_count$label_text("brainson_outliers")` visualizes the sample-specific median of each metric calculated from the polycomb RNA RNA-Seq data set.
+`r figure_count$label_text("brainson_outliers")` visualizes the sample-specific median of each metric calculated from the Brainson RNA-Seq data set.
 Likewise, `r table_count$label_text("brainson_outliers")` lists the outliers detected based on each metric.
 In this example, Pearson shows superior sensitivity to outlier detection, likely due to the larger spread in median Pearson correlation values.
 
@@ -678,7 +678,7 @@ adeno_ft_out = adeno_table %>%
 adeno_ft_out
 ```
 
-`r figure_count$label_text("adeno_outliers")` visualizes the sample-specific median metric value calculated from the TGCA RNA-Seq data set, with `r table_count$label_text("adeno_outliers")` listing the outliers detected from each metric.
+`r figure_count$label_text("adeno_outliers")` visualizes the sample-specific median metric value calculated from the TCGA RNA-Seq data set, with `r table_count$label_text("adeno_outliers")` listing the outliers detected from each metric.
 In this example, the ICI-Kt * completeness correlation demonstrated superior sensitivity for outlier detection, likely due to its better sensitivity to measurement completeness.
 The wider spread of measurement completeness is expected, since TCGA is an aggregate of samples collected from various human cancer patents as compared to the first two examples which were collected from specific experiments in cell culture (`r supp_table_count$label_text("adeno_mad")`).
 The wider spread of measurement completeness is expected, since TCGA is an aggregate of samples collected from various human cancer patients as compared to the first two examples which were collected from specific experiments in cell culture. 
