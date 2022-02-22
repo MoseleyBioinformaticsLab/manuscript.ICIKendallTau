@@ -184,7 +184,7 @@ In practice, it is possible to replace the missing values with a value that is s
 After this initial implementation, we used the *SciPy* [@virtanen_scipy_2020] *kendalltau* code as a model to create a mergesort based implementation that has a complexity of O(nlog(n)), in comparison to the pairwise testing that has a complexity of O(n^2) [@knight_mergesortkendall_1966].
 This provides a 460X speedup of the runtime to compare two feature vectors with lengths of 40,000.
 In comparison to directly counting the concordant and discordant pairs, some of the values in the mergesort implementation can reach the 32 bit default limit in C++.
-Therefore, we used 64 bit integers and floats where necessary in the Rcpp code.
+Therefore, we used 64 bit integers and floats where necessary in the *Rcpp* code.
 
 C++ (via *Rcpp* [@eddelbuettel_rcppseamless_2011; @eddelbuettel_seamlessbook_2013; @eddelbuettel_extendingrcpp_2018]) and R code implementations are in the src/kendallc.cpp and R/kendalltau.R files of the ICIKendallTau R package, hosted at https://github.com/MoseleyBioinformaticsLab/ICIKendallTau.
 The version of the package used in this manuscript is available on figshare [@flightICIKendallTau2022].
@@ -224,7 +224,7 @@ Summarized gene level counts were obtained from a GitHub project maintained by t
 It should be noted that the data are also available from two figshare repositories [@bartonSNF2KnockoutYeast2015; @bartonWildtypeYeastGene2015].
 These data were generated and reported as part of two publications evaluating replicate data and differential gene expression [@gierlinski_statisticalmodels_2015; @schurchHowManyBiological2016].
 
-The original outliers reported by Gierlinski et al are based on a combination of median correlations, feature outliers, and RNA-seq coverage.
+The original outliers reported by Gierliński et al are based on a combination of median correlations, feature outliers, and RNA-seq coverage.
 Given that we want to compare outliers based on correlation, we re-determined outliers using only correlation calculated by replacing zero counts with missing values and calculating sample - sample pairwise Pearson correlations on the raw feature counts using the genes present in both samples.
 
 ### Adenocarcinoma Recount RNA-Seq Data Set
@@ -253,10 +253,11 @@ For (2), selection by variance, feature variances across samples were calculated
 For (3), selection by variance of the principal components, principal component analysis (PCA) decomposition was performed on the full data set, the variance contribution of each PC calculated, and then the percent variance for each principal component (PC) is used to determine the number of features with high loadings to select from the given PC.
 In this feature subsampling approach, weaker PCs contribute proportionately fewer features to the feature subset.
 
-Correlation values calculated using Pearson correlation were calculated on log-transformed values in two ways: 
-(1) just using the log-transformed values and leaving missing (NA) values as missing (Pearson);
-(2) after log-transforming values, any missing (NA) were replaced with 0 (Pearson 0). This should be fine as the non-zero entries are all greater than 1.
-For both Pearson methods, only features that are non-missing in both samples being compared are used for the correlation.
+Pearson correlation values were calculated using both raw and log-transformed values, where the initial data had zero values replaced by NA (missing).
+In both the raw and log-transformed cases, final missing values were handled by either:
+(1) missing (NA) values left as missing (Pearson);
+(2) missing (NA) values replaced with 0 (Pearson 0).
+In the Pearson case, only features that are non-missing in both samples being compared are used for the correlation (*pairwise.complete.obs*).
 
 ### Principal Component Evaluation of Subsample Coverage
 
@@ -282,7 +283,7 @@ For the comparisons of time taken using different numbers of samples to evaluate
 
 ### Comparison To Other Correlation Measures
 
-We compared the ICI-Kt correlation to both Pearson and regular Kendall-tau-b correlations as calculated by the built-in R functions using simulated data sets with missing values, as well as a large RNA-seq dataset.
+We compared the ICI-Kt correlation to both Pearson and regular Kendall-tau-b correlations as calculated by the built-in R functions using simulated data sets with missing values (`r supp_figure_count$label_text(c("kt_pearson", "ici_distribution", "kt_distribution"))`).
 
 We created two samples with 1000 observations each drawn from a log-normal distribution, and sorted in each case.
 The *true* correlation for each of the Kendall and Pearson correlations were calculated, and then missingness was introduced in the lower range of values (see Methods).
@@ -579,7 +580,7 @@ outlier_table_text = table_count$label_text(c("yeast_outliers",
                                               "adeno_outliers"))
 ```
 
-We analyzed three RNA-Seq datasets for possible outliers using a variety of  different correlation and correlation-related metrics: (1) ICI-Kt; (2) ICI-Kt scaled by *completeness* (see Methods); (3) Pearson correlation; (4) Pearson using pairwise complete features; (4) Pearson on log(value + 1); (5) Pearson on log(value); and (6) Kendall-tau.
+We analyzed three RNA-Seq datasets for possible outliers using a variety of  different correlation and correlation-related metrics: (1) ICI-Kt; (2) ICI-Kt scaled by *completeness* (see Methods); (3) Pearson correlation; (4) Pearson using pairwise complete features; (5) Pearson on log(value + 1); (6) Pearson on log(value); and (7) Kendall-tau.
 We primarily concentrate on the ICI-Kt, ICI-Kt * completeness, and Pearson log(x + 1) here, but all outliers by method are shown in the Supplemental materials.
 Additionally, we compared how the outliers change if we require that a feature is present in at least a certain fraction of samples of a class with each different correlation measure (supplemental materials).
 For each dataset and correlation-related metric, the median correlation for a sample was calculated amongst the samples for each sub-group of samples corresponding to an experimental condition of interest (disease, mutant, how cells were grown).

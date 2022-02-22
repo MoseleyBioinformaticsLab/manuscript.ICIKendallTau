@@ -1,0 +1,61 @@
+---
+title: 'Supplemental Tables'
+output: 
+  rmarkdown::word_document:
+    reference_docx: 'table_template.docx'
+    keep_md: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, 
+                      message = FALSE, fig.width = 8, 
+                      fig.height = 6, fig.keep = "all",
+                      fig.process = dn_modify_path,
+                      tab.cap.style = "paragraph",
+                      tab.cap.pre = "",
+                      tab.cap.sep = "",
+                      dpi = 600,
+                      dev.args = list(png = list(type = "cairo")))
+```
+
+`r supp_table_count$label_text("yeast_outliers")`.
+Yeast dataset median correlation values and outlier determination for each outlier from each of the correlation methods.
+Abbreviations for different measures are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; PB: Pearson Base, PN: Pearson No Zero; PL1: Pearson Log(x + 1); PL: Pearson Log(x); Kt: Kendall-tau.
+
+```{r yeast_table2}
+#yeast_ft_out = set_caption(yeast_table,
+  # caption = paste0(paste_label("Table S", supp_table_count, "yeast_outliers"), ". Yeast dataset median correlation values and outlier determination for each outlier from each of the correlation methods."), style = "paragraph")
+yeast_ft_out = yeast_table %>%
+  set_nice_widths(sample_width = 0.52, outlier_width = 0.5, cor_width = 0.7) %>%
+  put_outlier_right() %>%
+  fontsize(size = 7, part = "all")
+yeast_ft_out
+```
+
+
+`r supp_table_count$label_text("brainson_outliers")`.
+Brainson dataset median correlation values and outlier determination for each outlier from each of the correlation methods.
+Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; PB: Pearson Base, PN: Pearson No Zero; PL1: Pearson Log(x + 1); PL: Pearson Log(x); Kt: Kendall-tau.
+
+```{r brainson_table2}
+brainson_ft_out = brainson_table %>%
+  set_nice_widths(sample_width = 1.1, outlier_width = 0.5, cor_width = 0.7) %>%
+  put_outlier_right() %>%
+  fontsize(size = 7, part = "all")
+brainson_ft_out
+```
+
+
+`r supp_table_count$label_text("adeno_outliers")`.
+TGCA adenocarcinoma dataset median correlation values and outlier determination for each outlier from each of the correlation methods.
+Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; PB: Pearson Base, PN: Pearson No Zero; PL1: Pearson Log(x + 1); PL: Pearson Log(x); Kt: Kendall-tau.
+
+```{r adeno_table2}
+adeno_ft_out = adeno_table %>%
+  set_nice_widths(sample_width = 0.52, outlier_width = 0.5, cor_width = 0.7) %>%
+  put_outlier_right() %>%
+  fontsize(size = 7, part = "all")
+adeno_ft_out
+```

@@ -158,7 +158,7 @@ tmp_yeast[tmp_yeast$sample_id %in% yeast_paper_outliers, "outlier"] = TRUE
 tmp_yeast$which = "manuscript"
 yeast_single2 = rbind(yeast_single, tmp_yeast)
 
-compare_yeast = c("icikt", "icikt_complete", "pearson_log1p", "pearson_base_nozero", "manuscript")
+compare_yeast = c("icikt", "icikt_complete", "pearson_base", "pearson_base_nozero", "pearson_log1p", "pearson_log", "kt_base", "manuscript")
 ```
 
 ```{r yeast_outliers, dn_id = supp_figure_count}
@@ -204,34 +204,30 @@ all_brainson = purrr::map_df(c("brainsonrnaseq_outliers_1",
 
 brainson_single = all_brainson %>%
   dplyr::filter(keep_num == "1")
-compare_brainson = c("icikt", "icikt_complete", "pearson_log1p")
+compare_brainson = c("icikt", "icikt_complete", "pearson_base", "pearson_base_nozero", "pearson_log1p", "pearson_log", "kt_base")
 ```
 
 ```{r brainson_outliers, dn_id = supp_figure_count}
 brainson_single %>%
-  add_method() %>%
+  add_method(other_method) %>%
   dplyr::filter(which %in% compare_brainson) %>%
   ggplot(aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
   geom_sina() +
   facet_wrap(~ method, nrow = 1) +
-  labs(x = "Sample Class", y = "Median Correlation")
+  labs(x = "Sample Class", y = "Median Correlation") +
+  theme(axis.text.x = element_text(angle = 90))
 ```
 
 `r supp_figure_count$label_text("brainson_outliers")`.
 Median correlations for each of the Brainson RNA-Seq sample to all other samples in the same group, using different correlation measures on different data. 
+Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; PB: Pearson Base, PN: Pearson No Zero; PL1: Pearson Log(x + 1); PL: Pearson Log(x); Kt: Kendall-tau.
+
 
 `r supp_figure_count$label_text("brainson_outliers")` shows the effect of including the pairwise completeness measure, where the "total" tumor samples have a higher correlation than the "sorted" samples where a specific subset of cells were collected from each sample and sequenced.
 This is due to having more genes with non-zero reads in general over the sorted samples.
 
-`r supp_table_count$label_text("brainson_outliers")`.
-Brainson dataset median correlation values and outlier determination for each outlier from each of the correlation methods.
-
 ```{r brainson_table}
-brainson_table = compare_outlier_tables(brainson_single, compare_brainson, "pearson_log1p")
-brainson_ft_out = brainson_table %>%
-  set_nice_widths() %>%
-  put_outlier_right()
-brainson_ft_out
+brainson_table = compare_outlier_tables(brainson_single, compare_brainson, "pearson_log1p", map_method = other_method)
 ```
 
 
@@ -268,12 +264,12 @@ all_adeno2 = dplyr::left_join(new_adeno, all_adeno, by = c("old_sample" = "sampl
 
 adeno_single = all_adeno2 %>%
   dplyr::filter(keep_num == "1")
-compare_adeno = c("icikt", "icikt_complete", "pearson_log1p")
+compare_adeno = c("icikt", "icikt_complete", "pearson_base", "pearson_base_nozero", "pearson_log1p", "pearson_log", "kt_base")
 ```
 
 ```{r adeno_outliers, dn_id = supp_figure_count}
 adeno_single %>%
-  add_method() %>%
+  add_method(map_method = other_method) %>%
   dplyr::filter(which %in% compare_adeno) %>%
   ggplot(aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
   geom_sina() +
@@ -282,23 +278,18 @@ adeno_single %>%
 ```
 
 `r supp_figure_count$label_text("adeno_outliers")`.
-TCGA Adenocarcinoma outliers using various measures of correlation.
+Median correlations for each of the TGCA adenocarcinoma RNA-Seq sample to all other samples in the same group, using different correlation measures on different data. 
+Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; PB: Pearson Base, PN: Pearson No Zero; PL1: Pearson Log(x + 1); PL: Pearson Log(x); Kt: Kendall-tau.
 
-`r supp_table_count$label_text("adeno_outliers")`.
-TGCA adenocarcinoma dataset median correlation values and outlier determination for each outlier from each of the correlation methods.
 
 ```{r adeno_table}
-adeno_table = compare_outlier_tables(adeno_single, compare_adeno, "pearson_log1p")
-adeno_ft_out = adeno_table %>%
-  set_nice_widths() %>%
-  put_outlier_right()
-adeno_ft_out
+adeno_table = compare_outlier_tables(adeno_single, compare_adeno, "pearson_log1p", map_method = other_method)
 ```
 
 ```{r summarize_adeno}
 supp_table_count$increment("adeno_mad")
 adeno_variation = adeno_single %>%
-  add_method() %>%
+  add_method(map_method = other_method) %>%
   dplyr::filter(which %in% compare_adeno) %>%
   calculate_variation() %>%
   dplyr::select(mad) 

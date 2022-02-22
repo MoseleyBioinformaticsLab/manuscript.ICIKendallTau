@@ -11,6 +11,7 @@ add_method = function(outlier_df, map_method = c("icikt" = "ICI-Kt",
     match_loc = outlier_df$which %in% imap
     outlier_df[match_loc, "method"] = map_method[imap]
   }
+  outlier_df$method = factor(outlier_df$method, levels = map_method, ordered = TRUE)
   outlier_df
 }
 
