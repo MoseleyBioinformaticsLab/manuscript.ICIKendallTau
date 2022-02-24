@@ -18,7 +18,7 @@ library(ggforce)
 library(flextable)
 library(documentNumbering)
 library(officedown)
-library(magick)
+#library(magick)
 future::plan(multicore)
 
 theme_set(cowplot::theme_cowplot())
