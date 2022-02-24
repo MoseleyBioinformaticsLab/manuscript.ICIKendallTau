@@ -11,3 +11,4 @@ doc/*.md
 .drake
 renv
 actual_package
+.log
