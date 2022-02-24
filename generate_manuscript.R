@@ -1,11 +1,26 @@
-# for the manuscript
-source("./packages.R")
-lapply(list.files("./R", full.names = TRUE), source)
-# we process the supplement first so we can refer to the figures and tables
-# in there in the main manuscript
-rmarkdown::render("./doc/supplemental_materials.Rmd")
-rmarkdown::render("./doc/supplemental_tables.Rmd")
-#beepr::beep(2)
-rmarkdown::render("./doc/ici_kt_manuscript.Rmd")
+library(callr)
+supp_materials = r(
+  function(){
+    source("./packages.R")
+    lapply(list.files("./R", full.names = TRUE), source)
+    rmarkdown::render(here::here("doc", "supplemental_materials.Rmd"))
+  }, show = TRUE
+)
 
-beepr::beep(2)
+supp_tables = r(
+  function(){
+    source("./packages.R")
+    lapply(list.files("./R", full.names = TRUE), source)
+    rmarkdown::render(here::here("doc", "supplemental_tables.Rmd"))
+  }, show = TRUE
+)
+
+manuscript = r(
+  function(){
+    source("./packages.R")
+    lapply(list.files("./R", full.names = TRUE), source)
+    rmarkdown::render(here::here("doc", "ici_kt_manuscript.Rmd"))
+  }, show = TRUE
+)
+
+#beepr::beep(2)

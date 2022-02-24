@@ -354,10 +354,18 @@ the_plan <-
    pca_eval_summary = summarize_by_pca(all_pca_eval),
    
    single_core_perf = run_single_cor(),
-   complexity_figure = create_complexity_figure(single_core_perf),
+   complexity_figure = create_complexity_figure(single_core_perf)
    
-   supp_materials = render_docx(input_rmd = knitr_in(here::here("doc", "supplemental_materials.Rmd")), here::here("doc", "supplemental_materials.docx")),
-   supp_tables = render_docx(input_rmd = knitr_in(here::here("doc", "supplemental_tables.Rmd")), here::here("doc", "supplemental_tables.docx"), supp_materials),
-   manuscript = render_docx(input_rmd = knitr_in(here::here("doc", "ici_kt_manuscript.Rmd")), here::here("doc", "ici_kt_manuscript.docx"), supp_materials)
+   # add a comma after above target, and uncomment below if you want
+   # to generate manuscript as part of the overall plan.
+   # This may or may not be what you want to do.
+   # 
+   # Alternatively, you can do
+   #   source("generate_manuscript.R")
+   #   
+   #
+   # supp_materials = render_docx(input_rmd = knitr_in(here::here("doc", "supplemental_materials.Rmd")), here::here("doc", "supplemental_materials.docx")),
+   # supp_tables = render_docx(input_rmd = knitr_in(here::here("doc", "supplemental_tables.Rmd")), here::here("doc", "supplemental_tables.docx"), supp_materials),
+   # manuscript = render_docx(input_rmd = knitr_in(here::here("doc", "ici_kt_manuscript.Rmd")), here::here("doc", "ici_kt_manuscript.docx"), supp_materials)
 
 )
