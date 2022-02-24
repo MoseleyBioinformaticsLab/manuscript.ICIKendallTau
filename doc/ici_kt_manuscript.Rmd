@@ -37,7 +37,9 @@ knitr::opts_chunk$set(echo = FALSE,
                       fig.process = dn_modify_path,
                       dpi = 600,
                       dev.args = list(png = list(type = "cairo")))
-
+supp_figure_count = readRDS(here::here("doc/supp_figure_count.rds"))
+supp_table_count = readRDS(here::here("doc/supp_table_count.rds"))
+load(here::here("doc/supp_stuff.rda"))
 figure_count = dn_counter$new("Figure ", "_")
 table_count = dn_counter$new("Table ", "_")
 ```
@@ -496,6 +498,7 @@ Zoomed out (inset), the ICI-Kt appears as fast as using "pearson", but upon zoom
 In fact, regressing the time to number of samples using a formula with the expected algorithmic complexity, "pearson" shows O(n), ICI-Kt is O(nlog(n)), and "kendall" is O(n^2) (see `r supp_figure_count$label_text("complexity")`).
 
 ```{r singleperf, dn_id = figure_count}
+single_core_perf = readRDS(here::here("doc", "single_core_perf.rds"))
 single_core_perf = single_core_perf %>%
   dplyr::mutate(method2 = dplyr::case_when(
     method %in% "ici_kt" ~ "ICIKendallTau::ici_kt()",

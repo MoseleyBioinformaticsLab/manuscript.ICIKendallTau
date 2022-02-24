@@ -868,4 +868,10 @@ compare_plot | compare_small
 `r supp_figure_count$label_text("compare_overrange")`. 
 Median differences in correlation (top) and standard deviation of differences (bottom) as increasing fractions of features are used to calculate the sample-sample correlations.
 
+```{r save_supp_objects}
+saveRDS(supp_figure_count, file = here::here("doc/supp_figure_count.rds"))
+saveRDS(supp_table_count, file = here::here("doc/supp_table_count.rds"))
+save(yeast_table, brainson_table, adeno_table, yeast_single, brainson_single, adeno_single, use_colors, all_combined, file = here::here("doc/supp_stuff.rda"))
+```
+
 ## References
