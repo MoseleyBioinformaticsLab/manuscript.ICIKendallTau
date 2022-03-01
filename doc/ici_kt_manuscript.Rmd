@@ -103,7 +103,7 @@ We examine the effect of missing values on simulated data, comparing our informa
 We also evaluate the ability of ICI-Kt to capture outlier samples using three different RNA-seq datasets and comparing to a standard method using Pearson correlation.
 Finally, we examine the ability to recapitulate ICI-Kt correlation values calculated on a large feature omics data set using feature subsets, which is useful when the execution time of very large feature data sets becomes computationally prohibitive.
 
-All of the code used for this manuscript is available on figshare [@flightManuscriptICIKendallTau2022].
+All of the code used for this manuscript is available on zenodo [@flightManuscriptICIKendallTau2022].
 
 ## Methods
 
@@ -190,7 +190,7 @@ In comparison to directly counting the concordant and discordant pairs, some of 
 Therefore, we used 64 bit integers and floats where necessary in the *Rcpp* code.
 
 C++ (via *Rcpp* [@eddelbuettel_rcppseamless_2011; @eddelbuettel_seamlessbook_2013; @eddelbuettel_extendingrcpp_2018]) and R code implementations are in the src/kendallc.cpp and R/kendalltau.R files of the ICIKendallTau R package, hosted at https://github.com/MoseleyBioinformaticsLab/ICIKendallTau.
-The version of the package used in this manuscript is available on figshare [@flightICIKendallTau2022].
+The version of the package used in this manuscript is available on zenodo [@flightICIKendallTau2022].
 
 When a large number of samples need to be compared, it may be useful to split the comparisons across compute instances (across hyperthreaded cores, physical cores, or physical compute nodes).
 The *furrr* R package makes the definition of compute clusters easy [@vaughanFurrrApplyMapping2021].
@@ -406,7 +406,6 @@ figure_count$increment("leftcensored")
 ```
 
 ```{r leftcensored, fig.height = 8, fig.width = 8, dn_id = figure_count}
-figure_count$increment("f_leftcensored")
 loadd(left_censored_cor)
 left_censored_cor = left_censored_cor %>%
   dplyr::mutate(which2 = dplyr::case_when(

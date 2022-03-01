@@ -2041,7 +2041,7 @@
 		"type": "article",
 		"abstract": "ICIKendallTau version used in the manuscript Information-Content-Informed Kendall-tau Correlation: Utilizing Missing Values Robert M Flight, Praneeth S Bhatt, Hunter NB Moseley",
 		"title": "ICIKendallTau",
-		"URL": "https://figshare.com/articles/software/ICIKendallTau/19192886/1",
+		"URL": "https://doi.org/10.5281/zenodo.6311002",
 		"author": [
 			{
 				"family": "Flight",
@@ -2066,7 +2066,7 @@
 		"id": "flightManuscriptICIKendallTau2022",
 		"type": "article",
 		"title": "manuscript.ICIKendallTau",
-		"URL": "https://dx.doi.org/10.6084/m9.figshare.19196645",
+		"URL": "https://dx.doi.org/10.5281/zenodo.6309187",
 		"author": [
 			{
 				"family": "Flight",
