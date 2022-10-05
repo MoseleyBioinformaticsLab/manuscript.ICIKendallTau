@@ -134,7 +134,7 @@ The information-content-informed concordant pair definitions are below:
   * $x_i \& !x_j$ and $y_i > y_j$
   * $!x_i \& x_j$ and $y_i < y_j$ 
   * $x_i \& !x_j$ and $y_i \& !y_j$ 
-  * $x_i \& x_j$ and $!y_i \& y_j$ 
+  * $!x_i \& x_j$ and $!y_i \& y_j$ 
   
 The information content informed discordant pair definitions are below:
 
