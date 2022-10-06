@@ -68,8 +68,10 @@ Correlation between biomolecular features (nucleotide variants, RNA transcripts,
 Moreover, feature-feature correlations can be used to evaluate a dataset based on expected biochemical correlations, for example higher feature-feature correlations within lipid categories versus between lipid categories [@mitchellUntargetedLipidomicsNonSmall2021].
 Moreover, correlation is a foundational method for generating biomolecular feature-feature interaction networks, like those provided by STRING [@szklarczyk_string_2017], Genemania [@franz_genemania_2018], and WCGNA [@langfelder_wgcna_2008].
 Feature-feature correlation may also be used to inform which features are used for imputation of missing values [@faquih_missingvalueworkflow_2020].
-Correlation between biological samples as measured from omics data sets may be used for evaluating whether all the samples from a particular condition are truly related to each other, as well as to inform the choice of analysis, and to check for outliers prior to other statistical analyses [@flight_timecourseexploration_2010; @gierlinski_statisticalmodels_2015].
-Outlier detection, in particular, is often required for successful omics data analysis, since any misstep during the experimentation, sample collection, sample preparation, or analytical measurement of individual samples can inject high error and/or variance into the resulting data set [@moseleyErrorAnalysisPropagation2013; @gierlinski_statisticalmodels_2015].
+
+Often, the first step in omics level analyses is to examine the sample-sample (dis)similarities in various ways using exploratory data analysis or EDA.
+This can include the examination of decomposition by principal components analysis (PCA), sample-sample pairwise distances, or sample-sample pairwise correlations to highlight biological and batch groups [@10.12688/f1000research.7035.2; @10.12688/f1000research.9005.3; 10.12688/f1000research.8987.2], double check that the appropriateness of planned analyses [@flight_timecourseexploration_2010], and check if any samples should be removed prior to statistical analysis (outlier detection and removal) [@gierlinski_statisticalmodels_2015].
+Outlier detection, in particular, is often required for successful omics data analysis, as any misstep during the experimentation, sample collection, sample preparation, or analytical measurement of individual samples can inject high error and/or variance into the resulting data set [@moseleyErrorAnalysisPropagation2013; @gierlinski_statisticalmodels_2015].
 
 ```{r add_problemfig}
 figure_count$increment("problem")
@@ -86,21 +88,21 @@ Other approaches keep only those features with no missing values across experime
 Each of these are likely to deviate from the real sample-sample correlation values, especially with respect to specific data interpretation perspectives.
 
 ```{r problem, dn_id = figure_count}
-knitr::include_graphics(here::here("doc/the_problem.png"))
+knitr::include_graphics(here::here("doc/the_problem_3.png"))
 ```
 
 `r figure_count$label_text("problem")`. 
 Graphical description of the left-censored data problem.
+An example density plot of the analyte concentrations for a single experimental sample is shown as a solid line. 
 The true analyte concentration range covers the full range of the density distribution, with the minimum on the left, and the maximum on the right.
-An example density plot of the analyte concentrations for a single experimental sample is shown as a solid line, and the instrument response to concentration as a dashed line.
-Below certain analyte concentrations, highlighted as the red region, the instrument returns missing values, 0, or some other floored value.
-Above certain concentrations, highlighted as the yellow region, all values returned will also be identical (or flagged depending on the instrument).
+Below certain concentrations, shown by the red line, the instrument returns either missing values (NA), zeros, or some other floored values, resulting in a left-censored distribution.
+Above certain concentrations, highlighted by the yellow line, typically the values returned will be identical (or flagged depending on the instrument).
 Which analytes will have concentrations in the red region may vary from sample to sample due to the overall sample composition, as well as natural variances (non-systematic error) within each experimental sample.
 
 Assuming that a majority of missing values are not missing at random, but rather result from left-censored distributions due to the analyte being below the effective detection limit (see `r figure_count$label_text("problem")`), we propose that these missing values do in fact encode useful information that can be incorporated into correlation calculations, especially the Kendall-tau paired rank correlation coefficient.
 In this manuscript, we propose new definitions of concordant and discordant rank pairs that include missing values, as well as methods for incorporating missing values into the number of tied values for the equivalent of the modified Kendall-tau coefficient.
-We examine the effect of missing values on simulated data, comparing our information-content-informed Kendall-tau (ICI-Kt) method with other simpler methods of handling the missing values, namely removing them or imputing them to zero.
-We also evaluate the ability of ICI-Kt to capture outlier samples using three different RNA-seq datasets and comparing to a standard method using Pearson correlation.
+We examine the effect of missing values on various simulated data-sets, comparing our information-content-informed Kendall-tau (ICI-Kt) method with other simpler methods of handling the missing values, namely removing them or imputing them to zero
+Given the possible effects of outlier samples on differential analyses, we also evaluate the ability of ICI-Kt to capture sample-sample pairwise similarities and the determination of outlier samples prior to differential analyses.
 Finally, we examine the ability to recapitulate ICI-Kt correlation values calculated on a large feature omics data set using feature subsets, which is useful when the execution time of very large feature data sets becomes computationally prohibitive.
 
 All of the code used for this manuscript is available on zenodo [@flightManuscriptICIKendallTau2022].
