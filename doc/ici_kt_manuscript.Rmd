@@ -82,9 +82,7 @@ Of course some analytes will be missing at random because of random issues with 
 Some analytical instruments are purposely designed to floor measurements when they occur below a certain signal to noise ratio threshold.
 Imputation of missing measurements in omics samples is an active area of research, which we will not cover here beyond to say that it is worthwhile and very necessary in many instances.
 But when it comes to calculating correlation, there are very few methods that explicitly account for missing data that we know of.
-In many cases, missing values may be imputed to zero (or another value) and then included in the correlation calculation.
-Imputation or replacement with zero is likely to lead to high inflation of Pearson and related correlation measures.
-Other approaches keep only those features with no missing values across experimental samples (complete cases), or keep non-missing between any pair of experimental samples (pairwise complete cases).
+In many cases, missing values may be either ignored and only those measurements that are common across all samples (complete) or common between two samples being compared (pairwise complete) used, or alternatively imputed to zero (or another value) and then included in the correlation calculation.
 Each of these are likely to deviate from the real sample-sample correlation values, especially with respect to specific data interpretation perspectives.
 
 ```{r problem, dn_id = figure_count}
@@ -99,25 +97,24 @@ Below certain concentrations, shown by the red line, the instrument returns eith
 Above certain concentrations, highlighted by the yellow line, typically the values returned will be identical (or flagged depending on the instrument).
 Which analytes will have concentrations in the red region may vary from sample to sample due to the overall sample composition, as well as natural variances (non-systematic error) within each experimental sample.
 
-Assuming that a majority of missing values are not missing at random, but rather result from left-censored distributions due to the analyte being below the effective detection limit (see `r figure_count$label_text("problem")`), we propose that these missing values do in fact encode useful information that can be incorporated into correlation calculations, especially the Kendall-tau paired rank correlation coefficient.
+Assuming that a majority of missing values are not missing at random, but rather result from left-censored distributions due to the analyte being below the effective detection limit (see `r figure_count$label_text("problem")`), we propose that these missing values do in fact encode useful information that can be incorporated into correlation calculations.
+
+To create a correlation measure that is capable of working with missing values, we would not be interested in creating a completely new correlation metric from scratch, but modifying an existing one.
+Of the three commonly used correlation measures, Pearson, Spearman, and Kendall-tau, Spearman and Kendall-tau seem most appropriate for modification as they solely use ranks in the calculation of their coefficients.
+Modifying Pearson would either involve imputing new values, or finding a way to calculate the covariances **with** missingness included.
+While Spearman uses ranks, many of the modifications for handling identical ranks and ties do not seem amenable to working with missing values.
+In contrast, Kendall-tau's use of concordant and discordant pair counts seemed most amenable to the creation of new definitions that incorporate missingness while still working within the original definition of the correlation coefficient, as shown below.
+
 In this manuscript, we propose new definitions of concordant and discordant rank pairs that include missing values, as well as methods for incorporating missing values into the number of tied values for the equivalent of the modified Kendall-tau coefficient.
-We examine the effect of missing values on various simulated data-sets, comparing our information-content-informed Kendall-tau (ICI-Kt) method with other simpler methods of handling the missing values, namely removing them or imputing them to zero
-Given the possible effects of outlier samples on differential analyses, we also evaluate the ability of ICI-Kt to capture sample-sample pairwise similarities and the determination of outlier samples prior to differential analyses.
+We examine the effect of missing values on various simulated data-sets, comparing our information-content-informed Kendall-tau (ICI-Kt) method with other simpler methods of handling the missing values, namely removing them or imputing them to zero.
+Given the detrimental effects of including outlier samples on differential analyses, we also evaluate the ability of ICI-Kt to capture sample-sample pairwise similarities and the determination of outlier samples prior to differential analyses.
 Finally, we examine the ability to recapitulate ICI-Kt correlation values calculated on a large feature omics data set using feature subsets, which is useful when the execution time of very large feature data sets becomes computationally prohibitive.
 
 All of the code used for this manuscript is available on zenodo [@flightManuscriptICIKendallTau2022].
 
 ## Methods
 
-### Choosing a Correlation Method
-
-Ideally, to create a correlation measure that is acapable of working with missing values, we would not be interested in creating a completely new correlation metric from scratch, but only modifying an existing one.
-Of the three well known correlation metrics, Pearson, Spearman, and Kendall-tau, Spearman and Kendall-tau seem most appropriate for modification as they solely use ranks in the calculation of their coefficients.
-Modifying Pearson would either involve imputing new values, or finding a way to calculate the covariances **with** missingness.
-While Spearman uses ranks, many of the modifications for handling identical ranks and ties do not seem amenable to working with missing values.
-In contrast, Kendall-tau's use of concordant and discordant pair counts seemed most amenable to the creation of new definitions that incorporate missingness while still working within the original definition of the correlation coefficient, as shown below.
-
-### New Definitions of Concordant and Discordant Pairs to Include Missingness
+### Additional Definitions of Concordant and Discordant Pairs to Include Missingness
 
 In the simplest form, the Kendall-tau correlation can be defined as:
 
