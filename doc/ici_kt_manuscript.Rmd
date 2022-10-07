@@ -109,7 +109,15 @@ All of the code used for this manuscript is available on zenodo [@flightManuscri
 
 ## Methods
 
-### Definition of Concordant and Discordant Pairs
+### Choosing a Correlation Method
+
+Ideally, to create a correlation measure that is acapable of working with missing values, we would not be interested in creating a completely new correlation metric from scratch, but only modifying an existing one.
+Of the three well known correlation metrics, Pearson, Spearman, and Kendall-tau, Spearman and Kendall-tau seem most appropriate for modification as they solely use ranks in the calculation of their coefficients.
+Modifying Pearson would either involve imputing new values, or finding a way to calculate the covariances **with** missingness.
+While Spearman uses ranks, many of the modifications for handling identical ranks and ties do not seem amenable to working with missing values.
+In contrast, Kendall-tau's use of concordant and discordant pair counts seemed most amenable to the creation of new definitions that incorporate missingness while still working within the original definition of the correlation coefficient, as shown below.
+
+### New Definitions of Concordant and Discordant Pairs to Include Missingness
 
 In the simplest form, the Kendall-tau correlation can be defined as:
 
@@ -126,7 +134,8 @@ A discordant pair has the following classical definition [@kendall_newmeasure_19
   * $x_i > x_j$ and $y_i < y_j$
   * $x_i < x_j$ and $y_i > y_j$
 
-Assuming that the majority of missing values are not missing at random, but due to being below the effective detection limit, we can expand the concordant and discordant pair definitions to include missing values. Here $!x$ indicates a missing value and & is synonymous with "and".
+We can expand the concordant and discordant pair definitions to include missing values (e.g. `NA` in R). 
+Here $!x$ indicates a missing value and & is synonymous with "and".
 The information-content-informed concordant pair definitions are below:
 
   * $x_i > x_j$ and $y_i > y_j$
@@ -148,6 +157,8 @@ The information content informed discordant pair definitions are below:
   * $!x_i \& x_j$ and $y_i > y_j$
   * $x_i \& !x_j$ and $!y_i \& y_j$
   * $!x_i \& x_j$ and $y_i \& !y_j$
+  
+These additional definitions make it possible to calculate a Kendall-tau correlation that **incorporates missing values**, information-content-informed Kendall-tau (ICI-Kt).
 
 ### Considering Ties
 
@@ -157,13 +168,13 @@ However, the related tau-b statistic does handle the presence of tied values by 
 $$\tau = \frac{\left | pairs_{concordant} \right | - \left | pairs_{discordant} \right |}{\sqrt{(n_0 - n_{xtie})(n_0 - n_{ytie})}}$$
 
 We can also consider commonly missing values in X and Y specially as well.
-In the first instance, we remove those x-y points where both values are missing.
+In the first instance, we remove those x-y points where **both values** are missing.
 We refer to this case as the "local" ICI-Kt correlation.
 It is most appropriate for the comparison of only two experimental samples, where we are concerned with what values are present in the two experimental samples, with the odd case of missingness.
 
 The other case, where we leave ties resulting from points with missing X and Y, we refer to as the "global" ICI-Kt correlation.
-In this case, every single sample-sample correlation will consider the same number of pair comparisons.
-This is more useful when analyzing and interpreting correlations across multiple experimental samples, not just two feature vectors.
+In this case, every single correlation over multiple comparisons with the same set of features will consider the same number of pair comparisons.
+This is useful when analyzing and interpreting correlations from a large number of experimental samples, not just two feature vectors.
 
 ### Theoretical Maxima
 
@@ -184,7 +195,8 @@ Calculating a set of $tau_{max}$ values between all experimental samples, we can
 ### Implementation Details
 
 We produced an initial reference implementation in R [@rcoreteam_rlanguage_2020] where the various concordant and discordant pair definitions were written as simple logical tests to allow further exploration and validation of faster implementations.
-In practice, it is possible to replace the missing values with a value that is smaller than all of the values in the two sets of values under consideration, and then do tests of signs to define concordant and discordant pairs (see the definitions of concordant and discordant pairs above).
+In practice, it is possible to **replace the missing values with a value that is smaller than all of the values in the two sets of values under consideration**, and then do tests of signs to define concordant and discordant pairs (see the definitions of concordant and discordant pairs above).
+We note here that this is **not imputation of missing values**
 
 After this initial implementation, we used the *SciPy* [@virtanen_scipy_2020] *kendalltau* code as a model to create a mergesort based implementation that has a complexity of O(nlog(n)), in comparison to the pairwise testing that has a complexity of O(n^2) [@knight_mergesortkendall_1966].
 This provides a 460X speedup of the runtime to compare two feature vectors with lengths of 40,000.
