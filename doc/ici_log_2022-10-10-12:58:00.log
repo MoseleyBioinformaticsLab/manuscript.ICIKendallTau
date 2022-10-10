@@ -1,0 +1,10 @@
+popos  1797949  20221010 125805.489918 0400 GMT  supp_materials  processing file supplemental_materials.Rmd
+popos  1797949  20221010 125809.038262 0400 GMT  supp_materials  Warning Removed 8 rows containing missing values geom_point.
+popos  1797949  20221010 125812.938354 0400 GMT  supp_materials  Warning Removed 4094 rows containing nonfinite values stat_bin.
+popos  1797949  20221010 125815.707971 0400 GMT  supp_materials  Warning Removed 4094 rows containing nonfinite values stat_bin.
+popos  1797949  20221010 125827.278314 0400 GMT  supp_materials  Adding missing grouping variables method, sample_class
+popos  1797949  20221010 125832.288241 0400 GMT  supp_materials  summarise has grouped output by method. You can override using the .groups argument.
+popos  1797949  20221010 125838.923180 0400 GMT  supp_materials  summarise has grouped output by method. You can override using the .groups argument.
+popos  1797949  20221010 125845.918083 0400 GMT  supp_materials  summarise has grouped output by method. You can override using the .groups argument.
+popos  1797949  20221010 130009.245663 0400 GMT  supp_materials  output file supplemental_materials.knit.md
+popos  1797949  20221010 130013.825197 0400 GMT  supp_materials  Output created supplemental_materials.docx

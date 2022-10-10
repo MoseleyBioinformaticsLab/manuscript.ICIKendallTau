@@ -354,7 +354,36 @@ the_plan <-
    pca_eval_summary = summarize_by_pca(all_pca_eval),
    
    single_core_perf = run_single_cor(),
-   complexity_figure = create_complexity_figure(single_core_perf)
+   complexity_figure = create_complexity_figure(single_core_perf),
+   
+   supp_materials = target(
+     command = {
+       rmarkdown::render(knitr_in("doc/supplemental_materials.Rmd"))
+       file_out("doc/supplemental_materials.docx")
+     }
+   ),
+   
+   supp_materials_file = file_in("doc/supplemental_materials.docx"),
+   
+   supp_tables = target(
+     command = {
+       rmarkdown::render(knitr_in("doc/supplemental_tables.Rmd"))
+       file_out("doc/supplemental_tables.docx")
+     }
+   ),
+   
+   supp_tables_file = file_in("doc/supplemental_tables.docx"),
+   supp_tables_rds = file_in("doc/supp_table_count.rds"),
+   supp_figures_rds = file_in("doc/supp_figure_count.rds"),
+   supp_stuff_rda = file_in("doc/supp_stuff.rda"),
+   
+   manuscript = target(
+     command = {
+       rmarkdown::render(knitr_in("doc/ici_kt_manuscript.Rmd"))
+       file_out("doc/ici_kt_manuscript.docx")
+     }
+   )
+   
    
    # add a comma after above target, and uncomment below if you want
    # to generate manuscript as part of the overall plan.
