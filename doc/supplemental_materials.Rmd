@@ -297,7 +297,7 @@ adeno_variation = adeno_single %>%
 
 adeno_ratios = adeno_variation %>%
   tidyr::pivot_wider(names_from = sample_class, values_from = mad) %>%
-  dplyr::summarise(ratio = format(Tumor / Normal, digits = 0)) %>%
+  dplyr::summarise(ratio = format(Tumor / Normal, digits = 1, nsmall = 0)) %>%
   tidyr::pivot_wider(names_from = method, values_from = ratio)
 adeno_variation_wide = adeno_variation %>% 
   tidyr::pivot_wider(names_from = sample_class, values_from = mad) %>%

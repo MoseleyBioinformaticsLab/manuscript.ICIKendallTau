@@ -18,8 +18,11 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE,
                       tab.cap.sep = "",
                       dpi = 600,
                       dev.args = list(png = list(type = "cairo")))
-supp_table_count = readRDS(here::here("doc/supp_table_count.rds"))
-load(here::here("doc/supp_stuff.rda"))
+loadd(supp_materials_file)
+loadd(supp_tables_rds)
+supp_table_count = readRDS(here::here(supp_tables_rds))
+loadd(supp_stuff_rda)
+load(here::here(supp_stuff_rda))
 ```
 
 `r supp_table_count$label_text("yeast_outliers")`.

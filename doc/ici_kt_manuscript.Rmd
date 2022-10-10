@@ -37,9 +37,14 @@ knitr::opts_chunk$set(echo = FALSE,
                       fig.process = dn_modify_path,
                       dpi = 600,
                       dev.args = list(png = list(type = "cairo")))
-supp_figure_count = readRDS(here::here("doc/supp_figure_count.rds"))
-supp_table_count = readRDS(here::here("doc/supp_table_count.rds"))
-load(here::here("doc/supp_stuff.rda"))
+loadd(supp_materials_file)
+loadd(supp_tables_file)
+loadd(supp_figures_rds)
+loadd(supp_tables_rds)
+supp_figure_count = readRDS(here::here(supp_figures_rds))
+supp_table_count = readRDS(here::here(supp_tables_rds))
+loadd(supp_stuff_rda)
+load(here::here(supp_stuff_rda))
 figure_count = dn_counter$new("Figure ", "_")
 table_count = dn_counter$new("Table ", "_")
 ```
@@ -70,8 +75,8 @@ Moreover, correlation is a foundational method for generating biomolecular featu
 Feature-feature correlation may also be used to inform which features are used for imputation of missing values [@faquih_missingvalueworkflow_2020].
 
 Often, the first step in omics level analyses is to examine the sample-sample (dis)similarities in various ways using exploratory data analysis or EDA.
-This can include the examination of decomposition by principal components analysis (PCA), sample-sample pairwise distances, or sample-sample pairwise correlations to highlight biological and batch groups [@10.12688/f1000research.7035.2; @10.12688/f1000research.9005.3; 10.12688/f1000research.8987.2], double check that the appropriateness of planned analyses [@flight_timecourseexploration_2010], and check if any samples should be removed prior to statistical analysis (outlier detection and removal) [@gierlinski_statisticalmodels_2015].
-Outlier detection, in particular, is often required for successful omics data analysis, as any misstep during the experimentation, sample collection, sample preparation, or analytical measurement of individual samples can inject high error and/or variance into the resulting data set [@10.12688/f1000research.7035.2; @10.12688/f1000research.9005.3; 10.12688/f1000research.8987.2; @moseleyErrorAnalysisPropagation2013; @gierlinski_statisticalmodels_2015].
+This can include the examination of decomposition by principal components analysis (PCA), sample-sample pairwise distances, or sample-sample pairwise correlations to highlight biological and batch groups [@10.12688/f1000research.7035.2; @10.12688/f1000research.9005.3; @10.12688/f1000research.8987.2], double check that the appropriateness of planned analyses [@flight_timecourseexploration_2010], and check if any samples should be removed prior to statistical analysis (outlier detection and removal) [@gierlinski_statisticalmodels_2015].
+Outlier detection, in particular, is often required for successful omics data analysis, as any misstep during the experimentation, sample collection, sample preparation, or analytical measurement of individual samples can inject high error and/or variance into the resulting data set [@10.12688/f1000research.7035.2; @10.12688/f1000research.9005.3; @10.12688/f1000research.8987.2; @moseleyErrorAnalysisPropagation2013; @gierlinski_statisticalmodels_2015].
 
 ```{r add_problemfig}
 figure_count$increment("problem")
