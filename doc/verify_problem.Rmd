@@ -1,0 +1,212 @@
+---
+title: 'Verifying the Problem'
+output: 
+  rmarkdown::word_document:
+    keep_md: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, 
+                      message = FALSE, fig.width = 8, 
+                      fig.height = 10, fig.keep = "all",
+                      tab.cap.style = "paragraph",
+                      tab.cap.pre = "",
+                      tab.cap.sep = "",
+                      dpi = 600,
+                      dev.args = list(png = list(type = "cairo")))
+```
+
+## Yeast
+
+```{r}
+#| label: yeast_check
+source(here::here("packages.R"))
+suppressMessages(library(DESeq2))
+loadd(yeast_counts_info)
+yeast_counts = yeast_counts_info$counts
+
+yeast_des = DESeqDataSetFromMatrix(yeast_counts_info$counts, yeast_counts_info$info, design = ~ sample)
+yeast_des = estimateSizeFactors(yeast_des)
+yeast_norm = counts(yeast_des, normalized = TRUE)
+
+yeast_counts_df = tibble::as_tibble(yeast_norm)
+yeast_counts_df$feature = rownames(yeast_norm)
+
+yeast_counts_long = yeast_counts_df |>
+  tidyr::pivot_longer(cols = -feature, names_to = "sample", values_to = "count")
+
+# yeast_counts_long |>
+#   ggplot(aes(x = sample, y = log2(count))) +
+#   geom_boxplot()
+
+yeast_norm_median = purrr::map_dfr(rownames(yeast_norm), function(in_gene){
+  tmp_data = yeast_norm[in_gene, ]
+  med_all = median(tmp_data)
+  tmp_not0 = tmp_data[tmp_data > 0]
+  if (length(tmp_not0) > 0) {
+    med_not0 = median(tmp_not0)
+  } else {
+    med_not0 = NA
+  }
+  tibble(feature = in_gene, sample_present = length(tmp_not0), sample_missing = length(tmp_data) - length(tmp_not0), median_all = med_all, median_present = med_not0)
+  
+})
+
+yeast_plots = list(all = 
+                     yeast_norm_median |>
+                     ggplot(aes(x = log2(median_present), y = sample_present)) +
+                     geom_point(),
+                   
+                   less_32 = 
+                     yeast_norm_median |>
+                     dplyr::filter(median_present < 32) |>
+                     ggplot(aes(x = log2(median_present), y = sample_present)) +
+                     geom_point())
+
+wrap_plots(yeast_plots, ncol = 1)
+yeast_test_cor = yeast_norm_median |>
+  dplyr::filter(median_present <= 32)
+cor.test(yeast_test_cor$median_present, yeast_test_cor$sample_present, method = "kendall")
+```
+
+So here I've taken the Gierlinski Yeast data set, normalized it, and then counted how many samples a value was present in, and what the median value was across all samples (all) and where present (present).
+
+I trimmed to a median_present <= 32, and then run a correlation test between # samples present and median_present using Kendall-tau.
+
+So definitely a relationship in this case.
+
+Will be doing up the rest this morning.
+
+## Brainson
+
+```{r}
+#| label: load_brainson
+loadd(brainsonrnaseq_counts)
+loadd(brainsonrnaseq_info)
+```
+
+```{r}
+#| label: process_brainson
+brainsonrnaseq_des = DESeqDataSetFromMatrix(round(brainsonrnaseq_counts), brainsonrnaseq_info, design = ~ tumor + type) 
+brainsonrnaseq_des = estimateSizeFactors(brainsonrnaseq_des)
+brainsonrnaseq_norm = counts(brainsonrnaseq_des, normalized = TRUE)
+
+brainsonrnaseq_norm_median = purrr::map_dfr(rownames(brainsonrnaseq_norm), function(in_gene){
+  tmp_data = brainsonrnaseq_norm[in_gene, ]
+  med_all = median(tmp_data)
+  tmp_not0 = tmp_data[tmp_data > 0]
+  if (length(tmp_not0) > 0) {
+    med_not0 = median(tmp_not0)
+  } else {
+    med_not0 = NA
+  }
+  tibble(feature = in_gene, sample_present = length(tmp_not0), sample_missing = length(tmp_data) - length(tmp_not0), median_all = med_all, median_present = med_not0)
+  
+})
+
+brainsonrnaseq_plots = list(all = 
+                     brainsonrnaseq_norm_median |>
+                     ggplot(aes(x = log2(median_present), y = sample_present)) +
+                     geom_point(),
+                   
+                   less_32 = 
+                     brainsonrnaseq_norm_median |>
+                     dplyr::filter(median_present < 32) |>
+                     ggplot(aes(x = log2(median_present), y = sample_present)) +
+                     geom_point())
+
+wrap_plots(brainsonrnaseq_plots, ncol = 1)
+brainsonrnaseq_test_cor = brainsonrnaseq_norm_median |>
+  dplyr::filter(median_present <= 32)
+cor.test(brainsonrnaseq_test_cor$median_present, brainsonrnaseq_test_cor$sample_present, method = "kendall")
+```
+
+## Tumor
+
+```{r}
+#| label: load_tumor
+loadd(adeno_data)
+loadd(adeno_info)
+adeno_des = DESeqDataSetFromMatrix(adeno_data, adeno_info, design = ~ tissue_type)
+
+adeno_des = estimateSizeFactors(adeno_des)
+adeno_norm = counts(adeno_des, normalized = TRUE)
+
+
+adeno_norm_median = purrr::map_dfr(rownames(adeno_norm), function(in_gene){
+  tmp_data = adeno_norm[in_gene, ]
+  med_all = median(tmp_data)
+  tmp_not0 = tmp_data[tmp_data > 0]
+  if (length(tmp_not0) > 0) {
+    med_not0 = median(tmp_not0)
+  } else {
+    med_not0 = NA
+  }
+  tibble(feature = in_gene, sample_present = length(tmp_not0), sample_missing = length(tmp_data) - length(tmp_not0), median_all = med_all, median_present = med_not0)
+  
+})
+
+adeno_plots = list(all = 
+                     adeno_norm_median |>
+                     ggplot(aes(x = log2(median_present), y = sample_present)) +
+                     geom_point(),
+                   
+                   less_32 = 
+                     adeno_norm_median |>
+                     dplyr::filter(median_present < 32) |>
+                     ggplot(aes(x = log2(median_present), y = sample_present)) +
+                     geom_point(alpha = 0.5))
+
+wrap_plots(adeno_plots, ncol = 1)
+adeno_test_cor = adeno_norm_median |>
+  dplyr::filter(median_present <= 32)
+cor.test(adeno_test_cor$median_present, adeno_test_cor$sample_present, method = "kendall")
+```
+
+## NSCLC Metabolomics
+
+```{r}
+#| label: load_nsclc
+nsclc_data = readRDS(here::here("data/nsclc_scancentric_imfs_raw"))
+nsclc_medians = readRDS(here::here("data/nsclc_scancentric_medians"))
+nsclc_info = readRDS(here::here("data/nsclc_info"))
+
+nsclc_norm_list = purrr::map(colnames(nsclc_data$intensity), function(.x){
+  nsclc_data$intensity[, .x] / (dplyr::filter(nsclc_medians, sample %in% .x) |> dplyr::pull(median))
+})
+nsclc_norm = do.call(cbind, nsclc_norm_list)
+nsclc_norm[is.na(nsclc_norm)] = 0
+
+nsclc_norm_median = purrr::map_dfr(rownames(nsclc_norm), function(in_gene){
+  tmp_data = nsclc_norm[in_gene, ]
+  med_all = median(tmp_data)
+  tmp_not0 = tmp_data[tmp_data > 0]
+  if (length(tmp_not0) > 0) {
+    med_not0 = median(tmp_not0)
+  } else {
+    med_not0 = NA
+  }
+  tibble(feature = in_gene, sample_present = length(tmp_not0), sample_missing = length(tmp_data) - length(tmp_not0), median_all = med_all, median_present = med_not0)
+  
+})
+
+nsclc_plots = list(all = 
+                     nsclc_norm_median |>
+                     ggplot(aes(x = log2(median_present), y = sample_present)) +
+                     geom_point(),
+                   
+                   less_32 = 
+                     nsclc_norm_median |>
+                     dplyr::filter(median_present < 32) |>
+                     ggplot(aes(x = log2(median_present), y = sample_present)) +
+                     geom_point(alpha = 0.5))
+
+wrap_plots(nsclc_plots, ncol = 1)
+nsclc_test_cor = nsclc_norm_median |>
+  dplyr::filter(median_present <= 32)
+cor.test(nsclc_test_cor$median_present, nsclc_test_cor$sample_present, method = "kendall")
+```
+
+Sooo, this one is kinda weird.
