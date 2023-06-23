@@ -5,9 +5,12 @@
 data/barton_preprocessed
 data/rse_gene_lung.Rdata
 references/
-doc/ici_kt*.docx
-doc/supplemental_materials*.docx
-doc/*.md
-.drake
+old_resources/
+old_manuscript_versions/
+*.docx
+*.docx#
 renv
 actual_package
+data/
+*.rds
+*.rda

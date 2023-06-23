@@ -36,39 +36,34 @@ yeast_counts_df$feature = rownames(yeast_norm)
 
 yeast_counts_long = yeast_counts_df |>
   tidyr::pivot_longer(cols = -feature, names_to = "sample", values_to = "count")
+yeast_counts_long = dplyr::left_join(yeast_counts_long, yeast_counts_info$info, by = c("sample" = "sample_rep"))
 
 # yeast_counts_long |>
 #   ggplot(aes(x = sample, y = log2(count))) +
 #   geom_boxplot()
 
-yeast_norm_median = purrr::map_dfr(rownames(yeast_norm), function(in_gene){
-  tmp_data = yeast_norm[in_gene, ]
-  med_all = median(tmp_data)
-  tmp_not0 = tmp_data[tmp_data > 0]
-  if (length(tmp_not0) > 0) {
-    med_not0 = median(tmp_not0)
-  } else {
-    med_not0 = NA
-  }
-  tibble(feature = in_gene, sample_present = length(tmp_not0), sample_missing = length(tmp_data) - length(tmp_not0), median_all = med_all, median_present = med_not0)
-  
-})
+yeast_median = yeast_counts_long |>
+  dplyr::group_by(sample.y, feature) |>
+  dplyr::summarise(median = median(count),
+                   median_present = median(count[count > 0]),
+                   n_present = sum(count > 0)) |>
+  dplyr::ungroup()
 
 yeast_plots = list(all = 
-                     yeast_norm_median |>
-                     ggplot(aes(x = log2(median_present), y = sample_present)) +
+                     yeast_median |>
+                     ggplot(aes(x = log2(median_present), y = n_present)) +
                      geom_point(),
                    
                    less_32 = 
-                     yeast_norm_median |>
+                     yeast_median |>
                      dplyr::filter(median_present < 32) |>
-                     ggplot(aes(x = log2(median_present), y = sample_present)) +
+                     ggplot(aes(x = log2(median_present), y = n_present)) +
                      geom_point())
 
 wrap_plots(yeast_plots, ncol = 1)
-yeast_test_cor = yeast_norm_median |>
+yeast_test_cor = yeast_median |>
   dplyr::filter(median_present <= 32)
-cor.test(yeast_test_cor$median_present, yeast_test_cor$sample_present, method = "kendall")
+cor.test(yeast_test_cor$median_present, yeast_test_cor$n_present, method = "kendall")
 ```
 
 So here I've taken the Gierlinski Yeast data set, normalized it, and then counted how many samples a value was present in, and what the median value was across all samples (all) and where present (present).
@@ -93,28 +88,34 @@ brainsonrnaseq_des = DESeqDataSetFromMatrix(round(brainsonrnaseq_counts), brains
 brainsonrnaseq_des = estimateSizeFactors(brainsonrnaseq_des)
 brainsonrnaseq_norm = counts(brainsonrnaseq_des, normalized = TRUE)
 
-brainsonrnaseq_norm_median = purrr::map_dfr(rownames(brainsonrnaseq_norm), function(in_gene){
-  tmp_data = brainsonrnaseq_norm[in_gene, ]
-  med_all = median(tmp_data)
-  tmp_not0 = tmp_data[tmp_data > 0]
-  if (length(tmp_not0) > 0) {
-    med_not0 = median(tmp_not0)
-  } else {
-    med_not0 = NA
-  }
-  tibble(feature = in_gene, sample_present = length(tmp_not0), sample_missing = length(tmp_data) - length(tmp_not0), median_all = med_all, median_present = med_not0)
-  
-})
+brainsonrnaseq_norm_df = tibble::as_tibble(brainsonrnaseq_norm) |>
+  dplyr::mutate(feature = rownames(brainsonrnaseq_norm))
+
+brainsonrnaseq_norm_long = brainsonrnaseq_norm_df |>
+  tidyr::pivot_longer(-feature,
+                      values_to = "count",
+                      names_to = "sample")
+
+brainsonrnaseq_norm_long = dplyr::left_join(brainsonrnaseq_norm_long,
+                                            brainsonrnaseq_info, by = "sample")
+
+brainsonrnaseq_median = brainsonrnaseq_norm_long |>
+  dplyr::group_by(type, tumor, feature) |>
+  dplyr::summarise(median = median(count),
+                   median_present = median(count[count > 0]),
+                   n_present = sum(count > 0)) |>
+  dplyr::ungroup()
+
 
 brainsonrnaseq_plots = list(all = 
-                     brainsonrnaseq_norm_median |>
-                     ggplot(aes(x = log2(median_present), y = sample_present)) +
+                     brainsonrnaseq_median |>
+                     ggplot(aes(x = log2(median), y = n_present)) +
                      geom_point(),
                    
                    less_32 = 
-                     brainsonrnaseq_norm_median |>
-                     dplyr::filter(median_present < 32) |>
-                     ggplot(aes(x = log2(median_present), y = sample_present)) +
+                     brainsonrnaseq_median |>
+                     dplyr::filter(median < 32) |>
+                     ggplot(aes(x = log2(median), y = n_present)) +
                      geom_point())
 
 wrap_plots(brainsonrnaseq_plots, ncol = 1)
@@ -128,63 +129,69 @@ cor.test(brainsonrnaseq_test_cor$median_present, brainsonrnaseq_test_cor$sample_
 
 ```{r}
 #| label: load_nsclc
-loadd(nsclc_peaks)
+nsclc_peaks = readRDS("data/nsclc_matched_height.rds")
 loadd(nsclc_medians)
 loadd(nsclc_info)
+
+keep_samples = intersect(colnames(nsclc_peaks), nsclc_medians$sample)
+keep_samples = intersect(keep_samples, nsclc_info$sample)
+
+nsclc_info = nsclc_info |>
+  dplyr::filter(sample %in% keep_samples) |>
+  dplyr::mutate(disease_instrument = paste0(disease, ":", instrument))
+split_type_instrument = split(nsclc_info, nsclc_info$disease_instrument)
+
+nsclc_medians = nsclc_medians |>
+  dplyr::filter(sample %in% keep_samples)
+
+nsclc_peaks = nsclc_peaks[, keep_samples]
 
 nsclc_norm_list = purrr::map(colnames(nsclc_peaks), function(.x){
   nsclc_peaks[, .x] / (dplyr::filter(nsclc_medians, sample %in% .x) |> dplyr::pull(median))
 })
+
 nsclc_norm = do.call(cbind, nsclc_norm_list)
 colnames(nsclc_norm) = colnames(nsclc_peaks)
 nsclc_norm[is.na(nsclc_norm)] = 0
 
-nsclc_info = nsclc_info |>
-  dplyr::filter(sample %in% colnames(nsclc_peaks))
-info_split_instrument = split(nsclc_info, nsclc_info$instrument)
-
-nsclc_norms = purrr::map(info_split_instrument, function(in_instrument){
+nsclc_median_instrument = purrr::map(split_type_instrument, function(in_instrument){
   tmp_norm = nsclc_norm[, in_instrument$sample]
-  instrument_median = purrr::map_dfr(rownames(nsclc_norm), function(in_feature){
+  instrument_median = purrr::map_dfr(seq_len(nrow(nsclc_norm)), function(in_feature){
     tmp_data = tmp_norm[in_feature, ]
     med_all = median(tmp_data)
     tmp_not0 = tmp_data[tmp_data > 0]
     if (length(tmp_not0) > 0) {
       med_not0 = median(tmp_not0)
+      return(
+        tibble(feature = in_feature, sample_present = length(tmp_not0), sample_missing = length(tmp_data) - length(tmp_not0), median_all = med_all, median_present = med_not0, disease_instrument = in_instrument$disease_instrument[1])
+      )
     } else {
-      med_not0 = NA
+      return(NULL)
     }
-    tibble(feature = in_feature, sample_present = length(tmp_not0), sample_missing = length(tmp_data) - length(tmp_not0), median_all = med_all, median_present = med_not0)
+    
   })
+  instrument_median
 })
 
-nsclc_norm_median = purrr::map_dfr(rownames(nsclc_norm), function(in_gene){
-  tmp_data = nsclc_norm[in_gene, ]
-  med_all = median(tmp_data)
-  tmp_not0 = tmp_data[tmp_data > 0]
-  if (length(tmp_not0) > 0) {
-    med_not0 = median(tmp_not0)
-  } else {
-    med_not0 = NA
-  }
-  tibble(feature = in_gene, sample_present = length(tmp_not0), sample_missing = length(tmp_data) - length(tmp_not0), median_all = med_all, median_present = med_not0)
-  
+nsclc_by_instrument = purrr::map(nsclc_median_instrument, function(.x){
+  tmp_x = .x |>
+    dplyr::group_by(sample_present) |>
+    dplyr::summarise(med_median_present = median(median_present))
+         .x |>
+         ggplot(aes(x = log2(median_present), y = sample_present, group = sample_present)) +
+geom_sina() +
+        labs(subtitle = .x$disease_instrument[1])
 })
 
-nsclc_plots = list(all = 
-                     nsclc_norm_median |>
-                     ggplot(aes(x = log2(median_present), y = sample_present)) +
-                     geom_point(),
-                   
-                   less_32 = 
-                     nsclc_norm_median |>
-                     dplyr::filter(median_present < 32) |>
-                     ggplot(aes(x = log2(median_present), y = sample_present)) +
-                     geom_point(alpha = 0.5))
+wrap_plots(nsclc_by_instrument, nrow = 2)
+wrap_plots(nsclc_by_instrument$FSN10352, ncol = 1)
 
-wrap_plots(nsclc_plots, ncol = 1)
-nsclc_test_cor = nsclc_norm_median |>
-  dplyr::filter(median_present <= 32)
+cor_tests = purrr::walk(nsclc_median_instrument, function(.x){
+  cor_sub = .x |>
+    dplyr::filter(median_present < 2)
+  print(cor.test(cor_sub$median_present, cor_sub$sample_present, method = "kendall"))
+})
+
 cor.test(nsclc_test_cor$median_present, nsclc_test_cor$sample_present, method = "kendall")
 ```
 

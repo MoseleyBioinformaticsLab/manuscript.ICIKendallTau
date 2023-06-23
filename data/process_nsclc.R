@@ -3,148 +3,128 @@
 # a hefty dataset, 300 MB. We don't want it sitting in the _drake cache like
 # that, so we are going to do the preprocessing and then load it in.
 # 
-library("ivs")
+library(ivs)
 library(smirfeTools)
 library(progress)
-freq_to_iv = function(in_freq, in_sd, multiplier = 3)
+library(ggplot2)
+library(furrr)
+options(parallelly.fork.enable = TRUE)
+plan(multicore)
+mz_to_iv = function(in_mz, in_ppm)
 {
-  width_freq = in_sd * multiplier
-  iv(start = in_freq - width_freq, end = in_freq + width_freq)
+  width_mz = in_ppm * 1e-6 * in_mz
+  iv(start = in_mz - width_mz, end = in_mz + width_mz)
 }
 
-run_samples = function(in_sample)
+match_peaks = function(in_peaks)
 {
-  cluster1_peaks = all_peaks |>
-    dplyr::filter(sample %in% in_sample)
-  
-  out_cluster1 = tibble::tibble(loc = vector("double", nrow(cluster1_peaks)),
-                                sd = 0,
-                                iv = iv(rep(1, nrow(cluster1_peaks)), rep(2, nrow(cluster1_peaks))),
-                                peaklist = vector("list", nrow(cluster1_peaks)))
-  
   save_index = 1
-  pb = progress_bar$new(
-    format = "   matching [:bar] :percent eta: :eta",
-    total = nrow(cluster1_peaks),
-    clear = FALSE)
-  while (sum(!cluster1_peaks$used) > 0) {
-    unused_peaks = cluster1_peaks |>
+  out_peaks = tibble::tibble(loc = vector("double", nrow(in_peaks)),
+                                sd = 0,
+                                iv = iv(rep(1, nrow(in_peaks)), rep(2, nrow(in_peaks))),
+                                peaklist = vector("list", nrow(in_peaks)))
+  while (sum(!in_peaks$used) > 0) {
+    unused_peaks = in_peaks |>
       dplyr::filter(!used)
     grab_peak1 = unused_peaks |>
       dplyr::slice_head(n = 1)
     matched_locations = iv_locate_overlaps(grab_peak1$iv, unused_peaks$iv)
     matched_peaks = unused_peaks[matched_locations$haystack, ]
-    updated_peak1 = tibble::tibble(loc = median(matched_peaks$ObservedFrequency),
-                                   sd = max(matched_peaks$ObservedFrequencySD),
-                                   iv = freq_to_iv(loc, sd),
+    updated_peak1 = tibble::tibble(loc = median(matched_peaks$ObservedMZ),
+                                   sd = sd(matched_peaks$ObservedMZ),
+                                   iv = mz_to_iv(loc, 0.5),
                                    peaklist = list(matched_peaks$PeakID))
     iteration_match = FALSE
     while (!iteration_match) {
       matched_locations2 = iv_locate_overlaps(updated_peak1$iv, unused_peaks$iv)
       iteration_match = length(base::setdiff(matched_locations2$haystack, matched_locations$haystack)) == 0
       matched_peaks = unused_peaks[matched_locations$haystack, ]
-      updated_peak1 = tibble::tibble(loc = median(matched_peaks$ObservedFrequency),
-                                     sd = max(matched_peaks$ObservedFrequencySD),
-                                     iv = freq_to_iv(loc, sd),
+      updated_peak1 = tibble::tibble(loc = median(matched_peaks$ObservedMZ),
+                                     sd = sd(matched_peaks$ObservedMZ),
+                                     iv = mz_to_iv(loc, 0.5),
                                      peaklist = list(matched_peaks$PeakID))
       matched_locations = matched_locations2
     }
     
-    cluster1_peaks[cluster1_peaks$PeakID %in% updated_peak1$peaklist[[1]], "used"] = TRUE
-    out_cluster1[save_index, ] = updated_peak1
+    in_peaks[in_peaks$PeakID %in% updated_peak1$peaklist[[1]], "used"] = TRUE
+    out_peaks[save_index, ] = updated_peak1
     save_index = save_index + 1
-    pb$update(ratio = sum(cluster1_peaks$used) / nrow(cluster1_peaks))
   }
   
-  out_cluster1 = out_cluster1 |>
+  out_peaks = out_peaks |>
     dplyr::filter(!(sd %in% 0))
-  out_cluster1
+  out_peaks
 }
 
+run_samples = function(run_peaks)
+{
+  run_peaks$mziv = iv(start = run_peaks$ObservedMZ, end = run_peaks$ObservedMZ + 1e-8)
+  
+  ms_ranges = iv(start = seq(150, 1600 - 50, by = 50), end = seq(200, 1600, by = 50))
+  
+  ms_overlaps = iv_locate_overlaps(ms_ranges, run_peaks$mziv)
+  
+  split_overlaps = split(ms_overlaps$haystack, ms_overlaps$needles)
+  split_ms = purrr::map(split_overlaps, ~ run_peaks[.x, ])
+  
+  run_each = furrr::future_map(split_ms, match_peaks)
+  
+  matched_peaks = dplyr::bind_rows(run_each)
+  matched_peaks
+}
 
+## work with assigned data first ----
+## This is going to help us figure out the limit to use to match the peaks
+## to each other.
+imf_data = readRDS("data/nsclc_scancentric_imfs_raw")
+imf_loc_data = tibble::tibble(sd = apply(imf_data$location, 1, sd, na.rm = TRUE),
+                              mean = apply(imf_data$location, 1, mean, na.rm = TRUE)) |>
+  dplyr::mutate(sd_ppm = sd / mean / 1e-6) |>
+  dplyr::filter(!is.na(sd), sd_ppm < 10)
 
+imf_loc_data |>
+  ggplot(aes(x = sd_ppm)) +
+  geom_histogram(bins = 100)
+
+## Based on this graph, a limit of 0.5 to either side seems like we would be OK.
 all_zip = dir("/big_data/data/nsclc_scpc_data/lung_matched_tissue-2022-05-11", pattern = "zip$", full.names = TRUE)
 nsclc_data = readRDS("data/nsclc_peaks.rds")
 names(nsclc_data) = purrr::map_chr(nsclc_data, \(.x) .x$Sample)
 
-all_models = extract_coefficient_data(all_zip)
-names(all_models) = gsub(".zip$", "", basename(all_zip))
-all_coefficients = purrr::map_dfr(all_models, function(.x){
-  tibble::tibble(coefficient = .x$coefficients$frequency_coefficients[3])
-})
-all_coefficients$sample = names(all_models)
-
-all_coefficients = all_coefficients %>%
-  dplyr::mutate(cluster =
-                  dplyr::case_when(
-                    coefficient < 29801700 ~ 1,
-                    coefficient > 29801700 ~ 2
-                  ))
-
 all_peaks = purrr::imap(nsclc_data, function(.x, .y) {
   .x$Peaks |>
     dplyr::filter(!HighSD) |>
-    dplyr::select(ObservedFrequency, ObservedFrequencySD, PeakID) |>
+    dplyr::select(ObservedMZ, ObservedMZSD, PeakID, Height) |>
     dplyr::mutate(sample = .y,
                   PeakID = paste0(.y, ":", PeakID))
   })
 
 all_peaks = tibble::as_tibble(dplyr::bind_rows(all_peaks))
-all_peaks = dplyr::slice_sample(all_peaks, n = nrow(all_peaks))
 all_peaks$used = FALSE
-all_peaks$iv = freq_to_iv(all_peaks$ObservedFrequency, all_peaks$ObservedFrequencySD)
-
-clustered_samples = split(all_coefficients$sample, all_coefficients$cluster)
-
-clustered_peaks = purrr::map(clustered_samples, run_samples)
+all_peaks$iv = mz_to_iv(all_peaks$ObservedMZ, 0.5)
 
 
+use_seeds = c(1234, 9034, 3042, 5467)
 
-full_peak_list = tibble::tibble(mz = vector("double", n_peaks),
-                                iv = iv(rep(1, n_peaks), rep(2, n_peaks)),
-                                use = FALSE)
+for (iseed in use_seeds) {
+  set.seed(iseed)
+  all_peaks = dplyr::slice_sample(all_peaks, n = nrow(all_peaks))
+  matched_peaks = run_samples(all_peaks)
+  message(nrow(matched_peaks))
+}
 
-
-for (isample in all_peaks) {
-  isample = isample |>
-    dplyr::filter(!HighSD)
-  isample_iv = tibble::tibble(mz = isample$ObservedMZ,
-                              iv = mz_to_iv(isample$ObservedMZ),
-                              use = TRUE)
-  if (sum(full_peak_list$use) == 0) {
-    full_peak_list[1:nrow(isample_iv), ] = isample_iv
-  } else {
-    tmp_full = full_peak_list |>
-      dplyr::filter(use)
-    aligned = iv_locate_overlaps(isample_iv$iv, tmp_full$iv)
-    no_isample = aligned |>
-      dplyr::filter(is.na(haystack))
-    new_isample = isample_iv[no_isample$needles, ]
-    start_peak = which.min(full_peak_list$use)
-    end_peak = start_peak + nrow(new_isample) - 1
-    message(sum(c(start_peak, length(start_peak:end_peak))))
-    full_peak_list[start_peak:end_peak, ] = new_isample
+matched_heights = matrix(NA, nrow = nrow(matched_peaks), ncol = length(unique(all_peaks$sample)))
+colnames(matched_heights) = unique(all_peaks$sample)
+pb = progress_bar$new(total = nrow(matched_heights),
+                      format = ":spin [:bar] :percent in :elapsed ETA: :eta")
+for (ipeak in seq_len(nrow(matched_heights))) {
+  tmp_peaklist = matched_peaks$peaklist[ipeak][[1]]
+  tmp_peaks = all_peaks |>
+    dplyr::filter(PeakID %in% tmp_peaklist)
+  matched_heights[ipeak, tmp_peaks$sample] = tmp_peaks$Height
+  if ((ipeak %% 10) == 0) {
+    pb$tick(10)
   }
 }
 
-full_peak_list = full_peak_list[full_peak_list$use, ]
-
-full_peak_list = full_peak_list |>
-  dplyr::arrange(mz)
-
-peak_matrix = matrix(NA, nrow = nrow(full_peak_list), ncol = length(all_peaks))
-colnames(peak_matrix) = names(all_peaks)
-
-for (isample in names(all_peaks))
-{
-  tmp_peaks = all_peaks[[isample]] |>
-    dplyr::filter(!HighSD)
-  tmp_iv = mz_to_iv(tmp_peaks$ObservedMZ)
-  
-  aligned = iv_locate_overlaps(full_peak_list$iv, tmp_iv) |>
-    dplyr::filter(!is.na(haystack))
-  peak_matrix[aligned$needles, isample] = tmp_peaks$Height[aligned$haystack]
-}
-
-rownames(peak_matrix) = paste0("f", seq(1, nrow(peak_matrix)))
-saveRDS(peak_matrix, file = "data/nsclc_ppm_matched_peaks.rds")
+saveRDS(matched_heights, "data/nsclc_matched_height.rds")

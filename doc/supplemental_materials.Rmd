@@ -12,6 +12,7 @@ editor_options:
 ---
 
 ```{r setup, include=FALSE}
+targets::tar_source(files = c("./packages.R", "R"))
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, 
                       message = FALSE, fig.width = 8, 
                       fig.height = 6, fig.keep = "all",
@@ -37,10 +38,10 @@ The simplest simulated data set includes three samples, where two are perfectly 
 We then created missing values (replaced value with NA) in each sample systematically, and computed the ICI-Kt, Pearson, and Kendall-tau correlations.
 
 ```{r kt_pearson, dn_id = supp_figure_count}
-loadd(positive_kt)
-loadd(positive_pearson)
-loadd(negative_kt)
-loadd(negative_pearson)
+tar_load(positive_kt)
+tar_load(positive_pearson)
+tar_load(negative_kt)
+tar_load(negative_pearson)
 
 all_kt = rbind(positive_kt, negative_kt)
 all_pearson = rbind(positive_pearson, negative_pearson)
@@ -64,7 +65,7 @@ These distributions are shown in `r supp_figure_count$label_text("kt_distributio
 We can see that the distributions from both ICI-Kt and Kendall-tau are the same, which is expected given we replaced missing values (NA) with zero *within* the ICI-Kt code, and replaced missing values (NA) with zero prior to calculating Kendall-tau correlations.
 
 ```{r ici_distribution, dn_id = supp_figure_count}
-loadd(all_kt)
+tar_load(all_kt)
 ici_plot = ggplot(all_kt, aes(x = ici_kt)) +
   geom_histogram(bins = 100) +
   facet_wrap(~ comp, ncol = 1) +
@@ -96,9 +97,8 @@ In addition to comparing their performance, we can check that the algorithmic co
 The run times and fitted lines for each method (R's Pearson, the ICI-Kt, and R's Kendall-tau) are shown in `r supp_figure_count$label_text("complexity")`.
 
 ```{r complexity, dn_id = supp_figure_count}
-single_core_perf = readRDS(here::here("doc", "single_core_perf.rds"))
-complex_figure = create_complexity_figure(single_core_perf)
-complex_figure
+tar_load(complexity_figure)
+complexity_figure
 ```
 
 `r supp_figure_count$label_text("complexity")`. 
@@ -137,21 +137,18 @@ other_method = c("icikt" = "IK",
                                                  "pearson_log" = "PL",
                                                  "kt_base" = "Kt")
 
-loadd(yeast_paper_outliers)
+tar_load(c(yeast_paper_outliers,
+           yeast_outliers,
+           yeast_single))
 
-all_yeast = purrr::map_df(c("yeast_outliers_1",
-                            "yeast_outliers_25",
-                            "yeast_outliers_50"), function(.x){
-                              tmp = readd(.x, character_only = TRUE)
-                              tmp$outliers
-                            }) %>%
+
+all_yeast = rbind_outliers(yeast_outliers) %>%
   perc_to_number()
 
 all_yeast = add_method(all_yeast)
 
-yeast_single = all_yeast %>%
-  dplyr::select(-method) %>%
-  dplyr::filter(keep_num == "1")
+yeast_single = yeast_single %>%
+  perc_to_number()
 tmp_yeast = yeast_single %>%
   dplyr::filter(which %in% "pearson_base_nozero")
 tmp_yeast$outlier = FALSE
@@ -193,23 +190,17 @@ It should be noted that it seems that Gierlinski et al used an eyeball cutoff fo
 ```{r brainsonrnaseq_load}
 supp_figure_count$increment("brainson_outliers")
 supp_table_count$increment("brainson_outliers")
-all_brainson = purrr::map_df(c("brainsonrnaseq_outliers_1",
-                            "brainsonrnaseq_outliers_25",
-                            "brainsonrnaseq_outliers_50",
-                            "brainsonrnaseq_outliers_75",
-                            "brainsonrnaseq_outliers_100"), function(.x){
-                              tmp = readd(.x, character_only = TRUE)
-                              tmp$outliers
-                            }) %>%
+tar_load(c(brainsonrnaseq_outliers,
+           brainsonrnaseq_single))
+
+all_brainson = rbind_outliers(brainsonrnaseq_outliers) %>%
   perc_to_number()
 
-brainson_single = all_brainson %>%
-  dplyr::filter(keep_num == "1")
 compare_brainson = c("icikt", "icikt_complete", "pearson_base", "pearson_base_nozero", "pearson_log1p", "pearson_log", "kt_base")
 ```
 
 ```{r brainson_outliers, dn_id = supp_figure_count}
-brainson_single %>%
+brainsonrnaseq_single %>%
   add_method(other_method) %>%
   dplyr::filter(which %in% compare_brainson) %>%
   ggplot(aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
@@ -228,7 +219,7 @@ Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Com
 This is due to having more genes with non-zero reads in general over the sorted samples.
 
 ```{r brainson_table}
-brainson_table = compare_outlier_tables(brainson_single, compare_brainson, "pearson_log1p", map_method = other_method)
+brainson_table = compare_outlier_tables(brainsonrnaseq_single, compare_brainson, "pearson_log1p", map_method = other_method)
 ```
 
 
@@ -241,12 +232,10 @@ Discussions with the Brainson group have determined that some of the samples in 
 supp_figure_count$increment("adeno_outliers")
 supp_table_count$increment("adeno_outliers")
 
-all_adeno = purrr::map_df(c("adeno_outliers_1",
-                            "adeno_outliers_25",
-                            "adeno_outliers_50"), function(.x){
-                              tmp = readd(.x, character_only = TRUE)
-                              tmp$outliers
-                            }) %>%
+tar_load(c(adeno_outliers,
+           adeno_single))
+
+all_adeno = rbind_outliers(adeno_outliers) %>%
   perc_to_number()
 
 new_adeno = unique(all_adeno[, c("sample_id", "sample_class")]) %>%
@@ -262,9 +251,8 @@ new_adeno = unique(all_adeno[, c("sample_id", "sample_class")]) %>%
                 sample_new = NULL)
 
 all_adeno2 = dplyr::left_join(new_adeno, all_adeno, by = c("old_sample" = "sample_id"))
+adeno_single = dplyr::left_join(adeno_single, new_adeno, by = c("sample_id" = "old_sample"))
 
-adeno_single = all_adeno2 %>%
-  dplyr::filter(keep_num == "1")
 compare_adeno = c("icikt", "icikt_complete", "pearson_base", "pearson_base_nozero", "pearson_log1p", "pearson_log", "kt_base")
 ```
 
@@ -472,406 +460,10 @@ ggplot(adeno_diffs, aes(x = keep_num, y = diff)) +
 Difference of normal and tumor medians and MADs  by correlation method and applying different fractional cutoffs for TCGA adenocarcinoma RNA-seq data.
 Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; Kt: Kendall-tau; PB: Pearson Base (raw values); PL: Pearson Log(x); PL1: Pearson Log(x + 1); PN0: Pearson No Zeros.
 
-## Subsampling Correlation Differences
-
-### ICI-Kt
-
-```{r increment_figure_icikt}
-supp_figure_count$increment("icikt_subsampling")
-```
-
-```{r icikt_subsampling, dn_id = supp_figure_count}
-loadd(combined_random)
-
-icikt_overrange = 
-  (ggplot(combined_random, aes(x = fraction, y = median)) +
-  geom_line() +
-  labs(x = "Fraction of Features", y = "Correlation Residual Median")) /
-  (ggplot(combined_random, aes(x = fraction, y = sd)) +
-     geom_line() +
-     labs(x = "Fraction of Features", y = "Correlation Differences SD"))
-icikt_overrange
-```
-
-`r supp_figure_count$label_text("icikt_subsampling")`. 
-Median differences in correlation (top) and standard deviation of differences (bottom) as increasing fractions of features are used to calculate the sample-sample ICI-Kt correlations.
-
-### Pearson
-
-#### Straight Pearson
-
-```{r load_pearson}
-loadd(ref_pearson_log)
-supp_figure_count$increment("pearson_subsampling")
-```
-
-
-```{r pearson_subsampling, fig.height = 8, fig.width = 8, dn_id = supp_figure_count}
-
-loadd(run_random_pearson_log_select_random_fraction_0.01)
-loadd(run_random_pearson_log_select_random_fraction_0.1)
-loadd(run_random_pearson_log_select_random_fraction_0.3)
-pearson_diff = data.frame(ref = extract_data(ref_pearson_log, "cor"),
-                       f_01 = 
-extract_data(run_random_pearson_log_select_random_fraction_0.01, "cor"),
-                     f_1 = extract_data(run_random_pearson_log_select_random_fraction_0.1, "cor"),
-                     f_3 = extract_data(run_random_pearson_log_select_random_fraction_0.3, "cor"))
-pearson_diff = pearson_diff %>%
-  dplyr::mutate(diff_1 = f_01 - ref,
-                diff_10 = f_1 - ref,
-                diff_30 = f_3 - ref)
-pearson_f1_f3 = 
-  ((ggplot(pearson_diff, aes(x = ref, y = f_01)) + geom_point(alpha = 0.1) +
-    labs(x = "All Features", y = "1% Features") +
-    coord_equal() +
-    geom_abline(slope = 1, color = "red")) /
-  (ggplot(pearson_diff, aes(x = ref, y = f_1)) + geom_point(alpha = 0.1) +
-      labs(x = "All Features", y = "10% Features") +
-      coord_equal() +
-      geom_abline(slope = 1, color = "red")) /
-  (ggplot(pearson_diff, aes(x = ref, y = f_3)) + geom_point(alpha = 0.1) +
-      labs(x = "All Features", y = "30% Features") +
-      coord_equal() +
-      geom_abline(slope = 1, color = "red"))) |
-  ((ggplot(pearson_diff, aes(x = diff_1)) +
-     geom_histogram(bins = 100) +
-     coord_cartesian(xlim = c(-0.03, 0.03)) +
-     labs(x = "Correlation Residual") +
-     scale_y_continuous(expand = expansion(mult = 0)) +
-     geom_vline(xintercept = 0, color = "red")) /
-  (ggplot(pearson_diff, aes(x = diff_10)) +
-        geom_histogram(bins = 100) +
-        coord_cartesian(xlim = c(-0.03, 0.03)) +
-        labs(x = "Correlation Residual") +
-        scale_y_continuous(expand = expansion(mult = 0)) +
-        geom_vline(xintercept = 0, color = "red")) /
-  (ggplot(pearson_diff, aes(x = diff_30)) +
-        geom_histogram(bins = 100) +
-        coord_cartesian(xlim = c(-0.03, 0.03)) +
-        labs(x = "Correlation Residual") +
-        scale_y_continuous(expand = expansion(mult = 0)) +
-        geom_vline(xintercept = 0, color = "red")))
-
-pearson_f1_f3
-```
-
-`r supp_figure_count$label_text("pearson_subsampling")`. Sample-sample Pearson correlations using all features compared with 1%, 10% and 30% random subsets of features. 
-Left: The sample-sample correlations using all features are plotted against the sample-sample correlations using a random subset. Red line indicates perfect agreement. 
-Right: Histogram of the residual differences of the sample-sample correlations, where the difference is the (random subset - all features).
-
-
-```{r setup_pearson_range}
-supp_figure_count$increment("pearson_sub_overrange")
-```
-
-```{r pearson_sub_overrange, dn_id = supp_figure_count}
-loadd(combined_random_pearson_log)
-pearson_overrange = 
-  (ggplot(combined_random_pearson_log, aes(x = fraction, y = median)) +
-  geom_line() +
-  labs(x = "Fraction of Features", y = "Correlation Residual Median")) /
-  (ggplot(combined_random_pearson_log, aes(x = fraction, y = sd)) +
-     geom_line() +
-     labs(x = "Fraction of Features", y = "Correlation Differences SD"))
-pearson_overrange
-```
-
-`r supp_figure_count$label_text("pearson_sub_overrange")`. 
-Median differences in correlation (top) and standard deviation of differences (bottom) as increasing fractions of features are used to calculate the sample-sample Pearson correlations.
-
-#### Replacing Missing with Zero
-
-
-```{r load_pearson_0}
-loadd(ref_pearson_0_log)
-supp_figure_count$increment("pearson_subsampling_0")
-```
-
-
-```{r pearson_subsampling_0, fig.height = 8, fig.width = 8, dn_id = supp_figure_count}
-
-loadd(run_random_pearson_0_log_select_random_fraction_0.01)
-loadd(run_random_pearson_0_log_select_random_fraction_0.1)
-loadd(run_random_pearson_0_log_select_random_fraction_0.3)
-pearson_0_diff = data.frame(ref = extract_data(ref_pearson_0_log, "cor"),
-                       f_01 = 
-extract_data(run_random_pearson_0_log_select_random_fraction_0.01, "cor"),
-                     f_1 = extract_data(run_random_pearson_0_log_select_random_fraction_0.1, "cor"),
-                     f_3 = extract_data(run_random_pearson_0_log_select_random_fraction_0.3, "cor"))
-pearson_0_diff = pearson_0_diff %>%
-  dplyr::mutate(diff_1 = f_01 - ref,
-                diff_10 = f_1 - ref,
-                diff_30 = f_3 - ref)
-pearson_0_f1_f3 = 
-  ((ggplot(pearson_0_diff, aes(x = ref, y = f_01)) + geom_point(alpha = 0.1) +
-    labs(x = "All Features", y = "1% Features") +
-    coord_equal() +
-    geom_abline(slope = 1, color = "red")) /
-  (ggplot(pearson_0_diff, aes(x = ref, y = f_1)) + geom_point(alpha = 0.1) +
-      labs(x = "All Features", y = "10% Features") +
-      coord_equal() +
-      geom_abline(slope = 1, color = "red")) /
-  (ggplot(pearson_0_diff, aes(x = ref, y = f_3)) + geom_point(alpha = 0.1) +
-      labs(x = "All Features", y = "30% Features") +
-      coord_equal() +
-      geom_abline(slope = 1, color = "red"))) |
-  ((ggplot(pearson_0_diff, aes(x = diff_1)) +
-     geom_histogram(bins = 100) +
-     coord_cartesian(xlim = c(-0.03, 0.03)) +
-     labs(x = "Correlation Residual") +
-     scale_y_continuous(expand = expansion(mult = 0)) +
-     geom_vline(xintercept = 0, color = "red")) /
-  (ggplot(pearson_0_diff, aes(x = diff_10)) +
-        geom_histogram(bins = 100) +
-        coord_cartesian(xlim = c(-0.03, 0.03)) +
-        labs(x = "Correlation Residual") +
-        scale_y_continuous(expand = expansion(mult = 0)) +
-        geom_vline(xintercept = 0, color = "red")) /
-  (ggplot(pearson_0_diff, aes(x = diff_30)) +
-        geom_histogram(bins = 100) +
-        coord_cartesian(xlim = c(-0.03, 0.03)) +
-        labs(x = "Correlation Residual") +
-        scale_y_continuous(expand = expansion(mult = 0)) +
-        geom_vline(xintercept = 0, color = "red")))
-
-pearson_0_f1_f3
-```
-
-`r supp_figure_count$label_text("pearson_subsampling_0")`. Sample-sample Pearson correlations using all features compared with 1%, 10% and 30% random subsets of features. 
-Left: The sample-sample correlations using all features are plotted against the sample-sample correlations using a random subset. Red line indicates perfect agreement. 
-Right: Histogram of the residual differences of the sample-sample correlations, where the difference is the (random subset - all features).
-
-
-```{r setup_0_pearson_range}
-supp_figure_count$increment("pearson_sub_overrange_0")
-```
-
-```{r pearson_sub_overrange_0, dn_id = supp_figure_count}
-loadd(combined_random_pearson_0_log)
-pearson_0_overrange = 
-  (ggplot(combined_random_pearson_0_log, aes(x = fraction, y = median)) +
-  geom_line() +
-  labs(x = "Fraction of Features", y = "Correlation Residual Median")) /
-  (ggplot(combined_random_pearson_0_log, aes(x = fraction, y = sd)) +
-     geom_line() +
-     labs(x = "Fraction of Features", y = "Correlation Differences SD"))
-pearson_0_overrange
-```
-
-`r supp_figure_count$label_text("pearson_sub_overrange_0")`. 
-Median differences in correlation (top) and standard deviation of differences (bottom) as increasing fractions of features are used to calculate the sample-sample Pearson correlations.
-
-#### Without Log-Transformation
-
-```{r pearson_nologsetup}
-loadd(ref_pearson)
-supp_figure_count$increment("pearson_subsampling_nolog")
-supp_figure_count$increment("pearson_sub_overrange_nolog")
-```
-
-
-```{r pearson_subsampling_nolog, fig.height = 8, fig.width = 8, dn_id = supp_figure_count}
-nolog_limits = c(-0.6, 1)
-loadd(run_random_pearson_select_random_fraction_0.01)
-loadd(run_random_pearson_select_random_fraction_0.1)
-loadd(run_random_pearson_select_random_fraction_0.3)
-pearson_nolog_diff = data.frame(ref = extract_data(ref_pearson, "cor"),
-                       f_01 = 
-extract_data(run_random_pearson_select_random_fraction_0.01, "cor"),
-                     f_1 = extract_data(run_random_pearson_select_random_fraction_0.1, "cor"),
-                     f_3 = extract_data(run_random_pearson_select_random_fraction_0.3, "cor"))
-pearson_nolog_diff = pearson_nolog_diff %>%
-  dplyr::mutate(diff_1 = f_01 - ref,
-                diff_10 = f_1 - ref,
-                diff_30 = f_3 - ref)
-pearson_nolog_f1_f3 = 
-  ((ggplot(pearson_nolog_diff, aes(x = ref, y = f_01)) + geom_point(alpha = 0.1) +
-    labs(x = "All Features", y = "1% Features") +
-    coord_equal() +
-    geom_abline(slope = 1, color = "red")) /
-  (ggplot(pearson_nolog_diff, aes(x = ref, y = f_1)) + geom_point(alpha = 0.1) +
-      labs(x = "All Features", y = "10% Features") +
-      coord_equal() +
-      geom_abline(slope = 1, color = "red")) /
-  (ggplot(pearson_nolog_diff, aes(x = ref, y = f_3)) + geom_point(alpha = 0.1) +
-      labs(x = "All Features", y = "30% Features") +
-      coord_equal() +
-      geom_abline(slope = 1, color = "red"))) |
-  ((ggplot(pearson_nolog_diff, aes(x = diff_1)) +
-     geom_histogram(bins = 100) +
-     coord_cartesian(xlim = nolog_limits) +
-     labs(x = "Correlation Residual") +
-     scale_y_continuous(expand = expansion(mult = 0)) +
-     geom_vline(xintercept = 0, color = "red")) /
-  (ggplot(pearson_nolog_diff, aes(x = diff_10)) +
-        geom_histogram(bins = 100) +
-        coord_cartesian(xlim = nolog_limits) +
-        labs(x = "Correlation Residual") +
-        scale_y_continuous(expand = expansion(mult = 0)) +
-        geom_vline(xintercept = 0, color = "red")) /
-  (ggplot(pearson_nolog_diff, aes(x = diff_30)) +
-        geom_histogram(bins = 100) +
-        coord_cartesian(xlim = nolog_limits) +
-        labs(x = "Correlation Residual") +
-        scale_y_continuous(expand = expansion(mult = 0)) +
-        geom_vline(xintercept = 0, color = "red")))
-
-pearson_nolog_f1_f3
-```
-
-`r supp_figure_count$label_text("pearson_subsampling_nolog")`. Sample-sample Pearson correlations using all features compared with 1%, 10% and 30% random subsets of features. 
-Left: The sample-sample correlations using all features are plotted against the sample-sample correlations using a random subset. Red line indicates perfect agreement. 
-Right: Histogram of the residual differences of the sample-sample correlations, where the difference is the (random subset - all features).
-
-
-```{r pearson_sub_overrange_nolog, dn_id = supp_figure_count}
-loadd(combined_random_pearson)
-pearson_overrange_nolog = 
-  (ggplot(combined_random_pearson, aes(x = fraction, y = median)) +
-  geom_line() +
-  labs(x = "Fraction of Features", y = "Correlation Residual Median")) /
-  (ggplot(combined_random_pearson, aes(x = fraction, y = sd)) +
-     geom_line() +
-     labs(x = "Fraction of Features", y = "Correlation Differences SD"))
-pearson_overrange_nolog
-```
-
-`r supp_figure_count$label_text("pearson_sub_overrange_nolog")`. 
-Median differences in correlation (top) and standard deviation of differences (bottom) as increasing fractions of features are used to calculate the sample-sample Pearson correlations.
-
-### Kendall
-
-```{r load_kendall}
-loadd(ref_kendall)
-supp_figure_count$increment("kendall_subsampling")
-supp_figure_count$increment("kendall_overrange")
-```
-
-```{r kendall_subsampling, fig.height = 8, fig.width = 8, dn_id = supp_figure_count}
-
-loadd(run_random_kendall_select_random_fraction_0.01)
-loadd(run_random_kendall_select_random_fraction_0.1)
-loadd(run_random_kendall_select_random_fraction_0.3)
-kendall_diff = data.frame(ref = extract_data(ref_kendall, "cor"),
-                       f_01 = 
-extract_data(run_random_kendall_select_random_fraction_0.01, "cor"),
-                     f_1 = extract_data(run_random_kendall_select_random_fraction_0.1, "cor"),
-                     f_3 = extract_data(run_random_kendall_select_random_fraction_0.3, "cor"))
-kendall_diff = kendall_diff %>%
-  dplyr::mutate(diff_1 = f_01 - ref,
-                diff_10 = f_1 - ref,
-                diff_30 = f_3 - ref)
-kendall_f1_f3 = 
-  ((ggplot(kendall_diff, aes(x = ref, y = f_01)) + geom_point(alpha = 0.1) +
-    labs(x = "All Features", y = "1% Features") +
-    coord_equal() +
-    geom_abline(slope = 1, color = "red")) /
-  (ggplot(kendall_diff, aes(x = ref, y = f_1)) + geom_point(alpha = 0.1) +
-      labs(x = "All Features", y = "10% Features") +
-      coord_equal() +
-      geom_abline(slope = 1, color = "red")) /
-  (ggplot(kendall_diff, aes(x = ref, y = f_3)) + geom_point(alpha = 0.1) +
-      labs(x = "All Features", y = "30% Features") +
-      coord_equal() +
-      geom_abline(slope = 1, color = "red"))) |
-  ((ggplot(kendall_diff, aes(x = diff_1)) +
-     geom_histogram(bins = 100) +
-     coord_cartesian(xlim = c(-0.03, 0.03)) +
-     labs(x = "Correlation Residual") +
-     scale_y_continuous(expand = expansion(mult = 0)) +
-     geom_vline(xintercept = 0, color = "red")) /
-  (ggplot(kendall_diff, aes(x = diff_10)) +
-        geom_histogram(bins = 100) +
-        coord_cartesian(xlim = c(-0.03, 0.03)) +
-        labs(x = "Correlation Residual") +
-        scale_y_continuous(expand = expansion(mult = 0)) +
-        geom_vline(xintercept = 0, color = "red")) /
-  (ggplot(kendall_diff, aes(x = diff_30)) +
-        geom_histogram(bins = 100) +
-        coord_cartesian(xlim = c(-0.03, 0.03)) +
-        labs(x = "Correlation Residual") +
-        scale_y_continuous(expand = expansion(mult = 0)) +
-        geom_vline(xintercept = 0, color = "red")))
-
-kendall_f1_f3
-```
-
-`r supp_figure_count$label_text("kendall_subsampling")`. Sample-sample Kendall-tau correlations using all features compared with 1%, 10% and 30% random subsets of features. 
-Left: The sample-sample correlations using all features are plotted against the sample-sample correlations using a random subset. Red line indicates perfect agreement. 
-Right: Histogram of the residual differences of the sample-sample correlations, where the difference is the (random subset - all features).
-
-```{r kendall_overrange, dn_id = supp_figure_count}
-loadd(combined_random_kendall)
-loadd(combined_random_pearson_log)
-kendall_overrange = 
-  (ggplot(combined_random_kendall, aes(x = fraction, y = median)) +
-  geom_line() +
-  labs(x = "Fraction of Features", y = "Correlation Residual Median")) /
-  (ggplot(combined_random_kendall, aes(x = fraction, y = sd)) +
-     geom_line() +
-     labs(x = "Fraction of Features", y = "Correlation Differences SD"))
-kendall_overrange
-```
-
-`r supp_figure_count$label_text("kendall_overrange")`. 
-Median differences in correlation (top) and standard deviation of differences (bottom) as increasing fractions of features are used to calculate the sample-sample Kendall-tau correlations.
-
-
-### Comparisons
-
-```{r increment_count_compare}
-supp_figure_count$increment("compare_overrange")
-```
-
-```{r compare_overrange, fig.height = 10, fig.width = 10, dn_id = supp_figure_count}
-combined_random$method = "ICI-Kt"
-combined_random_pearson_log$method = "Pearson"
-combined_random_pearson_0_log$method = "Pearson 0"
-combined_random_pearson$method = "Pearson NoLog"
-combined_random_kendall$method = "Kendall"
-
-all_combined = rbind(combined_random, combined_random_pearson_log,
-                     combined_random_pearson_0_log,
-                     combined_random_pearson,
-                     combined_random_kendall)
-
-use_colors = scale_color_discrete()$palette(5)
-names(use_colors) = c("ICI-Kt", "Kendall", "Pearson", "Pearson 0", "Pearson NoLog")
-compare_plot = 
-  (ggplot(all_combined, aes(x = fraction, y = median, color = method)) +
-  geom_line() +
-    scale_color_manual(values = use_colors) +
-  labs(x = "Fraction of Features", y = "Median Correlation Differences") +
-    theme(legend.position = "none")) /
-  (ggplot(all_combined, aes(x = fraction, y = sd, color = method)) +
-  geom_line() +
-    scale_color_manual(values = use_colors) +
-  labs(x = "Fraction of Features", y = "Correlation Differences SD") +
-    theme(legend.position = "none"))
-
-combined_nolog = all_combined %>%
-  dplyr::filter(!(method %in% "Pearson NoLog"))
-compare_small = (ggplot(combined_nolog, aes(x = fraction, y = median, color = method)) +
-  geom_line() +
-    scale_color_manual(values = use_colors) +
-  labs(x = "Fraction of Features", y = "Median Correlation Differences") +
-    theme(legend.position = c(0.6, 0.4))) /
-  (ggplot(combined_nolog, aes(x = fraction, y = sd, color = method)) +
-  geom_line() +
-    scale_color_manual(values = use_colors) +
-  labs(x = "Fraction of Features", y = "Correlation Differences SD") +
-    theme(legend.position = "none"))
-
-compare_plot | compare_small
-```
-
-`r supp_figure_count$label_text("compare_overrange")`. 
-Median differences in correlation (top) and standard deviation of differences (bottom) as increasing fractions of features are used to calculate the sample-sample correlations.
-
 ```{r save_supp_objects}
 saveRDS(supp_figure_count, file = here::here("doc/supp_figure_count.rds"))
 saveRDS(supp_table_count, file = here::here("doc/supp_table_count.rds"))
-save(yeast_table, brainson_table, adeno_table, yeast_single, brainson_single, adeno_single, use_colors, all_combined, file = here::here("doc/supp_stuff.rda"))
+save(yeast_table, brainson_table, adeno_table, file = here::here("doc/supp_stuff.rda"))
 ```
 
 ## References

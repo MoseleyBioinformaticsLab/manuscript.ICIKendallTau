@@ -29,6 +29,8 @@ editor_options:
 ---
 
 ```{r setup, include=FALSE}
+targets::tar_source("./packages.R")
+tar_source("R")
 knitr::opts_chunk$set(echo = FALSE, 
                       warning = FALSE, 
                       message = FALSE, 
@@ -37,14 +39,14 @@ knitr::opts_chunk$set(echo = FALSE,
                       fig.process = dn_modify_path,
                       dpi = 600,
                       dev.args = list(png = list(type = "cairo")))
-loadd(supp_materials_file)
-loadd(supp_tables_file)
-loadd(supp_figures_rds)
-loadd(supp_tables_rds)
-supp_figure_count = readRDS(here::here(supp_figures_rds))
-supp_table_count = readRDS(here::here(supp_tables_rds))
-loadd(supp_stuff_rda)
-load(here::here(supp_stuff_rda))
+tar_load(c(supp_materials,
+           supp_tables,
+           brainsonrnaseq_single,
+           yeast_single,
+           adeno_single))
+supp_figure_count = readRDS(here::here("doc/supp_figure_count.rds"))
+supp_table_count = readRDS(here::here("doc/supp_table_count.rds"))
+load(here::here("doc/supp_stuff.rda"))
 figure_count = dn_counter$new("Figure ", "_")
 table_count = dn_counter$new("Table ", "_")
 ```
@@ -58,9 +60,8 @@ However, missing values occur in real data sets for a variety of reasons.
 In omics data sets that are derived from analytical measurements, the primary reason for missing values is that a specific measurable phenomenon falls below the detection limits of the analytical instrumentation.
 These missing data are not missing at random, but represent some information by their "missingness".
 Therefore, we propose an information-content-informed Kendall-tau (ICI-Kt) correlation coefficient that allows missing values to carry explicit information in the determination of concordant and discordant pairs.
-With both simulated and real data sets from RNA-seq experiments, we demonstrate that the ICI-Kt allows for the inclusion of missing data values as interpretable information, which allows improved determination of outlier samples prior to differential analysis of omics datasets.
+With both simulated and real data sets from RNA-seq and metabolomics experiments, we demonstrate that the ICI-Kt allows for the inclusion of missing data values as interpretable information, which allows improved determination of outlier samples prior to differential analysis of omics datasets.
 Moreover, our implementation of ICI-Kt uses a mergesort-like algorithm that provides O(nlog(n)) computational performance, a significant improvement over the Kendall-tau correlation available in base R. 
-Finally, we show that approximate ICI-Kt correlations can be calculated using smaller feature subsets of large data sets with significant time savings, which has practical computational value when feature sizes are very large.
 
 The ICI-Kt correlation calculation is available in an R package and Python module on GitHub at https://github.com/moseleyBioinformaticsLab/ICIKendallTau and https://github.com/moseleyBioinformaticsLab/icikt, respectively.
 
@@ -90,8 +91,8 @@ But when it comes to calculating correlation, there are very few methods that ex
 In many cases, missing values may be either ignored and only those measurements that are common across all samples (complete) or common between two samples being compared (pairwise complete) used, or alternatively imputed to zero (or another value) and then included in the correlation calculation.
 Each of these are likely to deviate from the real sample-sample correlation values, especially with respect to specific data interpretation perspectives.
 
-```{r problem, dn_id = figure_count}
-knitr::include_graphics(here::here("doc/the_problem_3.png"))
+```{r problem, dn_id = figure_count, eval = FALSE}
+knitr::include_graphics(here::here("doc", "the_problem_3.png"))
 ```
 
 `r figure_count$label_text("problem")`. 
@@ -261,40 +262,12 @@ This number, over the total number of features defines the *completeness* fracti
 
 $$comp = \frac{n_{feat} - (miss_i | miss_j)}{n_{feat}}$$
 
-
-### Subsampling of Features
-
-In addition to using the full set of features to calculate sample-sample correlations, it is possible to select a subsample of features and only use this feature subset to calculate correlations.
-Three methods were implemented: 1) random selections; 2) top set of features by variance; and 3) top set of features by variance of principal components.
-
-For (1), random selection, feature subsamples of 1 to 10% by 1% increments, and then in 5% increments to 90% were taken using the *sample* R function.
-For (2), selection by variance, feature variances across samples were calculated, and then ranked by the variances.
-For (3), selection by variance of the principal components, principal component analysis (PCA) decomposition was performed on the full data set, the variance contribution of each PC calculated, and then the percent variance for each principal component (PC) is used to determine the number of features with high loadings to select from the given PC.
-In this feature subsampling approach, weaker PCs contribute proportionately fewer features to the feature subset.
-
-Pearson correlation values were calculated using both raw and log-transformed values, where the starting data had zero values replaced by NA (missing).
-In both the raw and log-transformed cases, final missing values were handled by either:
-(1) missing (NA) values left as missing (Pearson);
-(2) missing (NA) values replaced with 0 (Pearson 0).
-In the Pearson case, only features that are non-missing in both samples being compared are used for the correlation (*pairwise.complete.obs*).
-
-### Principal Component Evaluation of Subsample Coverage
-
-The principal component decomposition of the full adenocarcinoma dataset was used to define the loadings for each principal component.
-For a given principal component (PC), the sum of the absolute values of the loadings defines the total loadings for that PC.
-The absolute values of the loadings for the subsampled features are also summed, and then divided by the total loadings previously calculated using all features.
-The loading fraction is calculated for each subsample of features, across all PCs.
-The responsible variance for each PC was also calculated as the variance of the scores in each PC.
-Further, the Kendall-tau correlation between the loading fraction and the PC variances was calculated.
-The median loading fraction across all PCs was also calculated, as well as fractional difference of the median loading fraction to the intended fraction (the number of subsampled features over the total number of features).
-
-
 ### Computing Environment
 
 Most calculations were run on a virtual machine with 80 virtual cores, and 1 TB of RAM.
 The virtual machine is running on top of a 50 node cluster, each with 4 10-core processors, 3TB of RAM and an 8TB solid-state-drive array, provided by the Kentucky Research Informatics Cloud (KyRIC).
 KyRIC manages the virtual machines via an OpenStack instance.
-We used the *drake* package to manage calculation dependencies [@landau_drakepackage_2018].
+We used the *targets* package to manage calculation dependencies [@landau_drakepackage_2018].
 For the comparisons of time taken using different numbers of samples to evaluate the algorithmic complexity, calculations were run on a single laptop Intel i7 core clocked at 2.2 GHz.
 
 ## Results
@@ -312,23 +285,23 @@ figure_count$increment("missing2cor")
 ```
 
 ```{r missing2cor, fig.width = 8, fig.height = 8, dn_id = figure_count}
-loadd(realistic_sample_1)
-loadd(realistic_sample_2)
-loadd(realistic_neg_sample)
+tar_load(realistic_sample_1)
+tar_load(realistic_sample_2)
+tar_load(realistic_neg_sample)
 ref_pearson = cor(realistic_sample_1, realistic_sample_2)
 ref_kendall = ici_kt(realistic_sample_1, realistic_sample_2, "global")[1]
 
 ref_pearson_neg = cor(realistic_sample_1, realistic_neg_sample)
 ref_kendall_neg = ici_kt(realistic_sample_1, realistic_neg_sample, "global")[1]
 
-loadd(realistic_na)
+tar_load(realistic_na)
 n_na = purrr::map_int(realistic_na, length)
-loadd(realistic_positive_pearson)
-loadd(realistic_positive_kendall)
-loadd(realistic_positive_kt)
-loadd(realistic_negative_pearson)
-loadd(realistic_negative_kendall)
-loadd(realistic_negative_kt)
+tar_load(realistic_positive_pearson)
+tar_load(realistic_positive_kendall)
+tar_load(realistic_positive_kt)
+tar_load(realistic_negative_pearson)
+tar_load(realistic_negative_kendall)
+tar_load(realistic_negative_kt)
 
 realistic_positive_pearson = realistic_positive_pearson %>%
   dplyr::mutate(type = "Pearson",
@@ -422,7 +395,7 @@ figure_count$increment("leftcensored")
 ```
 
 ```{r leftcensored, fig.height = 8, fig.width = 8, dn_id = figure_count}
-loadd(left_censored_cor)
+tar_load(left_censored_cor)
 left_censored_cor = left_censored_cor %>%
   dplyr::mutate(which2 = dplyr::case_when(
     which %in% "ici" ~ "ICI-Kt",
@@ -432,7 +405,7 @@ left_censored_cor = left_censored_cor %>%
     which %in% "pearson_0" ~ "Pearson-0"
   ))
 
-loadd(random_censored_cor)
+tar_load(random_censored_cor)
 
 random_censored_cor = random_censored_cor %>%
   dplyr::mutate(censoring = "random") %>%
@@ -445,7 +418,7 @@ random_censored_cor = random_censored_cor %>%
     which %in% "pearson_0" ~ "Pearson-0"
   ))
 
-loadd(logtransform_censored_cor)
+tar_load(logtransform_censored_cor)
 logtransform_censored_cor = logtransform_censored_cor %>%
   dplyr::mutate(censoring = "random") %>%
   dplyr::filter(n_na > 0) %>%
@@ -506,20 +479,24 @@ We note here that the typical way we've observed of handling missing data in cor
 As shown in `r figure_count$label_text("leftcensored")`C, this results in a complete misestimation of the changed correlative structure introduced by missing at random (MAR) entries.
 ICI-Kt, in contrast, incorporates the missingness in a sensical way, and the resulting correlation values fall as MAR entries are introduced.
 
-### Algorithmic Performance
+### Performance
 
 We compared the performance of our *Rcpp* *mergesort* implementation to the base R *cor* function using both "pearson" and "kendall" methods on a single core with increasing numbers of features.
 
 ```{r setup_perfplot}
-figure_count$increment("singleperf")
+figure_count$increment("performance")
 ```
 
-`r figure_count$label_text("singleperf")` shows that the "kendall" method is the slowest by far.
+`r figure_count$label_text("performance")`A shows that base R `cor` "kendall" method is the slowest by far.
 Zoomed out (inset), the ICI-Kt appears as fast as using "pearson", but upon zooming in, it's possible to see that ICI-Kt is using increasing amounts of time much faster than "pearson".
 In fact, regressing the time to number of samples using a formula with the expected algorithmic complexity, "pearson" shows O(n), ICI-Kt is O(nlog(n)), and "kendall" is O(n^2) (see `r supp_figure_count$label_text("complexity")`).
 
-```{r singleperf, dn_id = figure_count}
-single_core_perf = readRDS(here::here("doc", "single_core_perf.rds"))
+As we implemented a relatively easy way to make use of multiple cores using `future`, we also verified that increases in run time using multiple cores was reasonable as well.
+`r figure_count$label_text("performance")`B shows that as samples are added, the run time quickly increases logarithmically, similar to increasing samples on a single core (see `r figure_count$label_text("performance")`A).
+
+```{r performance, dn_id = figure_count}
+tar_load(c(single_core_perf,
+           time_multi))
 single_core_perf = single_core_perf %>%
   dplyr::mutate(method2 = dplyr::case_when(
     method %in% "ici_kt" ~ "ICIKendallTau::ici_kt()",
@@ -528,7 +505,7 @@ single_core_perf = single_core_perf %>%
   )) %>%
   dplyr::mutate(method = method2)
 s_perf_plot = ggplot(single_core_perf, aes(x = n, y = time, color = method)) +
-  geom_line(size = 2) + 
+  geom_line(linewidth = 2) + 
   coord_cartesian(ylim = c(NA, 0.002)) + 
   theme(legend.position = c(0.6, 0.2)) +
   labs(x = "Number of Features", y = "Time (s)")
@@ -542,44 +519,27 @@ core_perf2 = bind_rows(
   single_no_ici
 )
 inset_perf = ggplot(core_perf2, aes(x = n, y = time, color = method)) +
-  geom_line(size = 1.5) +
+  geom_line(linewidth = 1.5) +
   theme(legend.position = "none",
         axis.ticks.x = element_blank(),
-        axis.text.x = element_blank()) +
+        axis.text.x = element_blank(),
+        panel.background = element_rect(fill = "white")) +
   labs(x = "", y = "")
 
-s_perf_plot + inset_element(inset_perf, 0.1, 0.72, 1, 1)
-```
-
-`r figure_count$label_text("singleperf")`. Comparison of the *Rcpp* *mergesort* *ici_kt*, and base R's *cor* function using the "pearson" and "kendall" methods as the number of features are increased from 100 to 5000.
-Inset is the expanded view showing the full range of computation time in seconds.
-
-
-### Multi-Processing Performance
-
-In addition to an evaluation of the mergesort performance, we also wanted to evaluate the multi-processing performance.
-For this, we ran with small numbers of samples **without** parallelization enabled, and then with larger numbers of samples **with** parallelization enabled.
-
-```{r increment_dependence}
-figure_count$increment("multiperformance")
-```
-
-```{r multiperformance, dn_id = figure_count}
-
-loadd(combined_big)
-combined_big = combined_big %>%
-  dplyr::mutate(set = "large")
-
-ggplot(combined_big, aes(x = n_sample, y = log2(time))) + 
-  geom_line() +
+single_core = s_perf_plot + inset_element(inset_perf, 0.1, 0.72, 1, 1)
+multi_core = time_multi |>
+  ggplot(aes(x = n_sample, y = log2(time))) +
+  geom_line(linewidth = 2) +
+  geom_smooth(method = "lm", formula = y ~ (x), se = FALSE) +
   labs(x = "Number of Samples",
        y = "Log2(Time) (s)")
+s_perf_plot + inset_element(inset_perf, 0.1, 0.72, 1, 1, ignore_tag = TRUE) + multi_core + plot_annotation(tag_levels = "A")
 ```
 
-`r figure_count$label_text("multiperformance")`. 
-Time taken by ICI-Kt as a function of the number of samples with multi-processing at the R level, using 80 cores.
+`r figure_count$label_text("performance")`. (A) Comparison of the *Rcpp* *mergesort* *ici_kt*, and base R's *cor* function using the "pearson" and "kendall" methods as the number of features are increased from 100 to 5000.
+Inset is the expanded view showing the full range of computation time in seconds.
+(B) Log of time taken to calculate all pairwise comparisons for different numbers of samples in multicore processing.
 
-As samples are added, the run time quickly increases logarithmically, similar to increasing samples on a single core (see `r figure_count$label_text("multiperformance")`).
 
 
 ### Utility in Large Omics' Data Sets
@@ -648,7 +608,7 @@ We also note that these outliers seem to be a superset of the outliers noted by 
 
 ```{r brainson_outliers, dn_id = figure_count}
 compare_brainson_main = c("icikt", "icikt_complete", "pearson_log1p")
-brainson_single %>%
+brainsonrnaseq_single %>%
   add_method() %>%
   dplyr::filter(which %in% compare_brainson_main) %>%
   ggplot(aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
@@ -665,7 +625,7 @@ Median correlations for each of the Brainson RNA-Seq samples to all other sample
 Brainson dataset median correlation values and outlier determination for each outlier from each of the correlation methods.
 
 ```{r brainsonseq_table}
-brainson_table = compare_outlier_tables(brainson_single, compare_brainson_main, sort_var = "pearson_log1p")
+brainson_table = compare_outlier_tables(brainsonrnaseq_single, compare_brainson_main, sort_var = "pearson_log1p")
 
 brainson_ft_out = brainson_table %>%
   set_nice_widths(sample_width = 1.5) %>%
@@ -709,245 +669,6 @@ The wider spread of measurement completeness is expected, since TCGA is an aggre
 The wider spread of measurement completeness is expected, since TCGA is an aggregate of samples collected from various human cancer patients as compared to the first two examples which were collected from specific experiments in cell culture. 
 However, the outliers detected are not a complete superset of the outliers detected by ICI-Kt and Pearson, probably due to the integration of completeness and correlation.
 
-
-#### Feature Subsets for Extremely Large Datasets
-
-
-```{r load_data}
-loadd(transcript_data)
-loadd(ref_cor)
-figure_count$increment("icisubsampling")
-```
-
-```{r icisubsampling, fig.height = 8, fig.width = 5, dn_id = figure_count}
-
-loadd(run_random_select_random_fraction_0.01)
-loadd(run_random_select_random_fraction_0.1)
-loadd(run_random_select_random_fraction_0.3)
-diff_vals = data.frame(ref = extract_data(ref_cor),
-                       f_01 = 
-extract_data(run_random_select_random_fraction_0.01),
-                     f_1 = extract_data(run_random_select_random_fraction_0.1),
-                     f_3 = extract_data(run_random_select_random_fraction_0.3))
-diff_vals = diff_vals %>%
-  dplyr::mutate(diff_1 = f_01 - ref,
-                diff_10 = f_1 - ref,
-                diff_30 = f_3 - ref)
-ref_f1_f3 = 
-  ((ggplot(diff_vals, aes(x = ref, y = f_01)) + geom_point(alpha = 0.1) +
-     labs(x = "All Features", y = "1% Features") +
-  coord_equal() +
-    geom_abline(slope = 1, color = "red")) |
-  (ggplot(diff_vals, aes(x = diff_1)) +
-     geom_histogram(bins = 100) +
-     labs(x = "Correlation Residual") +
-     coord_cartesian(xlim = c(-0.03, 0.03)) +
-     scale_y_continuous(expand = expansion(mult = 0)) +
-     geom_vline(xintercept = 0, color = "red"))) /
-  ((ggplot(diff_vals, aes(x = ref, y = f_1)) + geom_point(alpha = 0.1) +
-     labs(x = "All Features", y = "10% Features") +
-     coord_equal() +
-      geom_abline(slope = 1, color = "red")) | 
-  (ggplot(diff_vals, aes(x = diff_10)) +
-     geom_histogram(bins = 100) +
-     labs(x = "Correlation Residual") +
-     coord_cartesian(xlim = c(-0.03, 0.03)) +
-     scale_y_continuous(expand = expansion(mult = 0)) +
-     geom_vline(xintercept = 0, color = "red"))) /
-  ((ggplot(diff_vals, aes(x = ref, y = f_3)) + geom_point(alpha = 0.1) +
-     labs(x = "All Features", y = "30% Features") +
-     coord_equal() +
-      geom_abline(slope = 1, color = "red")) +
-  (ggplot(diff_vals, aes(x = diff_30)) +
-     geom_histogram(bins = 100) +
-     labs(x = "Correlation Residual") +
-     coord_cartesian(xlim = c(-0.03, 0.03)) +
-     scale_y_continuous(expand = expansion(mult = 0)) +
-     geom_vline(xintercept = 0, color = "red")))
-
-ref_f1_f3
-```
-
-`r figure_count$label_text("icisubsampling")`. Sample-sample ICI-Kt correlations using all features compared with 1%, 10% and 30% random subsets of features. 
-Left: The sample-sample correlations using all features are plotted against the sample-sample correlations using a random subset. Red line indicates perfect agreement. 
-Right: Histogram of the residual differences of the sample-sample correlations, where the difference is the (random subset - all features).
-
-Given the length of time it takes to run the calculations for larger datasets (in particular RNA-Seq data), we wondered if "good enough" results could be obtained using subsamples of the features across the samples.
-Our starting data is the same set of stage I (I, Ia, and Ib) adenocarcinoma tumor and normal tissue RNA-Seq samples from the *recount2* project used for outlier detection, with `r nrow(transcript_data)` features that have a non-zero value in at least one sample, and `r ncol(transcript_data)` samples.
-
-In our original *Rcpp* implementation using pairwise comparisons, the adenocarcinoma pairwise comparisons took 6.7 hours, on an 80 core virtual machine.
-With the mergesort implementation, that time was greatly reduced to just over a minute (69 seconds).
-However, given that there may still be cases where the number of comparisons are so large that run time is still a concern, we investigated the effect of estimating sample-sample correlations using a subset of the features.
-
-`r figure_count$label_text("icisubsampling")` compares the sample-sample correlations from a random percent subsample of features to those obtained using all of the features.
-Both the pairwise plot (left) and histogram of residual differences (right) show that the correlations become much closer to those obtained when using all of the features as the percentage of subsampled features is increased.
-However, there is a consistent positive bias in the estimate, regardless of the number of subsamples used (see also `r supp_figure_count$label_text("icikt_subsampling")`).
-This bias is small, because we are comparing the **raw** correlation values, and not the rescaled values.
-When the rescaled values (using the maximum correlation) are compared, the positive bias becomes larger, due to the differences in the maximum correlation (results not shown).
-
-For the Pearson and Kendall correlation methods, the subsampled correlation results are almost identical to the ICI-Kt, with slightly higher residual differences for both Pearson and Kendall over ICI-Kt, and then lower residuals if the missing values (NA)  from log-transformation of zeros are replaced with zero (see `r supp_figure_count$label_text(c("pearson_subsampling", "compare_overrange"))`).
-
-```{r setup_nonlog}
-figure_count$increment("pearson_nolog")
-```
-
-We also tested Pearson correlation subsets without log-transforming the count data first.
-As shown in `r figure_count$label_text("pearson_nolog")`, as well as Figures `r supp_figure_count$just_count("pearson_subsampling_nolog")` and `r supp_figure_count$just_count("pearson_sub_overrange_nolog")`, when the transcriptomics data is not log-transformed, Pearson correlation using subsets of features deviates wildly from those obtained using the full data set, much more than ICI-Kt or any of the other methods used.
-
-```{r pearson_nolog, fig.height = 10, fig.width = 10, dn_id = figure_count}
-focus_colors = use_colors[c("ICI-Kt", "Pearson", "Pearson NoLog")]
-combined_focus = all_combined %>%
-  dplyr::filter(method %in% c("ICI-Kt", "Pearson", "Pearson NoLog"))
-combined_focus_nolog = combined_focus %>%
-  dplyr::filter(!(method %in% "Pearson NoLog"))
-
-compare_focus = (ggplot(combined_focus, aes(x = fraction, y = median, color = method)) +
-                   geom_line() +
-                   scale_color_manual(values = focus_colors) +
-                   labs(x = "Fraction of Features", y = "Median Correlation Differences") +
-                   theme(legend.position = "none")) /
-                   (ggplot(combined_focus, aes(x = fraction , y = sd, color = method)) +
-                      geom_line() +
-                      scale_color_manual(values = focus_colors) +
-                      labs(x = "Fraction of Features", y = "Correlation Differences SD") +
-                      theme(legend.position = "none"))
-
-compare_focus_small = (ggplot(combined_focus_nolog, aes(x = fraction, y = median, color = method)) +
-  geom_line() +
-    scale_color_manual(values = focus_colors) +
-  labs(x = "Fraction of Features", y = "Median Correlation Differences") +
-    theme(legend.position = c(0.6, 0.4))) /
-  (ggplot(combined_focus_nolog, aes(x = fraction, y = sd, color = method)) +
-  geom_line() +
-    scale_color_manual(values = focus_colors) +
-  labs(x = "Fraction of Features", y = "Correlation Differences SD") +
-    theme(legend.position = "none"))
-
-compare_focus | compare_focus_small
-```
-
-`r figure_count$label_text("pearson_nolog")`.
-Median (top) and standard deviation (SD, bottom) of correlation differences using subsets as the fraction of features used increases, for different methods, including ICI-Kt, Pearson on log-transformed data (Pearson), and Pearson without log-transforming the data (Pearson NoLog).
-Left shows all three methods compared to each other, while the right omits Pearson NoLog to show the much smaller ranges of values for the other two methods in comparison to the Pearson NoLog.
-
-```{r setup_pca_variancefig}
-figure_count$increment("pcavardifference")
-```
-
-In addition to the random feature subsamples, we also implemented feature selection methods based on loading contributions to each PC, as well as feature variances in the full data set (see Methods).
-As shown in `r figure_count$label_text("pcavardifference")`, both of these feature selection methods perform extremely poorly, even at the relatively large fraction of 50% of the features.
-
-```{r pcavardifference, dn_id = figure_count}
-loadd(run_nonrandom_select_nonrandom_fraction_0.5_var_select)
-loadd(run_nonrandom_select_nonrandom_fraction_0.5_pca_select)
-diff_var = data.frame(ref = extract_data(ref_cor),
-                         f_50 = 
-                           extract_data(run_nonrandom_select_nonrandom_fraction_0.5_var_select)) %>%
-  dplyr::mutate(diff = f_50 - ref)
-diff_pca = data.frame(ref = extract_data(ref_cor),
-                      f_50 = extract_data(run_nonrandom_select_nonrandom_fraction_0.5_pca_select)) %>%
-  dplyr::mutate(diff = f_50 - ref)
-
-var_diff = ggplot(diff_var, aes(x = ref, y = f_50)) +
-  geom_abline(slope = 1, color = "red") +
-  geom_point(alpha = 0.1) +
-  coord_equal() +
-  labs(x = "All Features",
-       y = "50% Features by Variance")
-pca_diff = ggplot(diff_pca, aes(x = ref, y = f_50)) +
-  geom_abline(slope = 1, color = "red") +
-  geom_point(alpha = 0.1) +
-  coord_equal() +
-  labs(x = "All Features",
-       y = "50% Features by PCA")
-var_dist = ggplot(diff_var, aes(x = diff)) + 
-  geom_histogram(bins = 100) + 
-  labs(x = "Correlation Residual")
-pca_dist = ggplot(diff_pca, aes(x = diff)) +
-  geom_histogram(bins = 100) +
-  labs(x = "Correlation Residual")
-
-nonrandom_plot = (var_diff | var_dist) / (pca_diff | pca_dist)
-nonrandom_plot
-```
-
-`r figure_count$label_text("pcavardifference")`. Sample-sample ICI-Kt correlations using all features compared with 50% non-random subsets of features. 
-Left: The sample-sample correlations using all features are plotted against the sample-sample correlations using 50% of features chosen by variance contribution or PCA. Red line indicates perfect agreement. 
-Right: Histogram of the residual differences of the sample-sample correlations, where the difference is the (subset - all features).
-
-```{r setup_pcaeval}
-figure_count$increment("pcaeval")
-```
-
-Outside of the differences between the subset and full set of correlations, we also evaluated each of the feature subsets using the correlation between loading fraction and principal component contributed variance (see `r figure_count$label_text("pcaeval")` A & B), and the difference between the median loading fraction and the intended fraction (C & D).
-
-```{r pcaeval, dn_id = figure_count}
-loadd(pca_eval_summary)
-pca_eval_summary = pca_eval_summary %>%
-  dplyr::mutate(Method = dplyr::case_when(
-    grepl("pca", type) ~ "PCA",
-    grepl("random", type) ~ "Random",
-    grepl("var", type) ~ "Variance"
-  ))
-#pca_eval_summary$Method = factor(pca_eval_summary$Method, levels = c("Random", "PCA", "Variance"), ordered = TRUE)
-loadd(all_pca_eval)
-pca_eval_50 = all_pca_eval %>%
-  dplyr::filter(frac == 0.5) %>%
-  dplyr::mutate(percent2 = percent * 100)
-
-rand_eval = pca_eval_50 %>%
-  dplyr::filter(type %in% "random")
-rand_kt = ici_kt(rand_eval$percent, rand_eval$selected_frac)[[1]]
-rand_labels = data.frame(label = c(paste0("Correlation: ", format(rand_kt, digits = 2)),
-                                   paste0("Fraction: 0.5")),
-                         x = c(2.5, 2.5),
-                         y = c(0.502, 0.504),
-                         hjust = 0)
-rand_example = ggplot(rand_eval, aes(x = percent2, y = selected_frac)) +
-  geom_point(alpha = 0.5) +
-  labs(x = "% PC Variance", y = "Loading Fraction") +
-  geom_text(data = rand_labels, aes(x = x, y = y, label = label, hjust = hjust))
-
-pca_eval = pca_eval_50 %>%
-  dplyr::filter(type %in% "pca")
-pca_kt = ici_kt(pca_eval$percent, pca_eval$selected_frac)[[1]]
-
-pca_labels = data.frame(label = c(paste0("Correlation: ", format(pca_kt, digits = 2)),
-                                   paste0("Fraction: 0.5")),
-                         x = c(2.5, 2.5),
-                         y = c(0.8, 0.85),
-                         hjust = 0)
-pca_example = ggplot(pca_eval, aes(x = percent2, y = selected_frac)) +
-  geom_point(alpha = 0.5) +
-  labs(x = "% PC Variance", y = "Loading Fraction") +
-  geom_text(data = pca_labels, aes(x = x, y = y, label = label, hjust = hjust))
-
-example_plots = rand_example / pca_example
-
-
-e_kt = ggplot(pca_eval_summary, aes(x = frac, y = kt, color = Method)) +
-  geom_point() +
-  labs(x = "Subsample Fraction", y = "Correlation of Loading Fraction with PC Variance") +
-  theme(legend.position = "none")
-
-e_diff = ggplot(pca_eval_summary, aes(x = frac, y = diff_perc, color = Method)) + 
-  geom_point() +
-  labs(x = "Subsample Fraction", y = "Percent Median Loading Fraction Difference") +
-  theme(legend.position = c(0.5, 0.8))
-
-eval_plot = (example_plots | e_kt | e_diff) + plot_annotation(tag_levels = "A")
-eval_plot
-```
-
-`r figure_count$label_text("pcaeval")`. 
-A) Random feature subsample of 0.5, with % principal component variance against the loading fraction. 
-B) Variance informed feature subsample of 0.5, % principal component variance against the loading fraction. 
-C) Subsample feature fraction plotted against the correlation of the loading fraction with PC variance for each type of subsampling.
-D) Subsample feature fraction  plotted against the percent difference of the median loading fraction to the intended loading fraction, which is also the subsample fraction.
-
-`r figure_count$label_text("pcaeval")` shows that for both the PCA and variance informed subsampling methods, there is a relationship between loading fraction and the percent PC variance.
-In contrast, the random subsampling shows no relationship of fraction to percent PC variance.
-The actual loading fraction covered by the subsample also varies widely from the intended fraction for the PCA and variance informed subsampling, while the random subsample fraction remains close to the intended fraction, with some minor deviation at the very low fractions.
 
 ## Discussion and Conclusion
 
