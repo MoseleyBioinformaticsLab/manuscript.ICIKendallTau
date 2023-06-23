@@ -1,3 +1,13 @@
+select_data = function(transcript_pca, transcript_na, use_function, fraction)
+{
+  # tar_load(transcript_pca)
+  # tar_load(transcript_na)
+  # use_function = tar_read(select_functions)[[1]]
+  # fraction = 0.01
+  out_data = use_function(transcript_pca, transcript_na, fraction)
+  out_data
+}
+
 var_select = function(pca_data, matrix_data, fraction){
   n_item = round(fraction * nrow(matrix_data))
   var_rows = apply(matrix_data, 1, var, na.rm = TRUE)

@@ -22,3 +22,17 @@ filter_generate_outliers = function(counts, info, keep_num, sample_col, class_co
   list(outliers = counts_outliers,
        features = rownames(counts))
 }
+
+get_single_outlier = function(outlier_list)
+{
+  # outlier_list = tar_read(yeast_outliers)
+  n_frac = purrr::map_dbl(outlier_list, \(x){x$outliers$keep_num[1]})
+  outlier_list[[which(n_frac == 1)]]$outliers
+}
+
+rbind_outliers = function(outlier_list)
+{
+  all_outliers = purrr::map(outlier_list, \(x){x$outliers}) |>
+    dplyr::bind_rows()
+  all_outliers
+}
