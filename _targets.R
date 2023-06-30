@@ -56,7 +56,6 @@ tar_plan(
   single_core_perf = run_single_cor(),
   complexity_figure = create_complexity_figure(single_core_perf),
 
-
   nsclc_info = readRDS("data/nsclc_info"),
   nsclc_medians = readRDS("data/nsclc_scancentric_medians"),
   nsclc_peaks = readRDS("data/nsclc_ppm_matched_peaks.rds"),
@@ -111,7 +110,27 @@ tar_plan(
   tar_target(time_multi,
              get_run_time(run_multi),
              pattern = map(run_multi)),
-
+  
+  mwtab_study_data = jsonlite::fromJSON("data/mwtab/ST000017_AN000034.json"),
+  mwtab_normalized = process_study_data(mwtab_study_data),
+  mwtab_grouped = group_mwtab_study(mwtab_normalized),
+  mwtab_grouped_correlation = correlate_medians_n_present(mwtab_grouped),
+  
+  nsclc_grouped = group_nsclc_study(nsclc_peaks,
+                                    nsclc_medians,
+                                    nsclc_info),
+  nsclc_grouped_correlation = correlate_medians_n_present(nsclc_grouped),
+  
+  adeno_grouped = group_adenocarcinoma_study(adeno_data,
+                                             adeno_info),
+  adeno_grouped_correlation = correlate_medians_n_present(adeno_grouped),
+  yeast_grouped = group_yeast_study(yeast_counts_info),
+  yeast_grouped_correlation = correlate_medians_n_present(yeast_grouped),
+  brainsonrnaseq_grouped = group_brainsonrnaseq_study(brainsonrnaseq_counts,
+                                                      brainsonrnaseq_info),
+  brainsonrnaseq_grouped_correlation = correlate_medians_n_present(brainsonrnaseq_grouped),
+  
+  
   tar_render(supp_materials,
               "doc/supplemental_materials.Rmd"),
   tar_render(supp_tables,
