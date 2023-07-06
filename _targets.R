@@ -100,14 +100,14 @@ performance_plan = tar_plan(
   
   tumorcultures_n = c(1, 0.25, 0.5, 0.75, 0.99),
   tar_target(tumorcultures_outliers,
-             filter_generate_outliers(tumorcultures_counts_info$counts, tumorcultures_counts_info$info, brainson_n, "sample", "treatment"),
-             pattern = map(brainson_n),
+             filter_generate_outliers(tumorcultures_counts_info$counts, tumorcultures_counts_info$info, tumorcultures_n, "sample", "treatment"),
+             pattern = map(tumorcultures_n),
              iteration = "list"),
   tumorcultures_single = get_single_outlier(tumorcultures_outliers),
 
   tar_target(tumorcultures_outliers_alt,
-             filter_generate_outliers(tumorcultures_counts_info$counts, tumorcultures_counts_info$info, brainson_n, "sample", c("type", "tumor")),
-             pattern = map(brainson_n),
+             filter_generate_outliers(tumorcultures_counts_info$counts, tumorcultures_counts_info$info, tumorcultures_n, "sample", c("type", "tumor")),
+             pattern = map(tumorcultures_n),
              iteration = "list"),
   
   yeast_paper_outliers = c("WT.21", "WT.22", "WT.25", "WT.28", "WT.34", "WT.36",
