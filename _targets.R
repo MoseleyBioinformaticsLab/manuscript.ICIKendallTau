@@ -1,11 +1,20 @@
-## Load your packages, e.g. library(targets).
+## Load your packages, e.g. library(targets). -----
 tar_source("./packages.R")
 
-## Load your R files
+## Load your R files -------
 tar_source(files = "R")
 
-## tar_plan supports drake-style targets and also tar_target()
-tar_plan(
+# creating mapping tibble --------
+dataset_variables = tibble::tibble(character = c("yeast_counts_info",
+                                                 "adenocarcinoma_counts_info",
+                                  "tumorcultures_counts_info",
+                                  "micediabetics_counts_info",
+                                  "nsclc_counts_info")) |>
+  dplyr::mutate(id = gsub("_.*", "", character),
+                sym = rlang::syms(character))
+
+
+small_realistic_examples = tar_plan(
 
   # small theoretical example --------
   x = seq(1, 10),
@@ -45,70 +54,77 @@ tar_plan(
   subsample = sample(1000, 50),
   left_sample_cor = left_censor_correlate(left_censored_samples[subsample, ]),
   random_sample_cor = random_censor_correlate(left_censored_samples[subsample, ], n_na = seq(0, 12, 2)),
-  logtransform_sample_cor = lt_left_censor_correlate(left_censored_samples[subsample, ]),
+  logtransform_sample_cor = lt_left_censor_correlate(left_censored_samples[subsample, ])
+)
 
+loading_real_data = tar_plan(
   # loading real data ---------
   tar_target(adenocarcinoma_file,
              here::here("data/recount_adenocarcinoma_count_info.rds"),
              format = "file"),
-  adenocarcinoma_data_info = readRDS(adenocarcinoma_file),
+  adenocarcinoma_counts_info = readRDS(adenocarcinoma_file),
   
   tar_target(barton_yeast_file,
              here::here("data/barton_yeast_counts_info.rds"),
              format = "file"),
-  yeast_data_info = readRDS(barton_yeast_file),
+  yeast_counts_info = readRDS(barton_yeast_file),
   
   tar_target(brainson_tumorcultures_file,
              here::here("data/brainsonrnaseq_type_counts_info.rds"),
              format = "file"),
-  tumorcultures_data_info = readRDS(brainson_tumorcultures_file),
+  tumorcultures_counts_info = readRDS(brainson_tumorcultures_file),
   
   tar_target(mwtab_micediabetics_file,
              here::here("data/mwtab_st000017_an000034_count_info.rds"),
              format = "file"),
-  micediabetics_data_info = readRDS(mwtab_micediabetics_file),
+  micediabetics_counts_info = readRDS(mwtab_micediabetics_file),
   
   tar_target(rcsirm_nsclc_file,
              here::here("data/nsclc_count_info.rds"),
              format = "file"),
-  nsclc_data_info = readRDS(rcsirm_nsclc_file),
-  
+  nsclc_counts_info = readRDS(rcsirm_nsclc_file)
+)
+
+# limit of detection examples --------
+limit_of_detection_map = tar_map(dataset_variables,
+                                 names = id,
+                                 tar_target(group_medians,
+                                            group_study(sym, id)),
+                                 tar_target(correlate_medians,
+                                            correlate_medians_n_present(group_medians)))
   
   # running a single core to measure performance aspects ----------
+performance_plan = tar_plan(
   single_core_perf = run_single_cor(),
   complexity_figure = create_complexity_figure(single_core_perf),
   
   tumorcultures_n = c(1, 0.25, 0.5, 0.75, 0.99),
   tar_target(tumorcultures_outliers,
-             filter_generate_outliers(tumorcultures_counts, tumorcultures_info, brainson_n, "sample", "tumor"),
+             filter_generate_outliers(tumorcultures_counts_info$counts, tumorcultures_counts_info$info, brainson_n, "sample", "treatment"),
              pattern = map(brainson_n),
              iteration = "list"),
   tumorcultures_single = get_single_outlier(tumorcultures_outliers),
 
   tar_target(tumorcultures_outliers_alt,
-             filter_generate_outliers(tumorcultures_counts, tumorcultures_info, brainson_n, "sample", c("type", "tumor")),
+             filter_generate_outliers(tumorcultures_counts_info$counts, tumorcultures_counts_info$info, brainson_n, "sample", c("type", "tumor")),
              pattern = map(brainson_n),
              iteration = "list"),
   
   yeast_paper_outliers = c("WT.21", "WT.22", "WT.25", "WT.28", "WT.34", "WT.36",
                            "Snf2.06", "Snf2.13", "Snf2.25", "Snf2.35"),
-  yeast_counts_info = readRDS(here::here("data", "yeast_counts_info.rds")),
   
   yeast_n = c(1, 0.25, 0.5),
   tar_target(yeast_outliers,
-             filter_generate_outliers(yeast_counts_info$counts, yeast_counts_info$info, yeast_n, "sample_rep", "sample"),
+             filter_generate_outliers(yeast_counts_info$counts, yeast_counts_info$info, yeast_n, "sample", "treatment"),
              pattern = map(yeast_n),
              iteration = "list"),
   yeast_single = get_single_outlier(yeast_outliers),
   
-  adeno_info = readRDS(here::here("data", "transcript_info.rds")),
-  adeno_data = transcript_data,
-  
-  tar_target(adeno_outliers,
-             filter_generate_outliers(adeno_data, adeno_info, yeast_n, "sample_id2", "tissue_type"),
+  tar_target(adenocarcinoma_outliers,
+             filter_generate_outliers(adenocarcinoma_counts_info$counts, adenocarcinoma_counts_info$info, yeast_n, "sample", "treatment"),
              pattern = map(yeast_n),
              iteration = "list"),
-  adeno_single = get_single_outlier(adeno_outliers),
+  adenocarcinoma_single = get_single_outlier(adenocarcinoma_outliers),
   
   multi_samples = seq(5, 95, 5),
   tar_target(select_ss_multi,
@@ -126,24 +142,6 @@ tar_plan(
              get_run_time(run_multi),
              pattern = map(run_multi)),
   
-  
-  mwtab_grouped_correlation = correlate_medians_n_present(mwtab_grouped),
-  
-  nsclc_grouped = group_nsclc_study(nsclc_peaks,
-                                    nsclc_medians,
-                                    nsclc_info),
-  nsclc_grouped_correlation = correlate_medians_n_present(nsclc_grouped),
-  
-  adeno_grouped = group_adenocarcinoma_study(adeno_data,
-                                             adeno_info),
-  adeno_grouped_correlation = correlate_medians_n_present(adeno_grouped),
-  yeast_grouped = group_yeast_study(yeast_counts_info),
-  yeast_grouped_correlation = correlate_medians_n_present(yeast_grouped),
-  brainsonrnaseq_grouped = group_brainsonrnaseq_study(brainsonrnaseq_counts,
-                                                      brainsonrnaseq_info),
-  brainsonrnaseq_grouped_correlation = correlate_medians_n_present(brainsonrnaseq_grouped),
-  
-  
   tar_render(supp_materials,
               "doc/supplemental_materials.Rmd"),
   tar_render(supp_tables,
@@ -151,9 +149,9 @@ tar_plan(
   tar_render(manuscript,
            "doc/ici_kt_manuscript.Rmd")
 
-  
-# target = function_to_make(arg), ## drake style
-
-# tar_target(target2, function_to_make2(arg)) ## targets style
-
 )
+
+list(small_realistic_examples,
+     loading_real_data,
+     limit_of_detection_map,
+     performance_plan)
