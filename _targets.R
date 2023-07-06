@@ -47,31 +47,46 @@ tar_plan(
   random_sample_cor = random_censor_correlate(left_censored_samples[subsample, ], n_na = seq(0, 12, 2)),
   logtransform_sample_cor = lt_left_censor_correlate(left_censored_samples[subsample, ]),
 
+  # loading real data ---------
+  tar_target(adenocarcinoma_file,
+             here::here("data/recount_adenocarcinoma_count_info.rds"),
+             format = "file"),
+  adenocarcinoma_data_info = readRDS(adenocarcinoma_file),
   
-  transcript_data = readRDS(here::here("data/recount_adeno_counts.rds")),
-  transcript_pca = prcomp(t(log1p(transcript_data)), center = TRUE, scale. = FALSE),
+  tar_target(barton_yeast_file,
+             here::here("data/barton_yeast_counts_info.rds"),
+             format = "file"),
+  yeast_data_info = readRDS(barton_yeast_file),
   
-  transcript_na = zero_to_na(transcript_data),
+  tar_target(brainson_tumorcultures_file,
+             here::here("data/brainsonrnaseq_type_counts_info.rds"),
+             format = "file"),
+  tumorcultures_data_info = readRDS(brainson_tumorcultures_file),
   
+  tar_target(mwtab_micediabetics_file,
+             here::here("data/mwtab_st000017_an000034_count_info.rds"),
+             format = "file"),
+  micediabetics_data_info = readRDS(mwtab_micediabetics_file),
+  
+  tar_target(rcsirm_nsclc_file,
+             here::here("data/nsclc_count_info.rds"),
+             format = "file"),
+  nsclc_data_info = readRDS(rcsirm_nsclc_file),
+  
+  
+  # running a single core to measure performance aspects ----------
   single_core_perf = run_single_cor(),
   complexity_figure = create_complexity_figure(single_core_perf),
-
-  nsclc_info = readRDS("data/nsclc_info"),
-  nsclc_medians = readRDS("data/nsclc_scancentric_medians"),
-  nsclc_peaks = readRDS("data/nsclc_ppm_matched_peaks.rds"),
   
-  brainsonrnaseq_counts = readRDS(here::here("data", "brainson_rnaseq201901_counts.rds")),
-  brainsonrnaseq_info = readRDS(here::here("data", "brainson_rnaseq201901_info.rds")),
-  
-  brainson_n = c(1, 0.25, 0.5, 0.75, 0.99),
-  tar_target(brainsonrnaseq_outliers,
-             filter_generate_outliers(brainsonrnaseq_counts, brainsonrnaseq_info, brainson_n, "sample", "tumor"),
+  tumorcultures_n = c(1, 0.25, 0.5, 0.75, 0.99),
+  tar_target(tumorcultures_outliers,
+             filter_generate_outliers(tumorcultures_counts, tumorcultures_info, brainson_n, "sample", "tumor"),
              pattern = map(brainson_n),
              iteration = "list"),
-  brainsonrnaseq_single = get_single_outlier(brainsonrnaseq_outliers),
+  tumorcultures_single = get_single_outlier(tumorcultures_outliers),
 
-  tar_target(brainsonrnaseq_outliers_alt,
-             filter_generate_outliers(brainsonrnaseq_counts, brainsonrnaseq_info, brainson_n, "sample", c("type", "tumor")),
+  tar_target(tumorcultures_outliers_alt,
+             filter_generate_outliers(tumorcultures_counts, tumorcultures_info, brainson_n, "sample", c("type", "tumor")),
              pattern = map(brainson_n),
              iteration = "list"),
   
@@ -111,9 +126,7 @@ tar_plan(
              get_run_time(run_multi),
              pattern = map(run_multi)),
   
-  mwtab_study_data = jsonlite::fromJSON("data/mwtab/ST000017_AN000034.json"),
-  mwtab_normalized = process_study_data(mwtab_study_data),
-  mwtab_grouped = group_mwtab_study(mwtab_normalized),
+  
   mwtab_grouped_correlation = correlate_medians_n_present(mwtab_grouped),
   
   nsclc_grouped = group_nsclc_study(nsclc_peaks,
