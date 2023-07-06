@@ -2,8 +2,8 @@
 .Rhistory
 .RData
 .Ruserdata
-data/barton_preprocessed
-data/rse_gene_lung.Rdata
+raw_data/barton_preprocessed
+raw_data/rse_gene_lung.Rdata
 references/
 old_resources/
 old_manuscript_versions/
@@ -11,6 +11,5 @@ old_manuscript_versions/
 *.docx#
 renv
 actual_package
-data/
 *.rds
 *.rda
