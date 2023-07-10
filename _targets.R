@@ -91,7 +91,9 @@ limit_of_detection_map = tar_map(dataset_variables,
                                  tar_target(group_medians,
                                             group_study(sym, id)),
                                  tar_target(correlate_medians,
-                                            correlate_medians_n_present(group_medians)))
+                                            correlate_medians_n_present(group_medians)),
+                                 tar_target(lod_graph,
+                                            graph_median_min(correlate_medians)))
   
   # running a single core to measure performance aspects ----------
 performance_plan = tar_plan(
