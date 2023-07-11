@@ -13,24 +13,102 @@ editor_options:
 
 ```{r setup, include=FALSE}
 targets::tar_source(files = c("./packages.R", "R"))
-knitr::opts_chunk$set(echo = FALSE, warning = FALSE, 
-                      message = FALSE, fig.width = 8, 
-                      fig.height = 6, fig.keep = "all",
-                      fig.process = dn_modify_path,
-                      tab.cap.style = "paragraph",
-                      tab.cap.pre = "",
-                      tab.cap.sep = "",
-                      dpi = 600,
-                      dev.args = list(png = list(type = "cairo")))
-
 
 supp_figure_count = dn_counter$new("Figure ", "_", "S")
 supp_table_count = dn_counter$new("Table ", "_", "S")
 
-supp_figure_count$increment("kt_pearson")
-supp_figure_count$increment("ici_distribution")
-supp_figure_count$increment("kt_distribution")
+
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, 
+                      message = FALSE, fig.width = 8, 
+                      fig.height = 6, fig.keep = "all",
+                      fig.process = supp_figure_count$modify_path,
+                      tab.cap.style = "paragraph",
+                      tab.cap.pre = "",
+                      tab.cap.sep = "",
+                      dpi = 600,
+                      dev = "ragg_png")
+
+
+
 ```
+
+```{r}
+#| label: load
+tar_load(c(lod_graph_adenocarcinoma,
+           lod_graph_tumorcultures,
+           lod_graph_nsclc,
+           lod_graph_micediabetics,
+           positive_kt,
+           positive_pearson,
+           negative_kt,
+           all_kt,
+           negative_pearson,
+           complexity_figure,
+           yeast_paper_outliers,
+           yeast_outliers,
+           yeast_single,
+           brainsonrnaseq_outliers,
+           brainsonrnaseq_single,
+           adeno_outliers,
+           adeno_single))
+```
+
+```{r}
+#| label: increment
+supp_figure_count$increment(c("lod_adenocarcinoma",
+                              "lod_tumorcultures",
+                              "lod_nsclc",
+                              "lod_micediabetics",
+                            "kt_pearson",
+                            "ici_distribution",
+                            "kt_distribution",
+                            "complexity",
+                            "yeast_outliers",
+                            "brainson_outliers",
+                            "adeno_outliers",
+                            "adeno_by_method",
+                            "adeno_by_keep_num",
+                            "adeno_differences"))
+
+supp_table_count$increment(c("yeast_outliers",
+                           "brainson_outliers",
+                           "adeno_outliers"))
+```
+
+## Limits of Detection Issues in Datasets
+
+In addition to the yeast RNA-seq dataset, we investigated the relationship of median abundance and minimum median abundance of present features with the number of present features across samples for the other four datasets, including TCGA Adenocarcinoma RNA-seq, Brainson Tumor Cultures RNA-seq, RCSIRM Non small cell lung cancer lipidomics, and mice diabetes metabolomics from Metabolomics Workbench.
+
+As shown in `r supp_figure_count$label_text(c("lod_adenocarcinoma", "lod_tumorcultures", "lod_nsclc", "lod_micediabetics"))`, there is a direct relationship between the minimum median value and number of samples a feature is present in.
+
+```{r}
+#| label: lod_adenocarcinoma 
+#| fig.width: 10
+#| fig.height: 8
+wrap_plots(lod_graph_adenocarcinoma, ncol = 1) + plot_annotation(tag_levels = "A")
+```
+
+```{r}
+#| label: lod_tumorcultures
+#| fig.width: 10
+#| fig.height: 8 
+wrap_plots(lod_graph_tumorcultures, ncol = 1) + plot_annotation(tag_levels = "A")
+```
+
+```{r}
+#| label: lod_nsclc
+#| fig.width: 10
+#| fig.height: 8
+wrap_plots(lod_graph_nsclc, ncol = 1) + plot_annotation(tag_levels = "A")
+```
+
+```{r}
+#| label: lod_micediabetics
+#| fig.width: 10
+#| fig.height: 8
+wrap_plots(lod_graph_micediabetics, ncol = 1) + plot_annotation(tag_levels = "A")
+```
+
 
 ## Simulated Data
 
@@ -38,16 +116,11 @@ The simplest simulated data set includes three samples, where two are perfectly 
 We then created missing values (replaced value with NA) in each sample systematically, and computed the ICI-Kt, Pearson, and Kendall-tau correlations.
 
 ```{r kt_pearson, dn_id = supp_figure_count}
-tar_load(positive_kt)
-tar_load(positive_pearson)
-tar_load(negative_kt)
-tar_load(negative_pearson)
-
-all_kt = rbind(positive_kt, negative_kt)
+all_kt_other = rbind(positive_kt, negative_kt)
 all_pearson = rbind(positive_pearson, negative_pearson)
 all_pearson[is.na(all_pearson$cor), "cor"] = 0
 
-compare_df = data.frame(ici_kt = all_kt$cor,
+compare_df = data.frame(ici_kt = all_kt_other$cor,
                         pearson = all_pearson$cor)
 set.seed(1234)
 rand_rows = sample(nrow(compare_df), 10000)
@@ -65,7 +138,6 @@ These distributions are shown in `r supp_figure_count$label_text("kt_distributio
 We can see that the distributions from both ICI-Kt and Kendall-tau are the same, which is expected given we replaced missing values (NA) with zero *within* the ICI-Kt code, and replaced missing values (NA) with zero prior to calculating Kendall-tau correlations.
 
 ```{r ici_distribution, dn_id = supp_figure_count}
-tar_load(all_kt)
 ici_plot = ggplot(all_kt, aes(x = ici_kt)) +
   geom_histogram(bins = 100) +
   facet_wrap(~ comp, ncol = 1) +
@@ -89,15 +161,10 @@ Kendall-tau correlation as missing values are varied between two samples and rep
 
 ## Algorithmic Complexity
 
-```{r increment_count_complexity}
-supp_figure_count$increment("complexity")
-```
-
 In addition to comparing their performance, we can check that the algorithmic complexity fits the theoretically expected complexity by fitting a regression line of the run time to the number of items.
 The run times and fitted lines for each method (R's Pearson, the ICI-Kt, and R's Kendall-tau) are shown in `r supp_figure_count$label_text("complexity")`.
 
 ```{r complexity, dn_id = supp_figure_count}
-tar_load(complexity_figure)
 complexity_figure
 ```
 
@@ -119,7 +186,6 @@ This version of Pearson correlation recreates the median sample-sample correlati
 Finally, we note the actual samples recorded as outliers by Gierlinski and coworkers, noted as "Manuscript".
 
 ```{r load_yeast_outliers}
-supp_figure_count$increment("yeast_outliers")
 manual_method = c("icikt" = "IK",
                                                  "icikt_complete" = "IKC",
                                                  "pearson_base" = "PB",
@@ -137,9 +203,6 @@ other_method = c("icikt" = "IK",
                                                  "pearson_log" = "PL",
                                                  "kt_base" = "Kt")
 
-tar_load(c(yeast_paper_outliers,
-           yeast_outliers,
-           yeast_single))
 
 
 all_yeast = rbind_outliers(yeast_outliers) %>%
@@ -175,8 +238,6 @@ Median correlations for each of the yeast RNA-Seq sample to all other samples in
 
 ```{r yeast_outlier_table}
 yeast_table = compare_outlier_tables(yeast_single2, compare_yeast, sort_var = "manuscript", map_method = manual_method)
-
-supp_table_count$increment("yeast_outliers")
 ```
 
 In `r supp_figure_count$label_text("yeast_outliers")` and `r supp_table_count$label_text("yeast_outliers")` we can see how the determination of outliers was not made solely on the basis of correlation alone, but on a combination of factors that lead to some of the higher correlating samples (using raw counts and Pearson correlaion) being considered outliers where lower correlating samples were not listed as being outliers.
@@ -188,10 +249,6 @@ It should be noted that it seems that Gierlinski et al used an eyeball cutoff fo
 ## Brainson RNASeq Samples
 
 ```{r brainsonrnaseq_load}
-supp_figure_count$increment("brainson_outliers")
-supp_table_count$increment("brainson_outliers")
-tar_load(c(brainsonrnaseq_outliers,
-           brainsonrnaseq_single))
 
 all_brainson = rbind_outliers(brainsonrnaseq_outliers) %>%
   perc_to_number()
@@ -229,12 +286,6 @@ Discussions with the Brainson group have determined that some of the samples in 
 ## TCGA Adenocarcinoma
 
 ```{r adeno_load}
-supp_figure_count$increment("adeno_outliers")
-supp_table_count$increment("adeno_outliers")
-
-tar_load(c(adeno_outliers,
-           adeno_single))
-
 all_adeno = rbind_outliers(adeno_outliers) %>%
   perc_to_number()
 
@@ -415,9 +466,6 @@ Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Com
 ### Adenocarcinoma
 
 ```{r increment_count_adeno}
-supp_figure_count$increment("adeno_by_method")
-supp_figure_count$increment("adeno_by_keep_num")
-supp_figure_count$increment("adeno_differences")
 ```
 
 ```{r adeno_by_method, dn_id = supp_figure_count}
