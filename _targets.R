@@ -7,7 +7,8 @@ tar_source(files = "R")
 # creating mapping tibble --------
 dataset_variables = tibble::tibble(character = c("yeast_counts_info",
                                                  "adenocarcinoma_counts_info",
-                                  "tumorcultures_counts_info",
+                                  "egfrgenotype_counts_info",
+                                  "egfrgenotypetumorculture_counts_info",
                                   "micediabetics_counts_info",
                                   "nsclc_counts_info")) |>
   dplyr::mutate(id = gsub("_.*", "", character),
@@ -69,10 +70,15 @@ loading_real_data = tar_plan(
              format = "file"),
   yeast_counts_info = readRDS(barton_yeast_file),
   
-  tar_target(brainson_tumorcultures_file,
+  tar_target(brainson_egfrgenotype_file,
              here::here("data/brainsonrnaseq_type_counts_info.rds"),
              format = "file"),
-  tumorcultures_counts_info = readRDS(brainson_tumorcultures_file),
+  egfrgenotype_counts_info = readRDS(brainson_egfrgenotype_file),
+  
+  tar_target(brainson_tumorcultures_file,
+             here::here("data/brainsonrnaseq_type_counts_info_tumor.rds"),
+             format = "file"),
+  egfrgenotypetumorculture_counts_info = readRDS(brainson_tumorcultures_file),
   
   tar_target(mwtab_micediabetics_file,
              here::here("data/mwtab_st000017_an000034_count_info.rds"),
@@ -100,16 +106,16 @@ performance_plan = tar_plan(
   single_core_perf = run_single_cor(),
   complexity_figure = create_complexity_figure(single_core_perf),
   
-  tumorcultures_n = c(1, 0.25, 0.5, 0.75, 0.99),
-  tar_target(tumorcultures_outliers,
-             filter_generate_outliers(tumorcultures_counts_info$counts, tumorcultures_counts_info$info, tumorcultures_n, "sample", "treatment"),
-             pattern = map(tumorcultures_n),
+  egfrgenotype_n = c(1, 0.25, 0.5, 0.75, 0.99),
+  tar_target(egfrgenotype_outliers,
+             filter_generate_outliers(egfrgenotype_counts_info$counts, egfrgenotype_counts_info$info, egfrgenotype_n, "sample", "treatment"),
+             pattern = map(egfrgenotype_n),
              iteration = "list"),
-  tumorcultures_single = get_single_outlier(tumorcultures_outliers),
+  egfrgenotype_single = get_single_outlier(egfrgenotype_outliers),
 
-  tar_target(tumorcultures_outliers_alt,
-             filter_generate_outliers(tumorcultures_counts_info$counts, tumorcultures_counts_info$info, tumorcultures_n, "sample", c("type", "tumor")),
-             pattern = map(tumorcultures_n),
+  tar_target(egfrgenotypetumorculture_outliers,
+             filter_generate_outliers(egfrgenotypetumorculture_counts_info$counts, egfrgenotypetumorculture_counts_info$info, egfrgenotype_n, "sample", "treatment"),
+             pattern = map(egfrgenotype_n),
              iteration = "list"),
   
   yeast_paper_outliers = c("WT.21", "WT.22", "WT.25", "WT.28", "WT.34", "WT.36",

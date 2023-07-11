@@ -32,6 +32,8 @@ editor_options:
 targets::tar_source("./packages.R")
 tar_source("R")
 
+unlink(here::here("doc", "ici_kt_manuscript_files"), recursive = TRUE)
+
 figure_count = dn_counter$new("Figure ", "_")
 table_count = dn_counter$new("Table ", "_")
 

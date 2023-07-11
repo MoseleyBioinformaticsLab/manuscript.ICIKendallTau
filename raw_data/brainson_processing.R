@@ -17,3 +17,10 @@ deseq_norm = deseq_norm[has_1, ]
 brainson_out = list(counts = deseq_norm, info = brainsonrnaseq_info)
 
 saveRDS(brainson_out, file = here::here("data", "brainsonrnaseq_type_counts_info.rds"))
+
+brainsonrnaseq_info2 = brainsonrnaseq_info |>
+  dplyr::mutate(treatment = tumor)
+
+brainson_out2 = list(counts = deseq_norm, info = brainsonrnaseq_info2)
+
+saveRDS(brainson_out2, file = here::here("data", "brainsonrnaseq_type_counts_info_tumor.rds"))
