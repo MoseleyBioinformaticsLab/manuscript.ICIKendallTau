@@ -14,6 +14,8 @@ editor_options:
 ```{r setup, include=FALSE}
 targets::tar_source(files = c("./packages.R", "R"))
 
+unlink(here::here("doc/supplemental_materials_files"), recursive = TRUE)
+
 supp_figure_count = dn_counter$new("Figure ", "_", "S")
 supp_table_count = dn_counter$new("Table ", "_", "S")
 
@@ -35,9 +37,10 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE,
 ```{r}
 #| label: load
 tar_load(c(lod_graph_adenocarcinoma,
-           lod_graph_tumorcultures,
+           lod_graph_egfrgenotype,
+           lod_graph_egfrgenotypetumorculture,
            lod_graph_nsclc,
-           lod_graph_micediabetics,
+           lod_graph_ratstamina,
            positive_kt,
            positive_pearson,
            negative_kt,
@@ -56,9 +59,10 @@ tar_load(c(lod_graph_adenocarcinoma,
 ```{r}
 #| label: increment
 supp_figure_count$increment(c("lod_adenocarcinoma",
-                              "lod_tumorcultures",
+                              "lod_egfrgenotype",
+                              "lod_egfrgenotypetumorculture",
                               "lod_nsclc",
-                              "lod_micediabetics",
+                              "lod_ratstamina",
                             "kt_pearson",
                             "ici_distribution",
                             "kt_distribution",
@@ -89,10 +93,17 @@ wrap_plots(lod_graph_adenocarcinoma, ncol = 1) + plot_annotation(tag_levels = "A
 ```
 
 ```{r}
-#| label: lod_tumorcultures
+#| label: lod_egfrgenotype
 #| fig.width: 10
 #| fig.height: 8 
-wrap_plots(lod_graph_tumorcultures, ncol = 1) + plot_annotation(tag_levels = "A")
+wrap_plots(lod_graph_egfrgenotype, ncol = 1) + plot_annotation(tag_levels = "A")
+```
+
+```{r}
+#| label: lod_egfrgenotypetumorculture
+#| fig.width: 10
+#| fig.height: 8 
+wrap_plots(lod_graph_egfrgenotypetumorculture, ncol = 1) + plot_annotation(tag_levels = "A")
 ```
 
 ```{r}
@@ -103,10 +114,10 @@ wrap_plots(lod_graph_nsclc, ncol = 1) + plot_annotation(tag_levels = "A")
 ```
 
 ```{r}
-#| label: lod_micediabetics
+#| label: lod_ratstamina
 #| fig.width: 10
 #| fig.height: 8
-wrap_plots(lod_graph_micediabetics, ncol = 1) + plot_annotation(tag_levels = "A")
+wrap_plots(lod_graph_ratstamina, ncol = 1) + plot_annotation(tag_levels = "A")
 ```
 
 
