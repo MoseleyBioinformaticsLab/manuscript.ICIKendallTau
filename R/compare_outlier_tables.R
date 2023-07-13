@@ -31,7 +31,7 @@ compare_outlier_tables = function(outlier_list, keep_compare, sort_var, map_meth
                                                                                        "pearson_log" = "Pearson Log(x)",
                                                                                        "kt_base" = "Kendall-tau")){
   
-  # drake::loadd(yeast_outliers_1)
+  # 
   # outlier_list = yeast_outliers_1$outliers
   # sort_var = "pearson_log"
   # keep_compare = c("icikt", "icikt_complete", "pearson_log")
@@ -53,6 +53,10 @@ compare_outlier_tables = function(outlier_list, keep_compare, sort_var, map_meth
   
   isoutlier = outlier_list %>%
     dplyr::filter(outlier)
+  
+  if (nrow(isoutlier) == 0) {
+    return(NULL)
+  }
   
   out_samples = data.frame(sample_id = unique(isoutlier$sample_id))
   

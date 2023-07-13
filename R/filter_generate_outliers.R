@@ -1,9 +1,10 @@
 filter_generate_outliers = function(counts, info, keep_num, sample_col, class_col){
-  # counts = readRDS(here::here("data", "brainson_rnaseq201901_counts.rds"))
-  # info = readRDS(here::here("data", "brainson_rnaseq201901_info.rds"))
+  # counts_info = tar_read(yeast_counts_info)
+  # counts = counts_info$counts
+  # info = counts_info$info
   # keep_num = 1
   # sample_col = "sample"
-  # class_col = "tumor"
+  # class_col = "treatment"
   if (length(class_col) == 2) {
     filter_col = class_col[1]
     median_col = class_col[2]
@@ -22,6 +23,7 @@ filter_generate_outliers = function(counts, info, keep_num, sample_col, class_co
   list(outliers = counts_outliers,
        features = rownames(counts))
 }
+
 
 get_single_outlier = function(outlier_list)
 {

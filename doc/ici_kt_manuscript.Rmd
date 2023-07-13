@@ -56,9 +56,9 @@ load(here::here("doc/supp_stuff.rda"))
 tar_load(c(supp_materials,
            supp_tables,
            lod_graph_yeast,
-           brainsonrnaseq_single,
+           egfrgenotype_single,
            yeast_single,
-           adeno_single,
+           adenocarcinoma_single,
            left_censored_cor,
            random_censored_cor,
            logtransform_censored_cor,
@@ -76,12 +76,12 @@ figure_count$increment(c("problem",
                          "leftcensored",
                          "performance",
                          "yeast_outliers",
-                         "brainson_outliers",
-                         "adeno_outliers"))
+                         "egfrgenotype_outliers",
+                         "adenocarcinoma_outliers"))
 
 table_count$increment(c("yeast_outliers",
-                        "brainson_outliers",
-                        "adeno_outliers"))
+                        "egfrgenotype_outliers",
+                        "adenocarcinoma_outliers"))
 
 ```
 
@@ -637,16 +637,16 @@ Inset is the expanded view showing the full range of computation time in seconds
 ```{r setting_up_outliers}
 
 outlier_figure_text = figure_count$label_text(c("yeast_outliers",
-                                                "brainson_outliers",
-                                                "adeno_outliers"))
+                                                "egfrgenotype_outliers",
+                                                "adenocarcinoma_outliers"))
 outlier_table_text = table_count$label_text(c("yeast_outliers",
-                                              "brainson_outliers",
-                                              "adeno_outliers"))
+                                              "egfrgenotype_outliers",
+                                              "adenocarcinoma_outliers"))
 ```
 
 We analyzed three RNA-Seq datasets for possible outliers using a variety of  different correlation and correlation-related metrics: (1) ICI-Kt; (2) ICI-Kt scaled by *completeness* (see Methods); (3) Pearson correlation; (4) Pearson using pairwise complete features; (5) Pearson on log(value + 1); (6) Pearson on log(value); and (7) Kendall-tau.
-We primarily concentrate on the ICI-Kt, ICI-Kt * completeness, and Pearson log(x + 1) here, but all outliers by method are shown in the Supplemental materials (`r supp_figure_count$label_text(c("yeast_outliers", "adeno_outliers"))`, `r supp_table_count$label_text(c("yeast_outliers", "brainson_outliers"))`).
-Additionally, we compared how the outliers change if we require that a feature is present in at least a certain fraction of samples of a class with each different correlation measure (`r supp_figure_count$label_text(c("yeast_by_method", "adeno_differences"))`).
+We primarily concentrate on the ICI-Kt, ICI-Kt * completeness, and Pearson log(x + 1) here, but all outliers by method are shown in the Supplemental materials (`r supp_figure_count$label_text(c("yeast_outliers", "adenocarcinoma_outliers"))`, `r supp_table_count$label_text(c("yeast_outliers", "egfrgenotype_outliers"))`).
+Additionally, we compared how the outliers change if we require that a feature is present in at least a certain fraction of samples of a class with each different correlation measure (`r supp_figure_count$label_text(c("yeast_by_method", "adenocarcinoma_differences"))`).
 For each dataset and correlation-related metric, the median correlation for a sample was calculated amongst the samples for each sub-group of samples corresponding to an experimental condition of interest (disease, mutant, how cells were grown).
 
 ```{r load_yeast_outliers}
@@ -686,11 +686,11 @@ In this example, ICI-Kt shows superior sensitivity for outlier detection as comp
 We also note that these outliers seem to be a superset of the outliers noted by Gierliński et al. (see `r supp_figure_count$label_text("yeast_outliers")` and `r supp_table_count$label_text("yeast_outliers")`).
 
 
-```{r brainson_outliers, dn_id = figure_count}
-compare_brainson_main = c("icikt", "icikt_complete", "pearson_log1p")
-brainsonrnaseq_single %>%
+```{r egfrgenotype_outliers, dn_id = figure_count}
+compare_egfrgenotype_main = c("icikt", "icikt_complete", "pearson_log1p")
+egfrgenotype_single %>%
   add_method() %>%
-  dplyr::filter(which %in% compare_brainson_main) %>%
+  dplyr::filter(which %in% compare_egfrgenotype_main) %>%
   ggplot(aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
   geom_sina() + 
   facet_wrap(~ method, nrow = 1) +
@@ -698,30 +698,32 @@ brainsonrnaseq_single %>%
   theme(legend.position = c(0.75, 0.2))
 ```
 
-`r figure_count$label_text("brainson_outliers")`. 
+`r figure_count$label_text("egfrgenotype_outliers")`. 
 Median correlations for each of the Brainson RNA-Seq samples to all other samples in the same group, using either ICI-Kt, ICI-Kt * completeness or Pearson Log(x + 1) correlation.
 
-`r table_count$label_text("brainson_outliers")`.
+`r table_count$label_text("egfrgenotype_outliers")`.
 Brainson dataset median correlation values and outlier determination for each outlier from each of the correlation methods.
 
-```{r brainsonseq_table}
-brainson_table = compare_outlier_tables(brainsonrnaseq_single, compare_brainson_main, sort_var = "pearson_log1p")
+```{r egfrgenotype_table}
+egfrgenotype_table = compare_outlier_tables(egfrgenotype_single, compare_egfrgenotype_main, sort_var = "pearson_log1p")
 
-brainson_ft_out = brainson_table %>%
+if (!is.null(egfrgenotype_table)) {
+  egfrgenotype_ft_out = egfrgenotype_table %>%
   set_nice_widths(sample_width = 1.5) %>%
   put_outlier_right()
-brainson_ft_out
+  print(egfrgenotype_ft_out)
+}
 ```
 
-`r figure_count$label_text("brainson_outliers")` visualizes the sample-specific median of each metric calculated from the Brainson RNA-Seq data set.
-Likewise, `r table_count$label_text("brainson_outliers")` lists the outliers detected based on each metric.
+`r figure_count$label_text("egfrgenotype_outliers")` visualizes the sample-specific median of each metric calculated from the Brainson RNA-Seq data set.
+Likewise, `r table_count$label_text("egfrgenotype_outliers")` lists the outliers detected based on each metric.
 In this example, Pearson shows superior sensitivity to outlier detection, likely due to the larger spread in median Pearson correlation values.
 
-```{r adeno_outliers, dn_id = figure_count}
-compare_adeno_main = c("icikt", "icikt_complete", "pearson_log1p")
-adeno_single %>%
+```{r adenocarcinoma_outliers, dn_id = figure_count}
+compare_adenocarcinoma_main = c("icikt", "icikt_complete", "pearson_log1p")
+adenocarcinoma_single %>%
   add_method() %>%
-  dplyr::filter(which %in% compare_adeno_main) %>%
+  dplyr::filter(which %in% compare_adenocarcinoma_main) %>%
   ggplot(aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
   geom_sina() + 
   facet_wrap(~ method, nrow = 1) +
@@ -729,23 +731,23 @@ adeno_single %>%
   theme(legend.position = c(0.75, 0.2))
 ```
 
-`r figure_count$label_text("adeno_outliers")`.
+`r figure_count$label_text("adenocarcinoma_outliers")`.
 Median correlations for each of the TCGA adenocarcinoma RNA-Seq samples to all other samples in the same group, using either ICI-Kt, ICI-Kt * completeness or Pearson Log(x + 1) correlation.
 
-`r table_count$label_text("adeno_outliers")`.
+`r table_count$label_text("adenocarcinoma_outliers")`.
 TCGA adenocarcinoma dataset median correlation values and outlier determination for each outlier from each of the correlation methods.
 
-```{r adeno_table}
-adeno_table = compare_outlier_tables(adeno_single, compare_adeno_main, sort_var = "pearson_log1p")
-adeno_ft_out = adeno_table %>%
+```{r adenocarcinoma_table}
+adenocarcinoma_table = compare_outlier_tables(adenocarcinoma_single, compare_adenocarcinoma_main, sort_var = "pearson_log1p")
+adenocarcinoma_ft_out = adenocarcinoma_table %>%
   set_nice_widths() %>%
   put_outlier_right()
-adeno_ft_out
+adenocarcinoma_ft_out
 ```
 
-`r figure_count$label_text("adeno_outliers")` visualizes the sample-specific median metric value calculated from the TCGA RNA-Seq data set, with `r table_count$label_text("adeno_outliers")` listing the outliers detected from each metric.
+`r figure_count$label_text("adenocarcinoma_outliers")` visualizes the sample-specific median metric value calculated from the TCGA RNA-Seq data set, with `r table_count$label_text("adenocarcinoma_outliers")` listing the outliers detected from each metric.
 In this example, the ICI-Kt * completeness correlation demonstrated superior sensitivity for outlier detection, likely due to its better sensitivity to measurement completeness.
-The wider spread of measurement completeness is expected, since TCGA is an aggregate of samples collected from various human cancer patents as compared to the first two examples which were collected from specific experiments in cell culture (`r supp_table_count$label_text("adeno_mad")`).
+The wider spread of measurement completeness is expected, since TCGA is an aggregate of samples collected from various human cancer patents as compared to the first two examples which were collected from specific experiments in cell culture (`r supp_table_count$label_text("adenocarcinoma_mad")`).
 The wider spread of measurement completeness is expected, since TCGA is an aggregate of samples collected from various human cancer patients as compared to the first two examples which were collected from specific experiments in cell culture. 
 However, the outliers detected are not a complete superset of the outliers detected by ICI-Kt and Pearson, probably due to the integration of completeness and correlation.
 

@@ -101,7 +101,7 @@ limit_of_detection_map = tar_map(dataset_variables,
                                  tar_target(lod_graph,
                                             graph_median_min(correlate_medians)))
   
-  # running a single core to measure performance aspects ----------
+# running a single core to measure performance aspects ----------
 performance_plan = tar_plan(
   single_core_perf = run_single_cor(),
   complexity_figure = create_complexity_figure(single_core_perf),
