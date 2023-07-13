@@ -39,27 +39,27 @@ yeast_ft_out
 ```
 
 
-`r supp_table_count$label_text("brainson_outliers")`.
+`r supp_table_count$label_text("egfrgenotype_outliers")`.
 Brainson dataset median correlation values and outlier determination for each outlier from each of the correlation methods.
 Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; PB: Pearson Base, PN: Pearson No Zero; PL1: Pearson Log(x + 1); PL: Pearson Log(x); Kt: Kendall-tau.
 
-```{r brainson_table2}
-brainson_ft_out = brainson_table %>%
+```{r egfrgenotype_table2}
+egfrgenotype_ft_out = egfrgenotype_table %>%
   set_nice_widths(sample_width = 1.1, outlier_width = 0.5, cor_width = 0.7) %>%
   put_outlier_right() %>%
   fontsize(size = 7, part = "all")
-brainson_ft_out
+egfrgenotype_ft_out
 ```
 
 
-`r supp_table_count$label_text("adeno_outliers")`.
+`r supp_table_count$label_text("adenocarcinoma_outliers")`.
 TGCA adenocarcinoma dataset median correlation values and outlier determination for each outlier from each of the correlation methods.
 Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; PB: Pearson Base, PN: Pearson No Zero; PL1: Pearson Log(x + 1); PL: Pearson Log(x); Kt: Kendall-tau.
 
-```{r adeno_table2}
-adeno_ft_out = adeno_table %>%
+```{r adenocarcinoma_table2}
+adenocarcinoma_ft_out = adenocarcinoma_table %>%
   set_nice_widths(sample_width = 0.52, outlier_width = 0.5, cor_width = 0.7) %>%
   put_outlier_right() %>%
   fontsize(size = 7, part = "all")
-adeno_ft_out
+adenocarcinoma_ft_out
 ```
