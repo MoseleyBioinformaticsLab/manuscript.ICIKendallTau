@@ -176,5 +176,6 @@ list(small_realistic_examples,
      loading_real_data,
      limit_of_detection_map,
      sample_outlier_plan,
+     feature_plan,
      performance_plan,
      documents_plan)
