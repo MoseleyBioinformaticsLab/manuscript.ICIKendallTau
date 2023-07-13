@@ -1,0 +1,53 @@
+calculate_qratio = function(network, annotations)
+{
+  # assume the network is a data.frame of nodes and edges
+  # sum over annotations
+  # sum the entire network of weights
+  # network_sum = sum(network$edges$weights)
+  p_vals = purrr::map_dbl(annotations, \(in_features){
+    # generate self-self network - sum correlations
+    in_network = network |>
+      dplyr::filter(start_node %in% in_features, end_node %in% in_features)
+    in_sum = sum(in_network$edges$weights)
+    out_network = network |>
+      dplyr::filter(start_node %in% in_features)
+    out_sum = sum(in_network$edges$weights)
+    
+    out_val = (in_sum / network_sum) - ((out_sum / network_sum)^2)
+    
+    out_val
+  })
+  q = sum(p_vals)
+  q
+}
+
+create_networks = function(feature_correlations)
+{
+  # assume correlations have been calculated all the different ways
+  various_network = purrr::map(feature_correlations, \(in_cor){
+    ggm(in_cor$cor)
+  })
+  various_network
+}
+
+create_correlation_networks = function(counts, info, keep_num, sample_col, class_col){
+  # counts_info = tar_read(yeast_counts_info)
+  # counts = counts_info$counts
+  # info = counts_info$info
+  # keep_num = 1
+  # sample_col = "sample"
+  # class_col = "treatment"
+  
+  if (length(class_col) == 2) {
+    filter_col = class_col[1]
+    median_col = class_col[2]
+  } else {
+    filter_col = class_col
+    median_col = class_col
+  }
+  counts_filter = t(keep_non_zero_percentage(t(counts), sample_classes = info[[filter_col]],
+                                             keep_num = keep_num))
+  counts_completeness = pairwise_completeness(counts_filter)
+  counts_cor = run_cor_everyway(t(counts_filter), counts_completeness)
+  counts_cor
+}
