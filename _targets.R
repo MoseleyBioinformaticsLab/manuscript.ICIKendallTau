@@ -14,7 +14,7 @@ dataset_variables = tibble::tibble(character = c("yeast_counts_info",
   dplyr::mutate(id = gsub("_.*", "", character),
                 sym = rlang::syms(character))
 
-
+# realistic examples -----
 small_realistic_examples = tar_plan(
 
   # small theoretical example --------
@@ -58,8 +58,8 @@ small_realistic_examples = tar_plan(
   logtransform_sample_cor = lt_left_censor_correlate(left_censored_samples[subsample, ])
 )
 
+# loading real data ---------
 loading_real_data = tar_plan(
-  # loading real data ---------
   tar_target(adenocarcinoma_file,
              here::here("data/recount_adenocarcinoma_count_info.rds"),
              format = "file"),
@@ -106,13 +106,32 @@ performance_plan = tar_plan(
   single_core_perf = run_single_cor(),
   complexity_figure = create_complexity_figure(single_core_perf),
   
+  multi_samples = seq(5, 95, 5),
+  tar_target(select_ss_multi,
+             select_samples(yeast_counts_info$counts, multi_samples),
+             pattern = map(multi_samples),
+             iteration = "list"
+  ),
+  
+  tar_target(run_multi,
+             run_big_samples(select_ss_multi),
+             pattern = map(select_ss_multi),
+             iteration = "list"),
+  
+  tar_target(time_multi,
+             get_run_time(run_multi),
+             pattern = map(run_multi))
+)
+
+# sample outliers -----
+sample_outlier_plan = tar_plan(
   egfrgenotype_n = c(1, 0.25, 0.5, 0.75, 0.99),
   tar_target(egfrgenotype_outliers,
              filter_generate_outliers(egfrgenotype_counts_info$counts, egfrgenotype_counts_info$info, egfrgenotype_n, "sample", "treatment"),
              pattern = map(egfrgenotype_n),
              iteration = "list"),
   egfrgenotype_single = get_single_outlier(egfrgenotype_outliers),
-
+  
   tar_target(egfrgenotypetumorculture_outliers,
              filter_generate_outliers(egfrgenotypetumorculture_counts_info$counts, egfrgenotypetumorculture_counts_info$info, egfrgenotype_n, "sample", "treatment"),
              pattern = map(egfrgenotype_n),
@@ -132,24 +151,11 @@ performance_plan = tar_plan(
              filter_generate_outliers(adenocarcinoma_counts_info$counts, adenocarcinoma_counts_info$info, yeast_n, "sample", "treatment"),
              pattern = map(yeast_n),
              iteration = "list"),
-  adenocarcinoma_single = get_single_outlier(adenocarcinoma_outliers),
-  
-  multi_samples = seq(5, 95, 5),
-  tar_target(select_ss_multi,
-             select_samples(yeast_counts_info$counts, multi_samples),
-             pattern = map(multi_samples),
-             iteration = "list"
-  ),
-  
-  tar_target(run_multi,
-             run_big_samples(select_ss_multi),
-             pattern = map(select_ss_multi),
-             iteration = "list"),
-  
-  tar_target(time_multi,
-             get_run_time(run_multi),
-             pattern = map(run_multi)),
-  
+  adenocarcinoma_single = get_single_outlier(adenocarcinoma_outliers)
+)
+
+# documents -----
+documents_plan = tar_plan(
   tar_render(supp_materials,
               "doc/supplemental_materials.Rmd"),
   tar_render(supp_tables,
@@ -159,7 +165,10 @@ performance_plan = tar_plan(
 
 )
 
+# put all together -----
 list(small_realistic_examples,
      loading_real_data,
      limit_of_detection_map,
-     performance_plan)
+     sample_outlier_plan,
+     performance_plan,
+     documents_plan)
