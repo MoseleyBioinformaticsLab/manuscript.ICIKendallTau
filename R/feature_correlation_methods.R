@@ -1,9 +1,9 @@
 ici = function(counts_info, id, keep_num, sample_col, class_col)
 {
   # counts_info = tar_read(yeast_counts_info)
-  keep_num = 1
-  sample_col = "sample"
-  class_col = "treatment"
+  # keep_num = 1
+  # sample_col = "sample"
+  # class_col = "treatment"
   counts = counts_info$counts
   info = counts_info$info
   
@@ -25,9 +25,9 @@ ici = function(counts_info, id, keep_num, sample_col, class_col)
 ici_completeness = function(counts_info, id, keep_num, sample_col, class_col)
 {
   # counts_info = tar_read(yeast_counts_info)
-  keep_num = 1
-  sample_col = "sample"
-  class_col = "treatment"
+  # keep_num = 1
+  # sample_col = "sample"
+  # class_col = "treatment"
   counts = counts_info$counts
   info = counts_info$info
   

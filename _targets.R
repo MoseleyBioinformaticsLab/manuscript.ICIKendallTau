@@ -172,7 +172,7 @@ sample_outlier_plan = tar_plan(
 feature_correlation_map = tar_map(dataset_feature_correlation,
                                  names = id,
                                  tar_target(feature_correlation,
-                                            correlation(dataset, 1, "sample", "treatment")))
+                                            correlation(dataset, id, 1, "sample", "treatment")))
 
 # documents -----
 documents_plan = tar_plan(
