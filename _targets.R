@@ -14,6 +14,20 @@ dataset_variables = tibble::tibble(character = c("yeast_counts_info",
   dplyr::mutate(id = gsub("_.*", "", character),
                 sym = rlang::syms(character))
 
+correlation_methods = c("ici",
+                                    "ici_completeness",
+                                    "pearson_base",
+                                    "pearson_base_nozero",
+                                    "pearson_log1p",
+                                    "pearson_log",
+                                    "kt")
+
+dataset_feature_correlation = tidyr::expand_grid(character_dataset = dataset_variables$sym,
+                                                 character_correlation = correlation_methods) |>
+  dplyr::mutate(dataset = rlang::syms(character_dataset),
+                correlation = rlang::syms(character_correlation),
+                id = paste0(character_correlation, "_", gsub("_.*", "", character_dataset)))
+
 # realistic examples -----
 small_realistic_examples = tar_plan(
 
@@ -155,10 +169,10 @@ sample_outlier_plan = tar_plan(
 )
 
 # correlation of features -----
-feature_correlation_map = tar_map(dataset_variables,
+feature_correlation_map = tar_map(dataset_feature_correlation,
                                  names = id,
-                                 tar_target(feature_cor,
-                                            create_correlation_networks(sym, 1, "sample", "treatment")))
+                                 tar_target(feature_correlation,
+                                            correlation(dataset, 1, "sample", "treatment")))
 
 # documents -----
 documents_plan = tar_plan(

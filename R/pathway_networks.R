@@ -21,6 +21,17 @@ calculate_qratio = function(network, annotations)
   q
 }
 
+pcor_pvalue = function(pcor_values)
+{
+  mean_pcor = mean(pcor_values)
+  sd_pcor = sd(pcor_values)
+  z_scores = (pcor_values - mean_pcor) / sd_pcor
+  
+  p_value = 2 * pnorm(-abs(z_scores))
+  p_adjust = p.adjust(p_value, method = "BH")
+  p_adjust
+}
+
 create_networks = function(feature_correlations)
 {
   # feature_correlations = tar_read(yeast_feature_cor)
@@ -32,10 +43,18 @@ create_networks = function(feature_correlations)
     diag(in_cor) = 1
     pcor_vals = cor_to_pcor(in_cor)
     network = tidygraph:::as_tbl_graph.matrix(pcor_vals, directed = FALSE, diag = FALSE)
-    all_edges = network |>
+    all_weights = network |>
       activate(edges) |>
       as_tibble() |>
-      dplyr::mutate(padj = p.adjust(1 - abs(weight), method = "bonferroni"))
+      dplyr::pull(weight)
+    
+    p_values = pcor_pvalue(all_weights)
+    
+    network = network |>
+      activate(edges) |>
+      cbind(p_values)
+    
+    mean_weight = mean(all_weights)
     
   })
   various_network
