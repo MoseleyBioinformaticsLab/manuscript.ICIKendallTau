@@ -43,13 +43,13 @@ create_networks = function(feature_correlations)
 
 
 
-create_correlation_networks = function(counts, info, keep_num, sample_col, class_col){
+create_correlation_networks = function(counts_info, keep_num, sample_col, class_col){
   # counts_info = tar_read(yeast_counts_info)
-  # counts = counts_info$counts
-  # info = counts_info$info
   # keep_num = 1
   # sample_col = "sample"
   # class_col = "treatment"
+  counts = counts_info$counts
+  info = counts_info$info
   
   if (length(class_col) == 2) {
     filter_col = class_col[1]

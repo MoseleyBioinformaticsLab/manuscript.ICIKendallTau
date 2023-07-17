@@ -154,11 +154,11 @@ sample_outlier_plan = tar_plan(
   adenocarcinoma_single = get_single_outlier(adenocarcinoma_outliers)
 )
 
-feature_plan = tar_plan(
-  yeast_feature_cor = create_correlation_networks(yeast_counts_info$counts,
-                                                  yeast_counts_info$info,
-                                                  1, "sample", "treatment")
-)
+# correlation of features -----
+feature_correlation_map = tar_map(dataset_variables,
+                                 names = id,
+                                 tar_target(feature_cor,
+                                            create_correlation_networks(sym, 1, "sample", "treatment")))
 
 # documents -----
 documents_plan = tar_plan(
@@ -176,6 +176,6 @@ list(small_realistic_examples,
      loading_real_data,
      limit_of_detection_map,
      sample_outlier_plan,
-     feature_plan,
+     feature_correlation_map,
      performance_plan,
      documents_plan)
