@@ -94,7 +94,7 @@ pearson_base_nozero = function(counts_info, id, keep_num, sample_col, class_col)
   counts_filter_na = counts_filter
   counts_filter_na[counts_filter == 0] = NA
   # this one should match the Gierlinski paper values for median correlations
-  tmp_out = cor(counts_filter_na, method = "pearson", use = "pairwise.complete")
+  tmp_out = cor(t(counts_filter_na), method = "pearson", use = "pairwise.complete")
   list(cor = tmp_out,
        data_id = counts_info$data_id,
        method_id = "pearson_base_nozero",
@@ -116,7 +116,7 @@ pearson_base = function(counts_info, id, keep_num, sample_col, class_col)
   }
   counts_filter = t(keep_non_zero_percentage(t(counts), sample_classes = info[[filter_col]],
                                              keep_num = keep_num))
-  tmp_out = cor(counts_filter, method = "pearson", use = "pairwise.complete")
+  tmp_out = cor(t(counts_filter), method = "pearson", use = "pairwise.complete")
   list(cor = tmp_out,
        data_id = counts_info$data_id,
        method_id = "pearson_base",
@@ -125,6 +125,11 @@ pearson_base = function(counts_info, id, keep_num, sample_col, class_col)
 
 pearson_log1p = function(counts_info, id, keep_num, sample_col, class_col)
 {
+  # counts_info = tar_read(yeast_counts_info)
+  # keep_num = 1
+  # sample_col = "sample"
+  # class_col = "treatment"
+  
   
   counts = counts_info$counts
   info = counts_info$info
@@ -138,7 +143,7 @@ pearson_log1p = function(counts_info, id, keep_num, sample_col, class_col)
   }
   counts_filter = t(keep_non_zero_percentage(t(counts), sample_classes = info[[filter_col]],
                                              keep_num = keep_num))
-  tmp_out = cor(log1p(counts_filter), method = "pearson", use = "pairwise.complete")
+  tmp_out = cor(log1p(t(counts_filter)), method = "pearson", use = "pairwise.complete")
   list(cor = tmp_out,
        data_id = counts_info$data_id,
        method_id = "pearson_log1p",
@@ -162,7 +167,7 @@ pearson_log = function(counts_info, id, keep_num, sample_col, class_col)
                                              keep_num = keep_num))
   log_counts = log(counts_filter)
   log_counts[is.infinite(log_counts)] = NA
-  tmp_out = cor(log_counts, method = "pearson", use = "pairwise.complete")
+  tmp_out = cor(t(log_counts), method = "pearson", use = "pairwise.complete")
   list(cor = tmp_out,
        data_id = counts_info$data_id,
        method_id = "pearson_log",
