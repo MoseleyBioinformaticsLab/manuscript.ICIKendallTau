@@ -23,12 +23,25 @@ calculate_qratio = function(network, annotations)
 
 create_networks = function(feature_correlations)
 {
+  # feature_correlations = tar_read(yeast_feature_cor)
   # assume correlations have been calculated all the different ways
-  various_network = purrr::map(feature_correlations, \(in_cor){
-    ggm(in_cor$cor)
+  various_network = furrr::future_map(feature_correlations, \(in_cor){
+    # in_cor = feature_correlations$pearson_log1p
+    # in_cor = in_cor[1:1000, 1:1000]
+    # some of our kendall-tau correlations do not have 1 on the diagonal
+    diag(in_cor) = 1
+    pcor_vals = cor_to_pcor(in_cor)
+    network = tidygraph:::as_tbl_graph.matrix(pcor_vals, directed = FALSE, diag = FALSE)
+    all_edges = network |>
+      activate(edges) |>
+      as_tibble() |>
+      dplyr::mutate(padj = p.adjust(1 - abs(weight), method = "bonferroni"))
+    
   })
   various_network
 }
+
+
 
 create_correlation_networks = function(counts, info, keep_num, sample_col, class_col){
   # counts_info = tar_read(yeast_counts_info)
