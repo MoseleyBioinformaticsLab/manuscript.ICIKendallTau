@@ -19,7 +19,8 @@ ici = function(counts_info, id, keep_num, sample_col, class_col)
   tmp_out = ici_kendalltau(counts_filter, global_na = c(NA, 0))$cor
   list(cor = tmp_out,
        data_id = counts_info$data_id,
-       method_id = "ici_cor")
+       method_id = "ici",
+       full_id = id)
 }
 
 ici_completeness = function(counts_info, id, keep_num, sample_col, class_col)
@@ -44,7 +45,8 @@ ici_completeness = function(counts_info, id, keep_num, sample_col, class_col)
   tmp_out = ici_kendalltau(counts_filter, global_na = c(NA, 0))$cor * counts_completeness
   list(cor = tmp_out,
        data_id = counts_info$data_id,
-       method_id = "ici_cor_completeness")
+       method_id = "ici_completeness",
+       full_id = id)
 }
 
 
@@ -69,7 +71,8 @@ kt = function(counts_info, id, keep_num, sample_col, class_col)
   tmp_out = ici_kendalltau(counts_filter, global_na = c(NA), scale_max = FALSE, diag_good = FALSE)$cor
   list(cor = tmp_out,
        data_id = counts_info$data_id,
-       method_id = "kt")
+       method_id = "kt",
+       full_id = id)
 }
 
 
@@ -94,7 +97,8 @@ pearson_base_nozero = function(counts_info, id, keep_num, sample_col, class_col)
   tmp_out = cor(counts_filter_na, method = "pearson", use = "pairwise.complete")
   list(cor = tmp_out,
        data_id = counts_info$data_id,
-       method_id = "pearson_base_nozero")
+       method_id = "pearson_base_nozero",
+       full_id = id)
 }
 
 pearson_base = function(counts_info, id, keep_num, sample_col, class_col)
@@ -115,7 +119,8 @@ pearson_base = function(counts_info, id, keep_num, sample_col, class_col)
   tmp_out = cor(counts_filter, method = "pearson", use = "pairwise.complete")
   list(cor = tmp_out,
        data_id = counts_info$data_id,
-       method_id = "pearson_base")
+       method_id = "pearson_base",
+       full_id = id)
 }
 
 pearson_log1p = function(counts_info, id, keep_num, sample_col, class_col)
@@ -136,7 +141,8 @@ pearson_log1p = function(counts_info, id, keep_num, sample_col, class_col)
   tmp_out = cor(log1p(counts_filter), method = "pearson", use = "pairwise.complete")
   list(cor = tmp_out,
        data_id = counts_info$data_id,
-       method_id = "pearson_log1p")
+       method_id = "pearson_log1p",
+       full_id = id)
 }
 
 pearson_log = function(counts_info, id, keep_num, sample_col, class_col)
@@ -159,6 +165,7 @@ pearson_log = function(counts_info, id, keep_num, sample_col, class_col)
   tmp_out = cor(log_counts, method = "pearson", use = "pairwise.complete")
   list(cor = tmp_out,
        data_id = counts_info$data_id,
-       method_id = "pearson_log")
+       method_id = "pearson_log",
+       full_id = id)
 }
 
