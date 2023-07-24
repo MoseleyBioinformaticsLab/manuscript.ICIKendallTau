@@ -16,7 +16,7 @@ ici = function(counts_info, id, keep_num, sample_col, class_col)
   }
   counts_filter = t(keep_non_zero_percentage(t(counts), sample_classes = info[[filter_col]],
                                              keep_num = keep_num))
-  tmp_out = ici_kendalltau(counts_filter, global_na = c(NA, 0))$cor
+  tmp_out = ici_kendalltau(counts_filter, global_na = c(NA, 0), return_matrix = FALSE)$cor
   list(cor = tmp_out,
        data_id = counts_info$data_id,
        method_id = "ici",
@@ -42,7 +42,7 @@ ici_completeness = function(counts_info, id, keep_num, sample_col, class_col)
   counts_filter = t(keep_non_zero_percentage(t(counts), sample_classes = info[[filter_col]],
                                              keep_num = keep_num))
   counts_completeness = pairwise_completeness(counts_filter)
-  tmp_out = ici_kendalltau(counts_filter, global_na = c(NA, 0))$cor * counts_completeness
+  tmp_out = ici_kendalltau(counts_filter, global_na = c(NA, 0), return_matrix = FALSE)$cor * counts_completeness
   list(cor = tmp_out,
        data_id = counts_info$data_id,
        method_id = "ici_completeness",
@@ -68,7 +68,7 @@ kt = function(counts_info, id, keep_num, sample_col, class_col)
   }
   counts_filter = t(keep_non_zero_percentage(t(counts), sample_classes = info[[filter_col]],
                                              keep_num = keep_num))
-  tmp_out = ici_kendalltau(counts_filter, global_na = c(NA), scale_max = FALSE, diag_good = FALSE)$cor
+  tmp_out = ici_kendalltau(counts_filter, global_na = c(NA), scale_max = FALSE, diag_good = FALSE, return_matrix = FALSE)$cor
   list(cor = tmp_out,
        data_id = counts_info$data_id,
        method_id = "kt",
