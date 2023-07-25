@@ -60,6 +60,7 @@ calculate_pcor_pvalues = function(feature_data)
   # feature_data = tar_read(feature_correlation_ici_yeast)
   feature_correlations = feature_data$cor
   diag(feature_correlations) = 1
+  feature_correlations[is.na(feature_correlations)] = 0
   pcor_vals = cor_to_pcor(feature_correlations)
   
   pcor_long = matrix_2_long(pcor_vals)
