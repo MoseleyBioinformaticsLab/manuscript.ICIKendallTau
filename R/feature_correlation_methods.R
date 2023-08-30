@@ -4,6 +4,10 @@ ici = function(counts_info, id, keep_num, sample_col, class_col)
   # keep_num = 1
   # sample_col = "sample"
   # class_col = "treatment"
+  n_workers = future::nbrOfWorkers()
+  if (n_workers == 80) {
+    future::plan(multicore(workers = 50))
+  }
   counts = counts_info$counts
   info = counts_info$info
   
@@ -16,7 +20,8 @@ ici = function(counts_info, id, keep_num, sample_col, class_col)
   }
   counts_filter = t(keep_non_zero_percentage(t(counts), sample_classes = info[[filter_col]],
                                              keep_num = keep_num))
-  tmp_out = ici_kendalltau(counts_filter, global_na = c(NA, 0))$cor
+  tmp_out = ici_kendalltau(counts_filter, global_na = c(NA, 0), return_matrix = FALSE)
+  future::plan(multicore)
   list(cor = tmp_out,
        data_id = counts_info$data_id,
        method_id = "ici",
@@ -29,6 +34,10 @@ ici_completeness = function(counts_info, id, keep_num, sample_col, class_col)
   # keep_num = 1
   # sample_col = "sample"
   # class_col = "treatment"
+  n_workers = future::nbrOfWorkers()
+  if (n_workers == 80) {
+    future::plan(multicore(workers = 50))
+  }
   counts = counts_info$counts
   info = counts_info$info
   
@@ -42,8 +51,10 @@ ici_completeness = function(counts_info, id, keep_num, sample_col, class_col)
   counts_filter = t(keep_non_zero_percentage(t(counts), sample_classes = info[[filter_col]],
                                              keep_num = keep_num))
   counts_completeness = pairwise_completeness(counts_filter)
-  tmp_out = ici_kendalltau(counts_filter, global_na = c(NA, 0))$cor * counts_completeness
+  tmp_out = ici_kendalltau(counts_filter, global_na = c(NA, 0), return_matrix = FALSE)
+  future::plan(multicore)
   list(cor = tmp_out,
+       completeness = counts_completeness,
        data_id = counts_info$data_id,
        method_id = "ici_completeness",
        full_id = id)
@@ -56,6 +67,10 @@ kt = function(counts_info, id, keep_num, sample_col, class_col)
   # keep_num = 1
   # sample_col = "sample"
   # class_col = "treatment"
+  n_workers = future::nbrOfWorkers()
+  if (n_workers == 80) {
+    future::plan(multicore(workers = 50))
+  }
   counts = counts_info$counts
   info = counts_info$info
   
@@ -68,7 +83,8 @@ kt = function(counts_info, id, keep_num, sample_col, class_col)
   }
   counts_filter = t(keep_non_zero_percentage(t(counts), sample_classes = info[[filter_col]],
                                              keep_num = keep_num))
-  tmp_out = ici_kendalltau(counts_filter, global_na = c(NA), scale_max = FALSE, diag_good = FALSE)$cor
+  tmp_out = ici_kendalltau(counts_filter, global_na = c(NA), scale_max = FALSE, diag_good = FALSE, return_matrix = FALSE)
+  future::plan(multicore)
   list(cor = tmp_out,
        data_id = counts_info$data_id,
        method_id = "kt",
