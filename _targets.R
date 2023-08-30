@@ -26,8 +26,8 @@ dataset_feature_correlation = tidyr::expand_grid(character_dataset = dataset_var
                                                  character_correlation = correlation_methods) |>
   dplyr::mutate(dataset = rlang::syms(character_dataset),
                 correlation = rlang::syms(character_correlation),
-                id = paste0(character_correlation, "_", gsub("_.*", "", character_dataset))) |>
-  dplyr::filter(grepl("yeast|ratstamina", id))
+                 id = paste0(character_correlation, "_", gsub("_.*", "", character_dataset)))
+  # dplyr::filter(grepl("yeast|ratstamina", id))
 
 # realistic examples -----
 small_realistic_examples = tar_plan(
