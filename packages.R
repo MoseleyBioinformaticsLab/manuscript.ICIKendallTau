@@ -25,4 +25,5 @@ options(parallelly.fork.enable = TRUE,
 future::plan(multicore)
 theme_set(cowplot::theme_cowplot())
 paint::mask_print()
-tar_option_set(memory = "transient")
+tar_option_set(memory = "transient",
+               error = "continue")
