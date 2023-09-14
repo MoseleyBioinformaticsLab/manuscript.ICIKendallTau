@@ -4,6 +4,11 @@ ici = function(counts_info, id, keep_num, sample_col, class_col)
   # keep_num = 1
   # sample_col = "sample"
   # class_col = "treatment"
+  # 
+  # counts_info = tar_read(nsclc_counts_info)
+  # keep_num = 1
+  # sample_col = "sample"
+  # class_col = "treatment"
   n_workers = future::nbrOfWorkers()
   if (n_workers == 80) {
     future::plan(multicore(workers = 50))
@@ -17,6 +22,9 @@ ici = function(counts_info, id, keep_num, sample_col, class_col)
   } else {
     filter_col = class_col
     median_col = class_col
+  }
+  if (is.null(rownames(counts))) {
+    rownames(counts) = paste0("f", seq_len(nrow(counts)))
   }
   counts_filter = t(keep_non_zero_percentage(t(counts), sample_classes = info[[filter_col]],
                                              keep_num = keep_num))
