@@ -72,15 +72,16 @@ calculate_pcor_pvalues = function(feature_data)
        full_id = feature_data$full_id)
 }
 
-create_network_from_correlation = function(feature_data)
+create_network_from_pcor_pvalues = function(pcor_data, padjust_limit = 0.05)
 {
+  # pcor_data = tar_read(feature_pcor_ici_yeast)
+  # padjust_limit = 0.05
+  pcor_values = pcor_data$pcor
   
+  pcor_keep = pcor_values |>
+    dplyr::filter(padjust <= padjust_limit)
   
-  various_network = furrr::future_map(feature_correlations, \(in_cor){
-    # in_cor = feature_correlations$pearson_log1p
-    # in_cor = in_cor[1:1000, 1:1000]
-    # some of our kendall-tau correlations do not have 1 on the diagonal
-    network = tidygraph:::as_tbl_graph.matrix(pcor_vals, directed = FALSE, diag = FALSE)
+  network = tidygraph::as_tbl_graph(pcor_keep, directed = FALSE)
     all_weights = network |>
       activate(edges) |>
       as_tibble() |>
@@ -94,7 +95,7 @@ create_network_from_correlation = function(feature_data)
     
     mean_weight = mean(all_weights)
     
-  })
+  
   various_network
 }
 

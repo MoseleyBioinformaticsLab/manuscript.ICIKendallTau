@@ -58,4 +58,5 @@ normalize_median = function(sample_measure_values)
 
 in_data = jsonlite::fromJSON(here::here("raw_data", "mwtab", "ST000017_AN000034.json"))
 processed_data = process_study_data(in_data)
+processed_data$data_id = "mwtab_ratstamina"
 saveRDS(processed_data, here::here("data/mwtab_st000017_an000034_count_info.rds"))

@@ -139,9 +139,11 @@ median_matrix = median_matrix[, colnames(matched_heights)]
 
 matched_heights_norm = matched_heights / median_matrix
 matched_heights_norm[is.na(matched_heights_norm)] = 0
+rownames(matched_heights_norm) = paste0("f", seq_len(nrow(matched_heights_norm)))
 nsclc_info = nsclc_info |>
   dplyr::mutate(treatment = paste0(instrument, ":", disease))
 out_norm = list(counts = matched_heights_norm, info = nsclc_info)
+out_norm$data_id = "nsclc"
 saveRDS(out_norm, here::here("data", "nsclc_count_info.rds"))
 other_data = list(matched_peaks = matched_peaks, all_peaks = all_peaks)
 saveRDS(other_data, here::here("data", "nsclc_other_peak_data.rds"))

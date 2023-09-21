@@ -14,13 +14,15 @@ deseq_norm = counts(deseq_counts, normalized = TRUE)
 has_1 = rowSums(deseq_norm > 0) > 0
 deseq_norm = deseq_norm[has_1, ]
   
-brainson_out = list(counts = deseq_norm, info = brainsonrnaseq_info)
+brainson_out = list(counts = deseq_norm, info = brainsonrnaseq_info,
+                    data_id = "brainsonrnaseq_egfrgenotype")
 
 saveRDS(brainson_out, file = here::here("data", "brainsonrnaseq_type_counts_info.rds"))
 
 brainsonrnaseq_info2 = brainsonrnaseq_info |>
   dplyr::mutate(treatment = tumor)
 
-brainson_out2 = list(counts = deseq_norm, info = brainsonrnaseq_info2)
+brainson_out2 = list(counts = deseq_norm, info = brainsonrnaseq_info2,
+                     data_id = "brainsonrnaseq_egfrgenotypetumorculture")
 
 saveRDS(brainson_out2, file = here::here("data", "brainsonrnaseq_type_counts_info_tumor.rds"))

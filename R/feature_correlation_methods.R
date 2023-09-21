@@ -9,7 +9,7 @@ ici = function(counts_info, id, keep_num, sample_col, class_col)
   # keep_num = 1
   # sample_col = "sample"
   # class_col = "treatment"
-  # n_workers = future::nbrOfWorkers()
+  n_workers = future::nbrOfWorkers()
   if (n_workers == 80) {
     future::plan(multicore(workers = 50))
   }

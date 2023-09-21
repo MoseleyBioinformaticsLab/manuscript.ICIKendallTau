@@ -63,7 +63,8 @@ tar_load(c(supp_materials,
            random_censored_cor,
            logtransform_censored_cor,
            single_core_perf,
-           time_multi
+           time_multi,
+           realistic_plot
 ))
 
 ```
@@ -110,7 +111,7 @@ Moreover, correlation is a foundational method for generating biomolecular featu
 Feature-feature correlation may also be used to inform which features are used for imputation of missing values [@faquih_missingvalueworkflow_2020].
 
 Often, the first step in omics level analyses is to examine the sample-sample (dis)similarities in various ways using exploratory data analysis or EDA.
-This can include the examination of decomposition by principal components analysis (PCA), sample-sample pairwise distances, or sample-sample pairwise correlations to highlight biological and batch groups [@loveRNASeqWorkflowGenelevel2016; @lawRNAseqAnalysisEasy2018; @chenReadsGenesPathways2016], double check that the appropriateness of planned analyses [@flight_timecourseexploration_2010], and check if any samples should be removed prior to statistical analysis (outlier detection and removal) [@gierlinski_statisticalmodels_2015].
+This can include the examination of decomposition by principal components analysis (PCA), sample-sample pairwise distances, or sample-sample pairwise correlations to highlight biological and batch groups [@loveRNASeqWorkflowGenelevel2016; @lawRNAseqAnalysisEasy2018; @chenReadsGenesPathways2016], double check the appropriateness of planned analyses [@flight_timecourseexploration_2010], and check if any samples should be removed prior to statistical analysis (outlier detection and removal) [@gierlinski_statisticalmodels_2015].
 Outlier detection, in particular, is often required for successful omics data analysis, as any misstep during the experimentation, sample collection, sample preparation, or analytical measurement of individual samples can inject high error and/or variance into the resulting data set [@loveRNASeqWorkflowGenelevel2016; @lawRNAseqAnalysisEasy2018; @chenReadsGenesPathways2016; @moseleyErrorAnalysisPropagation2013; @gierlinski_statisticalmodels_2015].
 
 
@@ -146,12 +147,12 @@ To create a correlation measure that is capable of working with missing values, 
 Of the three commonly used correlation measures, Pearson, Spearman, and Kendall-tau, Spearman and Kendall-tau seem most appropriate for modification as they solely use ranks in the calculation of their coefficients.
 Modifying Pearson would either involve imputing new values, or finding a way to calculate the covariances **with** missingness included.
 While Spearman uses ranks, many of the modifications for handling identical ranks and ties do not seem amenable to working with missing values.
-In contrast, Kendall-tau's use of concordant and discordant pair counts seemed most amenable to the creation of new definitions that incorporate missingness while still working within the original definition of the correlation coefficient, as shown below.
+In contrast, Kendall-tau's use of concordant and discordant pair counts seems most amenable to the creation of new definitions that incorporate missingness while still working within the original definition of the correlation coefficient, as shown below.
 
 In this manuscript, we propose new definitions of concordant and discordant rank pairs that include missing values, as well as methods for incorporating missing values into the number of tied values for the equivalent of the modified Kendall-tau coefficient.
-We examine the effect of missing values on various simulated data-sets, comparing our information-content-informed Kendall-tau (ICI-Kt) method with other simpler methods of handling the missing values, namely removing them or imputing them to zero.
-Given the detrimental effects of including outlier samples on differential analyses, we also evaluate the ability of ICI-Kt to capture sample-sample pairwise similarities and the determination of outlier samples prior to differential analyses.
-Finally, we examine the ability to recapitulate ICI-Kt correlation values calculated on a large feature omics data set using feature subsets, which is useful when the execution time of very large feature data sets becomes computationally prohibitive.
+We examine the effect of missing values on various simulated data-sets, comparing the information-content-informed Kendall-tau (ICI-Kt) method with other simpler methods of handling the missing values, namely removing them or imputing them to zero.
+Given the detrimental effects of including outlier samples in differential analyses, we also evaluate the ability of ICI-Kt to capture sample-sample pairwise similarities and the determination of outlier samples prior to differential analyses.
+Finally, we examine how feature-feature networks derived from various feature-feature correlations change depending on the correlation method used.
 
 All of the code used for this manuscript is available on zenodo [@flightManuscriptICIKendallTau2022].
 
@@ -214,7 +215,7 @@ It is most appropriate for the comparison of only two experimental samples, wher
 
 The other case, where we leave ties resulting from points with missing X and Y, we refer to as the "global" ICI-Kt correlation.
 In this case, every single correlation over multiple comparisons with the same set of features will consider the same number of pair comparisons.
-This is useful when analyzing and interpreting correlations from a large number of experimental samples, not just two feature vectors.
+This is useful when analyzing and interpreting correlations from a large number of experimental samples, not just two samples.
 
 ### Theoretical Maxima
 
@@ -353,15 +354,15 @@ Additionally, the Kendall-tau correlation of the minimum median and number of pr
 ### Limit of Detection As a Cause for Missingness
 
 We are aware of only one previous investigation of the causes of missingness in metabolomics datasets [@doCharacterizationMissingValues2018].
-In Do et al., the authors showed that there was a limit of detection effect, however it seemed mostly to be run-day dependent.
+In Do et al., the authors showed that there was a limit of detection effect, with a dependence on the day the samples were run.
 However, one thing that seemed to be missing in their analysis was normalizing each sample for sample-to-sample variation. 
 We feel that this is critical, given that even with Metabolon data, the standards do not correct for sample-to-sample variation.
-Unfortunately, the KORA4 metabolomics dataset is not publicly available, so we could not attempt to redo their analysis of missing values with the same dataset.
+Unfortunately, the KORA4 metabolomics dataset from Do et al. is not publicly available, so we could not attempt to redo their analysis of missing values with the same dataset.
 
 For each of the datasets we investigated (three RNA-seq and two metabolomics), for each experimental group of samples, we calculated the median abundance and number of present entries for each feature (gene or metabolite, see Methods).
 As shown in `r figure_count$label_text("lod")`A for the yeast RNA-seq dataset (also see XXX in Supplemental Materials for the other datasets), there is clearly a relationship between the median abundance and the number of present entries.
 In fact, as the number of present values increases, there is clearly a minimum median value below which the values do not cross.
-This relationship is extremely clear by pulling the minimum median value for each value of present features, and plotting them by number of present features, as shown in `r figure_count$label_text("lod")`B (see also XXX in Supplemental Metarials for the other datasets).
+This relationship is extremely clear by calculating the minimum median value for each value of present features, and plotting them by number of present features, as shown in `r figure_count$label_text("lod")`B (see also XXX in Supplemental Metarials for the other datasets).
 Given this relationship of the minimum median value observed and the number of present features, we believe that the majority of missing values in many -omics datasets are due to being below the limit of detection.
 
 This makes the ICI-Kt appropriate for use in many -omics datasets.
@@ -385,97 +386,7 @@ The *true* correlation for each of the Kendall and Pearson correlations were cal
 
 
 ```{r missing2cor, fig.width = 8, fig.height = 8, dn_id = figure_count}
-tar_load(realistic_sample_1)
-tar_load(realistic_sample_2)
-tar_load(realistic_neg_sample)
-ref_pearson = cor(realistic_sample_1, realistic_sample_2)
-ref_kendall = ici_kt(realistic_sample_1, realistic_sample_2, "global")[1]
 
-ref_pearson_neg = cor(realistic_sample_1, realistic_neg_sample)
-ref_kendall_neg = ici_kt(realistic_sample_1, realistic_neg_sample, "global")[1]
-
-tar_load(realistic_na)
-n_na = purrr::map_int(realistic_na, length)
-tar_load(realistic_positive_pearson)
-tar_load(realistic_positive_kendall)
-tar_load(realistic_positive_kt)
-tar_load(realistic_negative_pearson)
-tar_load(realistic_negative_kendall)
-tar_load(realistic_negative_kt)
-
-realistic_positive_pearson = realistic_positive_pearson %>%
-  dplyr::mutate(type = "Pearson",
-                dir = "positive",
-                diff = ref_pearson - cor,
-                n_na = (x_na + y_na) / 2)
-
-realistic_negative_pearson = realistic_negative_pearson %>%
-  dplyr::mutate(type = "Pearson",
-                dir = "negative",
-                diff = ref_pearson_neg - cor,
-                n_na = (x_na + y_na) / 2)
-
-realistic_positive_kendall = realistic_positive_kendall %>%
-  dplyr::mutate(type = "Kendall",
-                dir = "positive",
-                diff = ref_kendall - cor,
-                n_na = (x_na + y_na) / 2)
-
-realistic_negative_kendall = realistic_negative_kendall %>%
-  dplyr::mutate(type = "Kendall",
-                dir = "negative",
-                diff = ref_kendall_neg - cor,
-                n_na = (x_na + y_na) / 2)
-
-realistic_positive_kt = realistic_positive_kt %>%
-  dplyr::mutate(type = "ICI-Kt",
-                dir = "positive",
-                diff = ref_kendall - cor,
-                n_na = (x_na + y_na) / 2)
-
-realistic_negative_kt = realistic_negative_kt %>%
-  dplyr::mutate(type = "ICI-Kt",
-                dir = "negative",
-                diff = ref_kendall_neg - cor,
-                n_na = (x_na + y_na) / 2)
-
-positive_df = rbind(realistic_positive_pearson,
-                    realistic_positive_kendall,
-                    realistic_positive_kt)
-
-negative_df = rbind(realistic_negative_pearson,
-                    realistic_negative_kendall,
-                    realistic_negative_kt)
-
-use_rows = rep(FALSE, nrow(negative_df))
-n_subset = 10000
-use_rows[sample(length(use_rows), n_subset)] = TRUE
-negative_df = negative_df %>%
-  dplyr::mutate(perc_missing = n_na / max(n_na) * 100,
-                type = factor(type, levels = c("Kendall", "Pearson", "ICI-Kt"), ordered = TRUE)) %>%
-  dplyr::filter(use_rows)
-positive_df = positive_df %>%
-  dplyr::mutate(perc_missing = n_na / max(n_na) * 100,
-                type = factor(type, levels = c("Kendall", "Pearson", "ICI-Kt"), ordered = TRUE)) %>%
-  dplyr::filter(use_rows)
-pos_diff = ggplot(positive_df, aes(x = n_na, y = diff)) + 
-  geom_point() +
-  facet_grid(type ~ ., scales = "free") +
-  labs(subtitle = "Positive Correlation",
-       x = "Number Missing",
-       y = "Difference from Reference") +
-  scale_y_continuous(labels = label_scientific(digits = 2)) +
-  theme(plot.subtitle = element_text(size = 13))
-neg_diff = ggplot(negative_df, aes(x = n_na, y = diff)) +
-  geom_point() +
-  facet_grid(type ~ ., scales = "free") +
-  labs(subtitle = "Negative Correlation",
-       x = "Number Missing",
-       y = "Difference from Reference") +
-  scale_y_continuous(labels = label_scientific(digits = 2)) +
-  theme(plot.subtitle = element_text(size = 13))
-
-pos_diff + neg_diff
 ```
 
 `r figure_count$label_text("missing2cor")`. The effect on Kendall, Pearson and ICI-Kt correlations as increasing number of missing values in the bottom half of either sample for both positively and negatively correlated samples.

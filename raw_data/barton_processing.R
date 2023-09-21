@@ -45,4 +45,5 @@ yeast_read = function(in_file){
 }
 
 yeast_data = yeast_readcombine()
+yeast_data$data_id = "barton_yeast"
 saveRDS(yeast_data, file = here::here("data", "barton_yeast_counts_info.rds"))
