@@ -56,6 +56,7 @@ load(here::here("doc/supp_stuff.rda"))
 tar_load(c(supp_materials,
            supp_tables,
            lod_graph_yeast,
+           realistic_comparison_plot,
            egfrgenotype_single,
            yeast_single,
            adenocarcinoma_single,
@@ -63,8 +64,7 @@ tar_load(c(supp_materials,
            random_censored_cor,
            logtransform_censored_cor,
            single_core_perf,
-           time_multi,
-           realistic_plot
+           time_multi
 ))
 
 ```
@@ -386,17 +386,18 @@ The *true* correlation for each of the Kendall and Pearson correlations were cal
 
 
 ```{r missing2cor, fig.width = 8, fig.height = 8, dn_id = figure_count}
-
+comp_tmp_pos = purrr::map(realistic_comparison_plot$positive, \(x){x + theme(axis.text = element_text(size = 10))})
+comp_tmp_neg = purrr::map(realistic_comparison_plot$negative, \(x){x + theme(axis.text = element_text(size = 10))})
+comparison_plot = wrap_plots(c(comp_tmp_pos, comp_tmp_neg), nrow = 2, byrow = FALSE)
+comparison_plot
 ```
 
-`r figure_count$label_text("missing2cor")`. The effect on Kendall, Pearson and ICI-Kt correlations as increasing number of missing values in the bottom half of either sample for both positively and negatively correlated samples.
+`r figure_count$label_text("missing2cor")`. Comparing the correlation values obtained by Pearson, Kendall, and ICI-Kt correlation as an increasing number of missing values in the bottom half of either sample for both positively and negatively correlated samples.
 A subset of `r format(n_subset, big.mark = ",", big.interval = 3L)` points was used for visualization.
-Pay attention to the orders of magnitude differences between the y-axis scales.
 
 In `r figure_count$label_text("missing2cor")`, we can see that as missing values are added, only the ICI-Kt correlation values change in any significant way.
 As the number of missing values increase, the ICI-Kt values drop or increase by up to 0.2.
-Similarly, Pearson correlation is also affected, but the degree of change in the correlation values are much less (notice the orders of magnitude differences in the y-axis scales), on the order of only 0.003 for the positive case and 0.1 for the negative case.
-Also, the lack of symmetry in the Pearson negative comparisons is due to the lack of linear correlation between the samples.
+Similarly, Pearson correlation is also affected, but the degree of change in the correlation values are much less (notice the orders of magnitude differences in the x-axis scales compared to the y-axis), on the order of only 0.005 for both cases.
 These results demonstrate that the ICI-Kt correlation has quantitative sensitivity to missing values over the normal Kendall tau correlation and linear Pearson correlation where points with missing values are ignored (pairwise complete).
 
 ### Effect of Left Censoring VS Random Missing Data

@@ -1,32 +1,32 @@
 compare_realistic_to_reference = function(realistic_sample_1,
                                       realistic_sample_2,
-                                      realistic_neg_sample,
+                                      realistic_neg_sample_2,
                                       realistic_na,
                                       realistic_positive_pearson,
                                       realistic_positive_kendall,
                                       realistic_positive_kt,
-                                      realistic_negative_pearson,
+                                      realistic_negative_pearson_2,
                                       realistic_negative_kendall,
-                                      realistic_negative_kt){
+                                      realistic_negative_kt_2){
   
 
 # tar_load(realistic_sample_1)
 # tar_load(realistic_sample_2)
-# tar_load(realistic_neg_sample)
-ref_pearson = cor(realistic_sample_1, realistic_sample_2)
+# tar_load(realistic_neg_sample_2)
+  n_na = purrr::map_int(realistic_na, length)
+  ref_pearson = cor(realistic_sample_1, realistic_sample_2)
 ref_kendall = ici_kt(realistic_sample_1, realistic_sample_2, "global")[1]
 
-ref_pearson_neg = cor(realistic_sample_1, realistic_neg_sample)
-ref_kendall_neg = ici_kt(realistic_sample_1, realistic_neg_sample, "global")[1]
+ref_pearson_neg = cor(realistic_sample_1, realistic_neg_sample_2)
+ref_kendall_neg = ici_kt(realistic_sample_1, realistic_neg_sample_2, "global")[1]
 
 # tar_load(realistic_na)
-n_na = purrr::map_int(realistic_na, length)
 # tar_load(realistic_positive_pearson)
 # tar_load(realistic_positive_kendall)
 # tar_load(realistic_positive_kt)
-# tar_load(realistic_negative_pearson)
+# tar_load(realistic_negative_pearson_2)
 # tar_load(realistic_negative_kendall)
-# tar_load(realistic_negative_kt)
+# tar_load(realistic_negative_kt_2)
 
 realistic_positive_pearson = realistic_positive_pearson %>%
   dplyr::mutate(type = "Pearson",
@@ -34,7 +34,7 @@ realistic_positive_pearson = realistic_positive_pearson %>%
                 diff = ref_pearson - cor,
                 n_na = (x_na + y_na) / 2)
 
-realistic_negative_pearson = realistic_negative_pearson %>%
+realistic_negative_pearson_2 = realistic_negative_pearson_2 %>%
   dplyr::mutate(type = "Pearson",
                 dir = "negative",
                 diff = ref_pearson_neg - cor,
@@ -58,7 +58,7 @@ realistic_positive_kt = realistic_positive_kt %>%
                 diff = ref_kendall - cor,
                 n_na = (x_na + y_na) / 2)
 
-realistic_negative_kt = realistic_negative_kt %>%
+realistic_negative_kt_2 = realistic_negative_kt_2 %>%
   dplyr::mutate(type = "ICI-Kt",
                 dir = "negative",
                 diff = ref_kendall_neg - cor,
@@ -68,9 +68,9 @@ positive_df = rbind(realistic_positive_pearson,
                     realistic_positive_kendall,
                     realistic_positive_kt)
 
-negative_df = rbind(realistic_negative_pearson,
+negative_df = rbind(realistic_negative_pearson_2,
                     realistic_negative_kendall,
-                    realistic_negative_kt)
+                    realistic_negative_kt_2)
 
 use_rows = rep(FALSE, nrow(negative_df))
 n_subset = 10000
@@ -106,26 +106,26 @@ neg_diff = ggplot(negative_df, aes(x = n_na, y = diff)) +
 
 compare_realistic_to_each = function(realistic_sample_1,
                                           realistic_sample_2,
-                                          realistic_neg_sample,
+                                          realistic_neg_sample_2,
                                           realistic_na,
                                           realistic_positive_pearson,
                                           realistic_positive_kendall,
                                           realistic_positive_kt,
-                                          realistic_negative_pearson,
+                                          realistic_negative_pearson_2,
                                           realistic_negative_kendall,
-                                          realistic_negative_kt){
+                                          realistic_negative_kt_2){
   
   
   # tar_load(realistic_sample_1)
   # tar_load(realistic_sample_2)
-  # tar_load(realistic_neg_sample)
+  # tar_load(realistic_neg_sample_2)
   # tar_load(realistic_na)
   # tar_load(realistic_positive_pearson)
   # tar_load(realistic_positive_kendall)
   # tar_load(realistic_positive_kt)
-  # tar_load(realistic_negative_pearson)
+  # tar_load(realistic_negative_pearson_2)
   # tar_load(realistic_negative_kendall)
-  # tar_load(realistic_negative_kt)
+  # tar_load(realistic_negative_kt_2)
   
   # ref_pearson = cor(realistic_sample_1, realistic_sample_2)
   # ref_kendall = ici_kt(realistic_sample_1, realistic_sample_2, "global")[1]
@@ -154,13 +154,13 @@ compare_realistic_to_each = function(realistic_sample_1,
   
   compare_positive_subset = compare_positive[use_rows, ]
   
-  rp_pearson_negative_wide = realistic_negative_pearson %>%
+  rp_pearson_negative_wide = realistic_negative_pearson_2 %>%
     dplyr::transmute(pearson = cor,
                      id = paste0(i_na, ".", x_na, ".", y_na))
   rp_kendall_negative_wide = realistic_negative_kendall |>
     dplyr::transmute(kendall = cor,
                      id = paste0(i_na, ".", x_na, ".", y_na))
-  rp_icikt_negative_wide = realistic_negative_kt |>
+  rp_icikt_negative_wide = realistic_negative_kt_2 |>
     dplyr::transmute(icikt = cor,
                      id = paste0(i_na, ".", x_na, ".", y_na))
   
