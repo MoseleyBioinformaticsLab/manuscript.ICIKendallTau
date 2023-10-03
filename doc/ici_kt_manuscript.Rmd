@@ -57,6 +57,7 @@ tar_load(c(supp_materials,
            supp_tables,
            lod_graph_yeast,
            realistic_comparison_plot,
+           censored_compare_plots,
            egfrgenotype_single,
            yeast_single,
            adenocarcinoma_single,
@@ -369,6 +370,8 @@ This makes the ICI-Kt appropriate for use in many -omics datasets.
 
 ```{r}
 #| label: lod
+#| fig-width: 2
+#| fig-height:2
 wrap_plots(lod_graph_yeast, ncol = 1) + plot_annotation(tag_levels = "A")
 ```
 
@@ -393,7 +396,7 @@ comparison_plot
 ```
 
 `r figure_count$label_text("missing2cor")`. Comparing the correlation values obtained by Pearson, Kendall, and ICI-Kt correlation as an increasing number of missing values in the bottom half of either sample for both positively and negatively correlated samples.
-A subset of `r format(n_subset, big.mark = ",", big.interval = 3L)` points was used for visualization.
+A subset of `r format(realistic_comparison_plot$n_subset, big.mark = ",", big.interval = 3L)` points was used for visualization.
 
 In `r figure_count$label_text("missing2cor")`, we can see that as missing values are added, only the ICI-Kt correlation values change in any significant way.
 As the number of missing values increase, the ICI-Kt values drop or increase by up to 0.2.
@@ -402,71 +405,18 @@ These results demonstrate that the ICI-Kt correlation has quantitative sensitivi
 
 ### Effect of Left Censoring VS Random Missing Data
 
-```{r leftcensored, fig.height = 8, fig.width = 8, dn_id = figure_count}
-left_censored_cor = left_censored_cor %>%
-  dplyr::mutate(which2 = dplyr::case_when(
-    which %in% "ici" ~ "ICI-Kt",
-    which %in% "kendall" ~ "Kendall",
-    which %in% "kendall_0" ~ "Kendall-0",
-    which %in% "pearson" ~ "Pearson",
-    which %in% "pearson_0" ~ "Pearson-0"
-  ))
+```{r leftcensored, fig.height = 8, fig.width = 9, dn_id = figure_count}
+left_plot = purrr::map(censored_compare_plots$left, \(x){x + theme(axis.text = element_text(size = 8))}) |> wrap_plots(ncol = 1)
+log_plot = purrr::map(censored_compare_plots$log, \(x){x + theme(axis.text = element_text(size = 8))}) |> wrap_plots(ncol = 1)
+random_plot = purrr::map(censored_compare_plots$random, \(x){x + theme(axis.text = element_text(size = 8))}) |> wrap_plots(ncol = 1)
 
-
-random_censored_cor = random_censored_cor %>%
-  dplyr::mutate(censoring = "random") %>%
-  dplyr::filter(n_na > 0) %>%
-  dplyr::mutate(which2 = dplyr::case_when(
-    which %in% "ici" ~ "ICI-Kt",
-    which %in% "kendall" ~ "Kendall",
-    which %in% "kendall_0" ~ "Kendall-0",
-    which %in% "pearson" ~ "Pearson",
-    which %in% "pearson_0" ~ "Pearson-0"
-  ))
-
-logtransform_censored_cor = logtransform_censored_cor %>%
-  dplyr::mutate(censoring = "random") %>%
-  dplyr::filter(n_na > 0) %>%
-  dplyr::mutate(which2 = dplyr::case_when(
-    which %in% "ici" ~ "ICI-Kt",
-    which %in% "kendall" ~ "Kendall",
-    which %in% "kendall_0" ~ "Kendall-0",
-    which %in% "pearson" ~ "Pearson",
-    which %in% "pearson_0" ~ "Pearson-0"
-  ))
-
-
-random_plot = ggplot(random_censored_cor, aes(x = n_na, y = cor)) +
-  geom_sina(aes(group = n_na)) +
-  facet_wrap(~ which2, nrow = 1, scales = "free_y") +
-  labs(x = "Number Missing", y = "Correlation") +
-  cowplot::panel_border()
-
-rp_build = ggplot_build(random_plot)
-rp_breaks = rp_build$layout$panel_params[[1]]$x$get_breaks()
-rp_lim = rp_build$layout$panel_params[[1]]$x$get_limits()
-
-left_plot = ggplot(left_censored_cor, aes(x = n_na, y = cor)) + 
-  geom_point() + 
-  facet_wrap(~ which2, nrow = 1, scales = "free_y") +
-  labs(x = "Number Missing", y = "Correlation") +
-  scale_x_continuous(breaks = c(0, 100, 200)) +
-  cowplot::panel_border() 
-
-log_plot = ggplot(logtransform_censored_cor, aes(x = n_na, y = cor)) +
-  geom_point() +
-  facet_wrap(~ which2, nrow = 1, scales = "free_y") +
-  labs(x = "Number Missing", y = "Correlation") +
-  scale_x_continuous(breaks = c(0, 100, 200)) +
-  cowplot::panel_border()
-
-(left_plot / log_plot / random_plot) + plot_annotation(tag_levels = "A")
+(left_plot | log_plot | random_plot)
 ```
 
-`r figure_count$label_text("leftcensored")`. Effect of introducing missing values from a cutoff (A & B) or randomly (C) on different measures of correlation, including ICI-Kt, Kendall with pairwise complete, Kendall replacing missing with 0, Pearson with pairwise complete, and Pearson replacing missing with 0.
-A) Missing values introduced by setting an increasing cutoff.
-B) Missing values introduced by setting an increasing cutoff, and then log-transforming the values before calculating correlation.
-C) Missing values introduced at random.
+`r figure_count$label_text("leftcensored")`. Effect of introducing missing values from a cutoff (**A** & **B**) or randomly (**C**) on different measures of correlation, including ICI-Kt, Kendall with pairwise complete, Kendall replacing missing with 0, Pearson with pairwise complete, and Pearson replacing missing with 0.
+**A**: Missing values introduced by setting an increasing cutoff.
+**B**: Missing values introduced by setting an increasing cutoff, and then log-transforming the values before calculating correlation.
+**C**: Missing values introduced at random.
 For the random case, each sample of random positions was repeated 100 times.
 
 `r figure_count$label_text("leftcensored")` demonstrates the effect of introducing left-center versus random missingness in five different measures of correlation, including the ICI-Kt, the normal Kendall tau with pairwise complete, the normal Kendall tau replacing missing with 0, Pearson with pairwise complete, and Pearson replacing missing with 0.
