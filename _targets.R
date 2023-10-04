@@ -94,8 +94,17 @@ small_realistic_examples = tar_plan(
   subsample = sample(1000, 50),
   left_sample_cor = left_censor_correlate(left_censored_samples[subsample, ]),
   random_sample_cor = random_censor_correlate(left_censored_samples[subsample, ], n_na = seq(0, 12, 2)),
-  logtransform_sample_cor = lt_left_censor_correlate(left_censored_samples[subsample, ])
+  logtransform_sample_cor = lt_left_censor_correlate(left_censored_samples[subsample, ]),
+  
+  censored_value_plots = plot_censored_data(left_censored_cor,
+                                            random_censored_cor,
+                                            logtransform_censored_cor),
+  censored_compare_plots = compare_censored_data(left_censored_cor,
+                                                 random_censored_cor,
+                                                 logtransform_censored_cor)
 )
+
+
 
 # loading real data ---------
 loading_real_data = tar_plan(

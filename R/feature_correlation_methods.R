@@ -58,7 +58,7 @@ ici_completeness = function(counts_info, id, keep_num, sample_col, class_col)
   }
   counts_filter = t(keep_non_zero_percentage(t(counts), sample_classes = info[[filter_col]],
                                              keep_num = keep_num))
-  counts_completeness = pairwise_completeness(counts_filter)
+  counts_completeness = pairwise_completeness(counts_filter, return_matrix = FALSE)
   tmp_out = ici_kendalltau(counts_filter, global_na = c(NA, 0), return_matrix = FALSE)
   future::plan(multicore)
   list(cor = tmp_out,

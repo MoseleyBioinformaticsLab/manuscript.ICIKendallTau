@@ -101,7 +101,8 @@ neg_diff = ggplot(negative_df, aes(x = n_na, y = diff)) +
   theme(plot.subtitle = element_text(size = 13))
 
  list(positive = pos_diff,
-      negative = neg_diff)
+      negative = neg_diff,
+      n_subset = n_subset)
 }
 
 compare_realistic_to_each = function(realistic_sample_1,
@@ -192,5 +193,131 @@ compare_realistic_to_each = function(realistic_sample_1,
   list(positive = list(pearson = p_ici_pos,
                        kendall = k_ici_pos),
        negative = list(pearson = p_ici_neg,
-                       kendall = k_ici_neg))
+                       kendall = k_ici_neg),
+       n_subset = n_subset)
+}
+
+plot_censored_data = function(left_censored_cor,
+                   random_censored_cor,
+                   logtransform_censored_cor)
+{
+  # tar_load(left_censored_cor)
+  # tar_load(random_censored_cor)
+  # tar_load(logtransform_censored_cor)
+  
+  left_censored_cor = left_censored_cor %>%
+    dplyr::mutate(which2 = dplyr::case_when(
+      which %in% "ici" ~ "ICI-Kt",
+      which %in% "kendall" ~ "Kendall",
+      which %in% "kendall_0" ~ "Kendall-0",
+      which %in% "pearson" ~ "Pearson",
+      which %in% "pearson_0" ~ "Pearson-0"
+    ))
+  
+  
+  random_censored_cor = random_censored_cor %>%
+    dplyr::mutate(censoring = "random") %>%
+    dplyr::filter(n_na > 0) %>%
+    dplyr::mutate(which2 = dplyr::case_when(
+      which %in% "ici" ~ "ICI-Kt",
+      which %in% "kendall" ~ "Kendall",
+      which %in% "kendall_0" ~ "Kendall-0",
+      which %in% "pearson" ~ "Pearson",
+      which %in% "pearson_0" ~ "Pearson-0"
+    ))
+  
+  logtransform_censored_cor = logtransform_censored_cor %>%
+    dplyr::mutate(censoring = "random") %>%
+    dplyr::filter(n_na > 0) %>%
+    dplyr::mutate(which2 = dplyr::case_when(
+      which %in% "ici" ~ "ICI-Kt",
+      which %in% "kendall" ~ "Kendall",
+      which %in% "kendall_0" ~ "Kendall-0",
+      which %in% "pearson" ~ "Pearson",
+      which %in% "pearson_0" ~ "Pearson-0"
+    ))
+  
+  
+  random_plot = ggplot(random_censored_cor, aes(x = n_na, y = cor)) +
+    geom_sina(aes(group = n_na)) +
+    facet_wrap(~ which2, nrow = 1, scales = "free_y") +
+    labs(x = "Number Missing", y = "Correlation") +
+    cowplot::panel_border()
+  
+  rp_build = ggplot_build(random_plot)
+  rp_breaks = rp_build$layout$panel_params[[1]]$x$get_breaks()
+  rp_lim = rp_build$layout$panel_params[[1]]$x$get_limits()
+  
+  left_plot = ggplot(left_censored_cor, aes(x = n_na, y = cor)) + 
+    geom_point() + 
+    facet_wrap(~ which2, nrow = 1, scales = "free_y") +
+    labs(x = "Number Missing", y = "Correlation") +
+    scale_x_continuous(breaks = c(0, 100, 200)) +
+    cowplot::panel_border() 
+  
+  log_plot = ggplot(logtransform_censored_cor, aes(x = n_na, y = cor)) +
+    geom_point() +
+    facet_wrap(~ which2, nrow = 1, scales = "free_y") +
+    labs(x = "Number Missing", y = "Correlation") +
+    scale_x_continuous(breaks = c(0, 100, 200)) +
+    cowplot::panel_border()
+  list(left = left_plot, log = log_plot, random = random_plot)
+}
+
+compare_censored_data = function(left_censored_cor,
+                      random_censored_cor,
+                      logtransform_censored_cor)
+{
+  tar_load(left_censored_cor)
+  tar_load(random_censored_cor)
+  tar_load(logtransform_censored_cor)
+  
+  left_plots = comparison_individual_plot_maker(left_censored_cor, tag = "A")
+  log_plots = comparison_individual_plot_maker(logtransform_censored_cor, tag = "B")
+  random_censored_cor = random_censored_cor |>
+    dplyr::filter(n_na > 0) |>
+    dplyr::mutate(id = paste0(n_na, "_", cutoff, "_", rep))
+  random_plots = comparison_individual_plot_maker(random_censored_cor, tag = "C")
+  
+  list(left = left_plots,
+       log = log_plots,
+       random = random_plots)
+  
+}
+
+comparison_individual_plot_maker = function(censored_cor, tag = "")
+{
+  censored_cor = censored_cor |>
+    dplyr::mutate(which2 = dplyr::case_when(
+      which %in% "ici" ~ "ICI-Kt",
+      which %in% "kendall" ~ "Kendall",
+      which %in% "kendall_0" ~ "Kendall-0",
+      which %in% "pearson" ~ "Pearson",
+      which %in% "pearson_0" ~ "Pearson-0"
+    ))
+  
+  if (is.null(censored_cor$id)) {
+    censored_cor = censored_cor |>
+      dplyr::mutate(id = paste0(n_na, "_", cutoff))
+  }
+  censored_wide = censored_cor |>
+  tidyr::pivot_wider(id_cols = id, names_from = "which2",
+                       values_from = "cor")
+  censored_pearson = censored_wide |>
+    ggplot(aes(x = `Pearson`, y = `ICI-Kt`)) +
+    geom_point() +
+    labs(tag = tag)
+  censored_pearson_0 = censored_wide |>
+    ggplot(aes(x = `Pearson-0`, `ICI-Kt`)) +
+    geom_point()
+  censored_kendall = censored_wide |>
+    ggplot(aes(x = `Kendall`, y = `ICI-Kt`)) +
+    geom_point()
+  censored_kendall_0 = censored_wide |>
+    ggplot(aes(x = `Kendall-0`, y = `ICI-Kt`)) +
+    geom_point()
+  list(pearson = censored_pearson,
+       pearson_0 = censored_pearson_0,
+       kendall = censored_kendall,
+       kendall_0 = censored_kendall_0)
 }

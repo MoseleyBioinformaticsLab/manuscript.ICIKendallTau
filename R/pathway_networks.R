@@ -34,38 +34,32 @@ pcor_pvalue = function(pcor_values)
 }
 
 
-matrix_2_long = function(in_matrix)
-{
-  # in_matrix = pcor_vals
-  if (isSquare(in_matrix)) {
-    all_comb = combn(rownames(in_matrix), 2)
-  } else {
-    stop("Matrix isn't square, can't do it!")
-  }
-  
-  long_values = vector("numeric", ncol(all_comb))
-  for (icol in seq_len(length(long_values))) {
-    row_index = all_comb[1, icol]
-    col_index = all_comb[2, icol]
-    long_values[icol] = in_matrix[row_index, col_index]
-  }
-  long_df = tibble::tibble(n1 = all_comb[1, ],
-                           n2 = all_comb[2, ],
-                           value = long_values)
-  long_df
-}
-
 calculate_pcor_pvalues = function(feature_data)
 {
   # feature_data = tar_read(feature_correlation_ici_yeast)
-  feature_correlations = feature_data$cor
-  diag(feature_correlations) = 1
-  feature_correlations[is.na(feature_correlations)] = 0
-  pcor_vals = cor_to_pcor(feature_correlations)
+  if (inherits(feature_data$cor, "data.frame")) {
+    feature_correlations = feature_data$cor
+  } else {
+    feature_correlations = feature_data$cor$cor
+  }
   
-  pcor_long = matrix_2_long(pcor_vals)
+  message("converting to matrix form ...\n")
+  cor_matrix = long_df_2_cor_matrix(feature_correlations |> dplyr::select(s1, s2, cor))
+  diag(cor_matrix) = 1
+  cor_matrix[is.na(cor_matrix)] = 0
+  message("calculating partial correlation ...\n")
+  pcor_vals = cor_to_pcor(cor_matrix)
+  
+  pcor_vals[upper.tri(pcor_vals, diag = TRUE)] = NA
+  pcor_long = cor_matrix_2_long_df(pcor_vals)
+  pcor_long = pcor_long |>
+    dplyr::mutate(partial_cor = cor,
+                  cor = NULL)
+  message("adjusting p-values")
+  pcor_long = pcor_long |>
+    dplyr::filter(!is.na(partial_cor))
   pcor_long = dplyr::bind_cols(pcor_long,
-                               pcor_pvalue(pcor_long$value))
+                               pcor_pvalue(pcor_long$partial_cor))
   list(pcor = pcor_long,
        data_id = feature_data$data_id,
        method_id = feature_data$method_id,

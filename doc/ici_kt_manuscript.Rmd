@@ -370,8 +370,8 @@ This makes the ICI-Kt appropriate for use in many -omics datasets.
 
 ```{r}
 #| label: lod
-#| fig-width: 2
-#| fig-height:2
+#| fig-width: 10
+#| fig-height: 8
 wrap_plots(lod_graph_yeast, ncol = 1) + plot_annotation(tag_levels = "A")
 ```
 
