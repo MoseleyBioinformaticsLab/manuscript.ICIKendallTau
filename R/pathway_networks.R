@@ -21,7 +21,7 @@ calculate_qratio = function(network, annotations)
   q
 }
 
-pcor_pvalue = function(pcor_values)
+pcor_pvalue_z = function(pcor_values)
 {
   mean_pcor = mean(pcor_values)
   sd_pcor = sd(pcor_values)
@@ -33,15 +33,57 @@ pcor_pvalue = function(pcor_values)
                  padjust = p_adjust)
 }
 
+pcor_pvalue_extreme = function(pcor_value_df, p_cut = 0.05)
+{
+  # pcor_value_df = pcor_long
+  # p_cut = 0.05
+  mean_partial = mean(pcor_value_df$partial_cor)
+  pcor_value_df = pcor_value_df |>
+    dplyr::arrange(partial_cor) |>
+    dplyr::mutate(rank = rank(partial_cor),
+                  fraction = rank / max(rank),
+                  p_value = dplyr::case_when(
+                    partial_cor < mean_partial ~ fraction,
+                    partial_cor > mean_partial ~ 1 - fraction
+                  ),
+                  significant = p_value <= (p_cut / 2))
+  pcor_value_df
+}
+
+n_extreme = function(in_value_df)
+{
+  in_value_df = in_value_df |>
+    dplyr::mutate(rank = rank(partial_cor),
+                  p_value = 1 - ((max(rank) - rank) / max(rank)))
+}
+
 
 calculate_pcor_pvalues = function(feature_data)
 {
   # feature_data = tar_read(feature_correlation_ici_yeast)
+  # feature_data = tar_read(feature_correlation_pearson_base_ratstamina)
+  # feature_data = tar_read(feature_correlation_ici_completeness_ratstamina)
   if (inherits(feature_data$cor, "data.frame")) {
-    feature_correlations = feature_data$cor
+    feature_correlations = feature_data$cor |>
+      dplyr::transmute(s1 = s1,
+                       s2 = s2,
+                       cor = raw,
+                       id = paste0(s1, ".", s2))
   } else {
     feature_correlations = feature_data$cor$cor
+    feature_correlations = feature_correlations |>
+      dplyr::mutate(id = paste0(s1, ".", s2)) |>
+      dplyr::arrange(id)
+    if (!is.null(feature_data$completeness)) {
+      completeness = feature_data$completeness |>
+        dplyr::mutate(id = paste0(s1, ".", s2)) |>
+        dplyr::arrange(id)
+      if (all.equal(completeness$id, feature_correlations$id)) {
+        feature_correlations$cor = feature_correlations$cor * completeness$completeness
+      }
+    }
   }
+  
   
   message("converting to matrix form ...\n")
   cor_matrix = long_df_2_cor_matrix(feature_correlations |> dplyr::select(s1, s2, cor))
@@ -50,17 +92,21 @@ calculate_pcor_pvalues = function(feature_data)
   message("calculating partial correlation ...\n")
   pcor_vals = cor_to_pcor(cor_matrix)
   
-  pcor_vals[upper.tri(pcor_vals, diag = TRUE)] = NA
+  #pcor_vals[upper.tri(pcor_vals)] = NA
   pcor_long = cor_matrix_2_long_df(pcor_vals)
   pcor_long = pcor_long |>
+    dplyr::filter(!is.na(cor)) |>
     dplyr::mutate(partial_cor = cor,
-                  cor = NULL)
+                  cor = NULL,
+                  id = paste0(s1, ".", s2))
+  pcor_long = dplyr::left_join(feature_correlations[, c("cor", "id")], pcor_long, by = "id")
+  pcor_long = pcor_long |>
+    dplyr::filter(!(s1 == s2))
   message("adjusting p-values")
   pcor_long = pcor_long |>
     dplyr::filter(!is.na(partial_cor))
-  pcor_long = dplyr::bind_cols(pcor_long,
-                               pcor_pvalue(pcor_long$partial_cor))
-  list(pcor = pcor_long,
+  pcor_p_values = pcor_pvalue_extreme(pcor_long)
+  list(pcor = pcor_p_values,
        data_id = feature_data$data_id,
        method_id = feature_data$method_id,
        full_id = feature_data$full_id)
