@@ -58,7 +58,7 @@ n_extreme = function(in_value_df)
 }
 
 
-calculate_pcor_pvalues = function(feature_data)
+calculate_partial_cor_pvalues = function(feature_data)
 {
   # feature_data = tar_read(feature_correlation_ici_yeast)
   # feature_data = tar_read(feature_correlation_pearson_base_ratstamina)
@@ -169,3 +169,23 @@ cpp_wrapper = function(code) {
   out
 }
 
+compound_annotation = function(data_file, type = "pathway")
+{
+  # data_file = "data/kegg_compound_mapping.rds"
+  # type = "pathway"
+  compound_data = readRDS(data_file)
+  
+  use_entries = compound_data[[type]]
+  split_data = split(use_entries$compound, use_entries$id) |>
+    purrr::map(unique)
+  
+  pathway_meta = compound_data$meta |>
+    dplyr::filter(type %in% type)
+  pathway_description = pathway_meta[["description"]]
+  names(pathway_description) = pathway_meta$id
+  pathway_description = pathway_description[names(split_data)]
+  annotation_obj = categoryCompare2::annotation(split_data, annotation_type = paste0("kegg-", type),
+                                                description = pathway_description,
+                                                feature_type = "kegg-compound")
+  annotation_obj
+}

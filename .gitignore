@@ -13,3 +13,4 @@ renv
 actual_package
 *.rds
 *.rda
+data/kegg_compounds/

@@ -202,13 +202,22 @@ sample_outlier_plan = tar_plan(
   adenocarcinoma_single = get_single_outlier(adenocarcinoma_outliers)
 )
 
+kegg_annotation_plan = tar_plan(
+  tar_target(kegg_data,
+             "data/kegg_compound_mapping.rds",
+             format = "file"),
+  kegg_annotation_pathway = compound_annotation(kegg_data, "pathway"),
+  kegg_annotation_network = compound_annotation(kegg_data, "network"),
+  kegg_annotation_module = compound_annotation(kegg_data, "module")
+)
+
 # correlation of features -----
 feature_correlation_map = tar_map(dataset_feature_correlation,
                                  names = id,
                                  tar_target(feature_correlation,
                                             correlation(dataset, id, 1, "sample", "treatment")),
-                                 tar_target(feature_pcor,
-                                            calculate_pcor_pvalues(feature_correlation)))
+                                 tar_target(feature_partial_cor,
+                                            calculate_partial_cor_pvalues(feature_correlation)))
 
 # documents -----
 documents_plan = tar_plan(
@@ -227,5 +236,6 @@ list(small_realistic_examples,
      limit_of_detection_map,
      sample_outlier_plan,
      feature_correlation_map,
+     kegg_annotation_plan,
      performance_plan,
      documents_plan)
