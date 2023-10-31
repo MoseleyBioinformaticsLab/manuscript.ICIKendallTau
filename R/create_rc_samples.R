@@ -119,6 +119,7 @@ random_censor_correlate = function(lc_samples, n_na = seq(0, 250, 50), nrep = 10
                                        "pearson_0",
                                        "kendall_0"),
                              n_na = in_na,
+                             rep = in_rep,
                              cutoff = 0)
       #tmp_frame$na_locs = list(na_locs)
       tmp_frame

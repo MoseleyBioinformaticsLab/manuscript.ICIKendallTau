@@ -117,7 +117,8 @@ all_peaks = dplyr::slice_sample(all_peaks, n = nrow(all_peaks))
 matched_peaks = run_samples(all_peaks)
 
 matched_heights = matrix(NA, nrow = nrow(matched_peaks), ncol = length(unique(all_peaks$sample)))
-colnames(matched_heights) = unique(all_peaks$sample)
+matched_locations = matrix(NA, nrow = nrow(matched_peaks), ncol = length(unique(all_peaks$sample)))
+colnames(matched_heights) = colnames(matched_locations) = unique(all_peaks$sample)
 pb = progress_bar$new(total = nrow(matched_heights),
                       format = ":spin [:bar] :percent in :elapsed ETA: :eta")
 for (ipeak in seq_len(nrow(matched_heights))) {
@@ -125,10 +126,13 @@ for (ipeak in seq_len(nrow(matched_heights))) {
   tmp_peaks = all_peaks |>
     dplyr::filter(PeakID %in% tmp_peaklist)
   matched_heights[ipeak, tmp_peaks$sample] = tmp_peaks$Height
+  matched_locations[ipeak, tmp_peaks$sample] = tmp_peaks$ObservedMZ
   if ((ipeak %% 10) == 0) {
     pb$tick(10)
   }
 }
+
+class_data = smirfeTools::import_emf_classifications(file.path(here::here("raw_data/nsclc"), "all_emfs_classified_2020-01-27.json"))
 
 nsclc_info = readRDS(here::here("raw_data/nsclc/nsclc_info"))
 nsclc_medians = readRDS(here::here("raw_data/nsclc/nsclc_scancentric_medians"))
