@@ -216,7 +216,7 @@ sample_outlier_plan = tar_plan(
 feature_correlation_map = tar_map(dataset_feature_correlation,
                                  names = id,
                                  tar_target(feature_correlation,
-                                            correlation(dataset, id, 1, "sample", "treatment")),
+                                            correlation(dataset, id, 0.25, "sample", "treatment")),
                                  tar_target(feature_partial_cor,
                                             calculate_partial_cor_pvalues(feature_correlation)),
                                  tar_target(feature_network_qratio,

@@ -1,12 +1,12 @@
 ici = function(counts_info, id, keep_num, sample_col, class_col)
 {
-  # counts_info = tar_read(yeast_counts_info)
+  # counts_info = tar_read(adenocarcinoma_counts_info)
   # keep_num = 1
   # sample_col = "sample"
   # class_col = "treatment"
   # 
   # counts_info = tar_read(nsclc_counts_info)
-  # keep_num = 1
+  # keep_num = 0.25
   # sample_col = "sample"
   # class_col = "treatment"
   n_workers = future::nbrOfWorkers()
