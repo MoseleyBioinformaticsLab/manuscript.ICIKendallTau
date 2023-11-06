@@ -43,7 +43,7 @@ matrix_inverse <- function(m, tol = .Machine$double.eps^(2 / 3)) {
 invert_matrix <- function(m, tol = .Machine$double.eps^(2 / 3)) {
   if (det(m) < tol) {
     # The inverse of variance-covariance matrix is calculated using
-    # Moore-Penrose generalized matrix invers due to its determinant of zero.
+    # Moore-Penrose generalized matrix inverse due to its determinant of zero.
     out <- matrix_inverse(m, tol)
     colnames(out) <- colnames(m)
     row.names(out) <- row.names(m)
