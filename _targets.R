@@ -200,6 +200,20 @@ sample_outlier_plan = tar_plan(
              pattern = map(yeast_n),
              iteration = "list"),
   adenocarcinoma_single = get_single_outlier(adenocarcinoma_outliers),
+  
+  tar_target(nslcl_outliers,
+             filter_generate_outliers(nsclc_counts_info$counts, nsclc_counts_info$info, yeast_n, "sample", "treatment"),
+             pattern = map(yeast_n),
+             iteration = "list"),
+  nsclc_single = get_single_outlier(nsclc_outliers),
+  
+  tar_target(ratstamina_outliers,
+             filter_generate_outliers(ratstamina_counts_info$counts, ratstamina_counts_info$info, yeast_n, "sample", "treatment"),
+             pattern = map(yeast_n),
+             iteration = "list"),
+  ratstamina_single = get_single_outlier(ratstamina_outliers),
+  
+  ## Annotations -----
   tar_target(kegg_data,
              "data/kegg_compound_mapping.rds",
              format = "file"),

@@ -349,6 +349,13 @@ Subsequently, for all the medians with the same number of present values, the mi
 For correlations, the median of the log10(median) across all present values was used to include data for Kendall-tau correlation.
 Additionally, the Kendall-tau correlation of the minimum median and number of present values was calculated.
 
+### Computing Environment
+
+Most calculations were run on a virtual machine with 80 virtual cores, and 1 TB of RAM.
+The virtual machine is running on top of a 50 node cluster, each with 4 10-core processors, 3TB of RAM and an 8TB solid-state-drive array, provided by the Kentucky Research Informatics Cloud (KyRIC).
+KyRIC manages the virtual machines via an OpenStack instance.
+We used the *targets* package to manage calculation dependencies [@landauTargetsPackageDynamic2021b].
+For the comparisons of time taken using different numbers of samples to evaluate the algorithmic complexity, calculations were run on a single laptop Intel i7 core clocked at 2.2 GHz.
 
 ## Results
 
