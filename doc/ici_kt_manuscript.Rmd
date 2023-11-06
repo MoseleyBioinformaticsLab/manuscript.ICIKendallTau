@@ -387,6 +387,11 @@ We compared the ICI-Kt correlation to both Pearson and regular Kendall-tau-b cor
 We created two samples with 1000 observations each drawn from a log-normal distribution, and sorted in each case.
 The *true* correlation for each of the Kendall and Pearson correlations were calculated, and then missingness was introduced in the lower range of values (see Methods).
 
+In `r figure_count$label_text("missing2cor")`, we can see that as missing values are added, only the ICI-Kt correlation values change in any significant way.
+As the number of missing values increase, the ICI-Kt values drop or increase by up to 0.2.
+Similarly, Pearson correlation is also affected, but the degree of change in the correlation values are much less (notice the orders of magnitude differences in the x-axis scales compared to the y-axis), on the order of only 0.005 for both cases.
+These results demonstrate that the ICI-Kt correlation has quantitative sensitivity to missing values over the normal Kendall tau correlation and linear Pearson correlation where points with missing values are ignored (pairwise complete).
+
 
 ```{r missing2cor, fig.width = 8, fig.height = 8, dn_id = figure_count}
 comp_tmp_pos = purrr::map(realistic_comparison_plot$positive, \(x){x + theme(axis.text = element_text(size = 10))})
@@ -398,12 +403,19 @@ comparison_plot
 `r figure_count$label_text("missing2cor")`. Comparing the correlation values obtained by Pearson, Kendall, and ICI-Kt correlation as an increasing number of missing values in the bottom half of either sample for both positively and negatively correlated samples.
 A subset of `r format(realistic_comparison_plot$n_subset, big.mark = ",", big.interval = 3L)` points was used for visualization.
 
-In `r figure_count$label_text("missing2cor")`, we can see that as missing values are added, only the ICI-Kt correlation values change in any significant way.
-As the number of missing values increase, the ICI-Kt values drop or increase by up to 0.2.
-Similarly, Pearson correlation is also affected, but the degree of change in the correlation values are much less (notice the orders of magnitude differences in the x-axis scales compared to the y-axis), on the order of only 0.005 for both cases.
-These results demonstrate that the ICI-Kt correlation has quantitative sensitivity to missing values over the normal Kendall tau correlation and linear Pearson correlation where points with missing values are ignored (pairwise complete).
 
 ### Effect of Left Censoring VS Random Missing Data
+
+`r figure_count$label_text("leftcensored")` demonstrates the effect of introducing left-center versus random missingness in five different measures of correlation, including the ICI-Kt, the normal Kendall tau with pairwise complete, the normal Kendall tau replacing missing with 0, Pearson with pairwise complete, and Pearson replacing missing with 0.
+The ICI-Kt correlation demonstrates a slight increase from the starting 0.86 correlation value with growing left-centered missingness caused by a slight reinforcement of the correlation, while with **growing random missingness**, the ICI-Kt correlation drops precipitously due to the large increase in discordant pairs caused by the random missing values.
+The normal Kendall tau correlation with pairwise complete has a small decrease in the correlation value with growing left-centered missingness caused by a loss of supporting pairs, while this correlation has a near constant average value with growing random missingness.
+The normal Kendall tau correlation replacing missing with 0 has identical behavior to the ICI-Kt correlation.
+In contrast to ICI-Kt, the Pearson correlation calculated using only pairwise complete entries is **constant** over growing left-centered and random missingness.
+When replacing missing values with zero, Pearson correlation demonstrates a small decrease in the correlation value with growing left-centered missingness due to the zero values causing some deviation from linearity. 
+Pearson correlation drops precipitously with growing random missingness with a magnitude similar to the ICI-Kt and normal Kendall tau replacing missing with 0.
+Overall, the ICI-Kt and the normal Kendall-tau replacing missing with zero have the desirable characteristics of maintaining the correlation with growing left-centered missing **while sharply dropping the correlation** with growing random missingness.
+In a naive treatment of the left-centered missing data, if the values below the cutoff are set to missing followed by log-transforming the values and subsequently setting missing values to 0, then the Kendall tau correlation replacing missing with 0 will show some very odd patterns at low intensity cutoffs due to the introduction of discordant pairs.
+Likewise, Pearson correlation replacing missing with 0 shows a parabolic effect with increasing missing values.
 
 ```{r leftcensored, fig.height = 8, fig.width = 9, dn_id = figure_count}
 left_plot = purrr::map(censored_compare_plots$left, \(x){x + theme(axis.text = element_text(size = 8))}) |> wrap_plots(ncol = 1)
@@ -419,16 +431,6 @@ random_plot = purrr::map(censored_compare_plots$random, \(x){x + theme(axis.text
 **C**: Missing values introduced at random.
 For the random case, each sample of random positions was repeated 100 times.
 
-`r figure_count$label_text("leftcensored")` demonstrates the effect of introducing left-center versus random missingness in five different measures of correlation, including the ICI-Kt, the normal Kendall tau with pairwise complete, the normal Kendall tau replacing missing with 0, Pearson with pairwise complete, and Pearson replacing missing with 0.
-The ICI-Kt correlation demonstrates a slight increase from the starting 0.86 correlation value with growing left-centered missingness caused by a slight reinforcement of the correlation, while with **growing random missingness**, the ICI-Kt correlation drops precipitously due to the large increase in discordant pairs caused by the random missing values.
-The normal Kendall tau correlation with pairwise complete has a small decrease in the correlation value with growing left-centered missingness caused by a loss of supporting pairs, while this correlation has a near constant average value with growing random missingness.
-The normal Kendall tau correlation replacing missing with 0 has identical behavior to the ICI-Kt correlation.
-In contrast to ICI-Kt, the Pearson correlation calculated using only pairwise complete entries is **constant** over growing left-centered and random missingness.
-When replacing missing values with zero, Pearson correlation demonstrates a small decrease in the correlation value with growing left-centered missingness due to the zero values causing some deviation from linearity. 
-Pearson correlation drops precipitously with growing random missingness with a magnitude similar to the ICI-Kt and normal Kendall tau replacing missing with 0.
-Overall, the ICI-Kt and the normal Kendall-tau replacing missing with zero have the desirable characteristics of maintaining the correlation with growing left-centered missing **while sharply dropping the correlation** with growing random missingness.
-In a naive treatment of the left-centered missing data, if the values below the cutoff are set to missing followed by log-transforming the values and subsequently setting missing values to 0, then the Kendall tau correlation replacing missing with 0 will show some very odd patterns at low intensity cutoffs due to the introduction of discordant pairs.
-Likewise, Pearson correlation replacing missing with 0 shows a parabolic effect with increasing missing values.
 
 We note here that the typical way we've observed of handling missing data in correlation calculations is to ignore them completely and use the pairwise complete cases to calculate the Pearson correlation coefficient.
 As shown in `r figure_count$label_text("leftcensored")`C, this results in a complete misestimation of the changed correlative structure introduced by missing at random (MAR) entries.
@@ -506,7 +508,8 @@ outlier_table_text = table_count$label_text(c("yeast_outliers",
                                               "adenocarcinoma_outliers"))
 ```
 
-We analyzed three RNA-Seq datasets for possible outliers using a variety of  different correlation and correlation-related metrics: (1) ICI-Kt; (2) ICI-Kt scaled by *completeness* (see Methods); (3) Pearson correlation; (4) Pearson using pairwise complete features; (5) Pearson on log(value + 1); (6) Pearson on log(value); and (7) Kendall-tau.
+
+We analyzed datasets from RNA-Seq (3), lipidomics, and small molecule metabolomics for possible outliers using a variety of  different correlation and correlation-related metrics: (1) ICI-Kt; (2) ICI-Kt scaled by *completeness* (see Methods); (3) Pearson correlation; (4) Pearson using pairwise complete features; (5) Pearson on log(value + 1); (6) Pearson on log(value); and (7) Kendall-tau.
 We primarily concentrate on the ICI-Kt, ICI-Kt * completeness, and Pearson log(x + 1) here, but all outliers by method are shown in the Supplemental materials (`r supp_figure_count$label_text(c("yeast_outliers", "adenocarcinoma_outliers"))`, `r supp_table_count$label_text(c("yeast_outliers", "egfrgenotype_outliers"))`).
 Additionally, we compared how the outliers change if we require that a feature is present in at least a certain fraction of samples of a class with each different correlation measure (`r supp_figure_count$label_text(c("yeast_by_method", "adenocarcinoma_differences"))`).
 For each dataset and correlation-related metric, the median correlation for a sample was calculated amongst the samples for each sub-group of samples corresponding to an experimental condition of interest (disease, mutant, how cells were grown).
@@ -514,6 +517,12 @@ For each dataset and correlation-related metric, the median correlation for a sa
 ```{r load_yeast_outliers}
 compare_yeast_main = c("icikt", "icikt_complete", "pearson_log1p")
 ```
+
+`r figure_count$label_text("yeast_outliers")` visualizes the sample-specific median of each correlation-related metric calculated from the Yeast RNA-Seq data set. 
+`r table_count$label_text("yeast_outliers")` lists the outliers detected based on each sample-specific median metric value.  
+In this example, ICI-Kt shows superior sensitivity for outlier detection as compared to the other metrics and is likely related to the increased spread of median metric values as compared to Pearson.
+We also note that these outliers seem to be a superset of the outliers noted by Gierliński et al. (see `r supp_figure_count$label_text("yeast_outliers")` and `r supp_table_count$label_text("yeast_outliers")`).
+
 
 ```{r yeast_outliers, dn_id = figure_count}
 yeast_single %>%
@@ -541,11 +550,9 @@ yeast_ft_out = yeast_table %>%
 yeast_ft_out
 ```
 
-
-`r figure_count$label_text("yeast_outliers")` visualizes the sample-specific median of each correlation-related metric calculated from the Yeast RNA-Seq data set. 
-`r table_count$label_text("yeast_outliers")` lists the outliers detected based on each sample-specific median metric value.  
-In this example, ICI-Kt shows superior sensitivity for outlier detection as compared to the other metrics and is likely related to the increased spread of median metric values as compared to Pearson.
-We also note that these outliers seem to be a superset of the outliers noted by Gierliński et al. (see `r supp_figure_count$label_text("yeast_outliers")` and `r supp_table_count$label_text("yeast_outliers")`).
+`r figure_count$label_text("egfrgenotype_outliers")` visualizes the sample-specific median of each metric calculated from the Brainson RNA-Seq data set.
+Likewise, `r table_count$label_text("egfrgenotype_outliers")` lists the outliers detected based on each metric.
+In this example, Pearson shows superior sensitivity to outlier detection, likely due to the larger spread in median Pearson correlation values.
 
 
 ```{r egfrgenotype_outliers, dn_id = figure_count}
@@ -577,9 +584,11 @@ if (!is.null(egfrgenotype_table)) {
 }
 ```
 
-`r figure_count$label_text("egfrgenotype_outliers")` visualizes the sample-specific median of each metric calculated from the Brainson RNA-Seq data set.
-Likewise, `r table_count$label_text("egfrgenotype_outliers")` lists the outliers detected based on each metric.
-In this example, Pearson shows superior sensitivity to outlier detection, likely due to the larger spread in median Pearson correlation values.
+`r figure_count$label_text("adenocarcinoma_outliers")` visualizes the sample-specific median metric value calculated from the TCGA RNA-Seq data set, with `r table_count$label_text("adenocarcinoma_outliers")` listing the outliers detected from each metric.
+In this example, the ICI-Kt * completeness correlation demonstrated superior sensitivity for outlier detection, likely due to its better sensitivity to measurement completeness.
+The wider spread of measurement completeness is expected, since TCGA is an aggregate of samples collected from various human cancer patents as compared to the first two examples which were collected from specific experiments in cell culture (`r supp_table_count$label_text("adenocarcinoma_mad")`).
+The wider spread of measurement completeness is expected, since TCGA is an aggregate of samples collected from various human cancer patients as compared to the first two examples which were collected from specific experiments in cell culture. 
+However, the outliers detected are not a complete superset of the outliers detected by ICI-Kt and Pearson, probably due to the integration of completeness and correlation.
 
 ```{r adenocarcinoma_outliers, dn_id = figure_count}
 compare_adenocarcinoma_main = c("icikt", "icikt_complete", "pearson_log1p")
@@ -607,12 +616,6 @@ adenocarcinoma_ft_out = adenocarcinoma_table %>%
 adenocarcinoma_ft_out
 ```
 
-`r figure_count$label_text("adenocarcinoma_outliers")` visualizes the sample-specific median metric value calculated from the TCGA RNA-Seq data set, with `r table_count$label_text("adenocarcinoma_outliers")` listing the outliers detected from each metric.
-In this example, the ICI-Kt * completeness correlation demonstrated superior sensitivity for outlier detection, likely due to its better sensitivity to measurement completeness.
-The wider spread of measurement completeness is expected, since TCGA is an aggregate of samples collected from various human cancer patents as compared to the first two examples which were collected from specific experiments in cell culture (`r supp_table_count$label_text("adenocarcinoma_mad")`).
-The wider spread of measurement completeness is expected, since TCGA is an aggregate of samples collected from various human cancer patients as compared to the first two examples which were collected from specific experiments in cell culture. 
-However, the outliers detected are not a complete superset of the outliers detected by ICI-Kt and Pearson, probably due to the integration of completeness and correlation.
-
 
 ## Discussion and Conclusion
 
@@ -632,10 +635,6 @@ Also, this ICI-Kt * completeness metric may have applications in cluster detecti
 The implementations of the ICI-Kt in the presented R and Python packages provide a rich set of options for customizing the correlation calculation for a variety of use-cases and interpretations.
 These packages handle missing values in log-transformed data in a safe manner and have O(nlogn) performance, making them computationally practical for real-world omics data sets.
 Also, these packages provide multiprocessing implementations that take full advantage of modern multi-core central processing units.
-Furthermore, given the high amount of correlated variance in most real-world high-feature data sets, we demonstrate that random feature subsetting can be utilized to effectively estimate correlation for very large data sets or in situations where sub-second computational performance is needed for non-large data sets.
-However, care must be taken both in transforming data if using a method with an expectation of linearity, and selecting subsets of features.
-When using Pearson correlation, the log-transformation of RNA-seq data is absolutely necessary when using feature subsets.
-From the results presented here, random feature subsetting was superior to variance-selective feature subsetting.
 
 As demonstrated with the three RNA-Seq datasets analyzed here, the "best" correlation-related metric will likely depend on the specific dataset and the specific data analysis step.
 Many factors affect this, especially correlation linearity and the modality of measurement value distributions.
