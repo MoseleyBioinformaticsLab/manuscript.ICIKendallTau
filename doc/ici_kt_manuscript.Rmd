@@ -331,6 +331,10 @@ All iterations showed that the number of final aggregated peaks were within 100 
 Peak intensities in each sample were normalized by the median abundance of all quantified peaks in a sample.
 For details on the samples, their processing, and generation of assignments, see Mitchell et al [-@mitchellUntargetedLipidomicsNonSmall2021].
 Samples were grouped by the instrument (two different instruments were used to collect the data) and whether they were taken from normal or tumor tissue for the calculation of median abundance across samples.
+Assigned peaks and un-assigned peaks were matched to each other by finding peaks within a 0.5 ppm cutoff.
+We only considered peaks matched that had a single assigned and a single un-assigned peak match together.
+Assigned molecular formulas were then classified into one or more lipid categories using our lipid classifier tool [@mitchellDerivingLipidClassification2020].
+For each matched peak, we used voting of the lipid categories and classes of the assignments to ascribe a single category and lipid class (where possible).
 
 ### Rat Stamina and Feeding Metabolomics Data Set
 
