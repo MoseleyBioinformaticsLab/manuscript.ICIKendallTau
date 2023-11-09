@@ -185,6 +185,8 @@ sample_outlier_plan = tar_plan(
              pattern = map(egfrgenotype_n),
              iteration = "list"),
   
+  egfrgenotypetumorculture_single = get_single_outlier(egfrgenotypetumorculture_outliers),
+  
   yeast_paper_outliers = c("WT.21", "WT.22", "WT.25", "WT.28", "WT.34", "WT.36",
                            "Snf2.06", "Snf2.13", "Snf2.25", "Snf2.35"),
   
