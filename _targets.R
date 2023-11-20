@@ -203,7 +203,7 @@ sample_outlier_plan = tar_plan(
              iteration = "list"),
   adenocarcinoma_single = get_single_outlier(adenocarcinoma_outliers),
   
-  tar_target(nslcl_outliers,
+  tar_target(nsclc_outliers,
              filter_generate_outliers(nsclc_counts_info$counts, nsclc_counts_info$info, yeast_n, "sample", "treatment"),
              pattern = map(yeast_n),
              iteration = "list"),
