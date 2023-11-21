@@ -344,6 +344,12 @@ The data can be accessed directly via it's Project DOI: https://dx.doi.org/10.21
 The mass-spectrometry peak intensities, and sample metadata were taken directly from the MWTAB json file provided by Metabolomics Workbench.
 Peak intensities were normalized by the non-zero peak abundances in each sample.
 Samples were grouped by the combination of feeding status (ad lib or calorie restricted) and oxidative capacity (low or high) for the calculation of median abundance across samples.
+Metabolite annotations are based on Kyoto Encyclopedia of Genes and Genomes (KEGG) pathways that map from the provided KEGG compound IDs to various KEGG pathways.
+Compound - pathway annotations were fetched using the kegg-pull python package [@huckvaleKegg_pullSoftwarePackage2023].
+
+### Gene Annotations
+
+Pathway annotations for RNA-Seq were obtained from Reactome pathways in the reactome.db Bioconductor package as well as organism specific annotation packages [@joshi-topeReactomeKnowledgebaseBiological2005; @ligtenbergReactomeDbSet2023].
 
 ### Number of Non-Missing Values and Median Values
 
@@ -352,6 +358,24 @@ Within each experimental factor, for each feature, the median for present values
 Subsequently, for all the medians with the same number of present values, the minimum median value was recorded.
 For correlations, the median of the log10(median) across all present values was used to include data for Kendall-tau correlation.
 Additionally, the Kendall-tau correlation of the minimum median and number of present values was calculated.
+
+### Feature - Feature Networks and Partitioning
+
+For each of the datasets, we trimmed to features present in 25% or more of **any** of the sample classes (see above for the various classes of sampels in each dataset).
+Various correlation measures are calculated between all remaining features.
+For any given correlation, we generate the feature-feature network for that data set - correlation combination.
+The dataset correlations are transformed to partial correlation.
+From the distribution of partial correlation values, we consider the fraction of values that make up the 2.5 % of the tail values (for a total of 5%) as the **significant** partial correlations that can be used as actual edges in the network.
+The network is then trimmed to only the edges that have a positive weight.
+For each feature annotation (see Gene Annotations), we calculate three sums of the edge weights.
+
+  1. The total sum of edge weights for all edges with features that are annotated to one or more of the annotations (total_sum).
+  1. The within annotation edge weight sum, where both start and end nodes are annotated to the same annotation.
+  1. The outer annotation edge weight sum, where the start node is part of the annotated set, and the end node is annotated to one of the other annotations.
+  
+The partitioning ratio (or q-ratio) is then:
+
+$$Q = \sum_{i=1}^{annot}\frac{within_i}{annotated} - \left(\frac{outer_i}{annotated}\right)^2$$
 
 ### Computing Environment
 
@@ -367,14 +391,16 @@ For the comparisons of time taken using different numbers of samples to evaluate
 
 We are aware of only one previous investigation of the causes of missingness in metabolomics datasets [@doCharacterizationMissingValues2018].
 In Do et al., the authors showed that there was a limit of detection effect, with a dependence on the day the samples were run.
-However, one thing that seemed to be missing in their analysis was normalizing each sample for sample-to-sample variation. 
+However, one thing that seemed to be missing in the analysis was normalizing each sample for sample-to-sample variation. 
 We feel that this is critical, given that even with Metabolon data, the standards do not correct for sample-to-sample variation.
 Unfortunately, the KORA4 metabolomics dataset from Do et al. is not publicly available, so we could not attempt to redo their analysis of missing values with the same dataset.
 
-For each of the datasets we investigated (three RNA-seq and two metabolomics), for each experimental group of samples, we calculated the median abundance and number of present entries for each feature (gene or metabolite, see Methods).
-As shown in `r figure_count$label_text("lod")`A for the yeast RNA-seq dataset (also see XXX in Supplemental Materials for the other datasets), there is clearly a relationship between the median abundance and the number of present entries.
+For each of the datasets we investigated (three RNA-seq, one metabolomics, one lipidomics), for each experimental group of samples, we calculated the median abundance and number of present entries for each feature (gene or metabolite, see Methods).
+As shown in `r figure_count$label_text("lod")`A for the yeast RNA-seq dataset (also see `r supp_figure_count$label_text(c("lod_adenocarcinoma", "lod_egfrgenotype", "lod_egfrgenotypetumorculture", 
+"lod_nsclc", "lod_ratstamina"))` in Supplemental Materials for the other datasets), there is clearly a relationship between the median abundance and the number of present entries.
 In fact, as the number of present values increases, there is clearly a minimum median value below which the values do not cross.
-This relationship is extremely clear by calculating the minimum median value for each value of present features, and plotting them by number of present features, as shown in `r figure_count$label_text("lod")`B (see also XXX in Supplemental Metarials for the other datasets).
+This relationship is extremely clear by calculating the minimum median value for each value of present features, and plotting them by number of present features, as shown in `r figure_count$label_text("lod")`B (see also `r supp_figure_count$label_text(c("lod_adenocarcinoma", "lod_egfrgenotype", "lod_egfrgenotypetumorculture", 
+"lod_nsclc", "lod_ratstamina"))` in Supplemental Metarials for the other datasets).
 Given this relationship of the minimum median value observed and the number of present features, we believe that the majority of missing values in many -omics datasets are due to being below the limit of detection.
 
 This makes the ICI-Kt appropriate for use in many -omics datasets.
@@ -511,12 +537,8 @@ Inset is the expanded view showing the full range of computation time in seconds
 
 ```{r setting_up_outliers}
 
-outlier_figure_text = figure_count$label_text(c("yeast_outliers",
-                                                "egfrgenotype_outliers",
-                                                "adenocarcinoma_outliers"))
-outlier_table_text = table_count$label_text(c("yeast_outliers",
-                                              "egfrgenotype_outliers",
-                                              "adenocarcinoma_outliers"))
+outlier_figure_text = figure_count$label_text(c("yeast_outliers"))
+outlier_table_text = table_count$label_text(c("yeast_outliers"))
 ```
 
 
@@ -626,6 +648,9 @@ adenocarcinoma_ft_out = adenocarcinoma_table %>%
   put_outlier_right()
 adenocarcinoma_ft_out
 ```
+
+### Generating Feature - Feature Networks
+
 
 
 ## Discussion and Conclusion
