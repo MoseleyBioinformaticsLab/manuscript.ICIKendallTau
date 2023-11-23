@@ -124,3 +124,4 @@ feature_id_2_class = feature_id_2_class |>
 
 feature_id_2_voted = dplyr::left_join(feature_id_2_class[, c("feature_id", "sudo_EMF", "emf")], voted_data,
                                       by = "emf")
+saveRDS(feature_id_2_voted, file = "data/nsclc_feature_lipid_classes.rds")

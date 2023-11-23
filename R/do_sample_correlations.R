@@ -25,8 +25,13 @@ run_cor_everyway = function(sample_counts, sample_completeness){
 
 calculate_cor_medians = function(sample_cor, sample_ids, sample_classes){
   out_med = purrr::imap(sample_cor, function(in_cor, cor_id){
-    in_cor = in_cor[sample_ids, sample_ids]
-    in_med = visualizationQualityControl::median_correlations(in_cor, sample_classes)
+    intersect_ids = base::intersect(colnames(in_cor), sample_ids)
+    keep_ids = sample_ids %in% intersect_ids
+    use_ids = sample_ids[keep_ids]
+    use_classes = sample_classes[keep_ids]
+    
+    in_cor = in_cor[use_ids, use_ids]
+    in_med = visualizationQualityControl::median_correlations(in_cor, use_classes)
     in_med$which = cor_id
     in_med
   })
