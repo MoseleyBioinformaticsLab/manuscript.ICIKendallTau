@@ -9,6 +9,7 @@ dataset_variables = tibble::tibble(character = c("yeast_counts_info",
                                                  "adenocarcinoma_counts_info",
                                   "egfrgenotype_counts_info",
                                   "egfrgenotypetumorculture_counts_info",
+                                  "typeandtumorculture_counts_info",
                                   "ratstamina_counts_info",
                                   "nsclc_counts_info")) |>
   dplyr::mutate(id = gsub("_.*", "", character),
@@ -127,6 +128,11 @@ loading_real_data = tar_plan(
              here::here("data/brainsonrnaseq_type_counts_info_tumor.rds"),
              format = "file"),
   egfrgenotypetumorculture_counts_info = readRDS(brainson_tumorcultures_file),
+  
+  tar_target(brainson_typeandtumorcultures_file,
+             here::here("data/brainsonrnaseq_type_counts_info_typetumor.rds"),
+             format = "file"),
+  typeandtumorculture_counts_info = readRDS(brainson_typeandtumorcultures_file),
   
   tar_target(mwtab_ratstamina_file,
              here::here("data/mwtab_st000017_an000034_count_info.rds"),
