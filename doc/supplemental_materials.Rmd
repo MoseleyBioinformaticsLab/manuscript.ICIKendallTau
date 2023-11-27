@@ -111,6 +111,10 @@ As shown in `r supp_figure_count$label_text(c("lod_adenocarcinoma", "lod_tumorcu
 #| fig.height: 8
 wrap_plots(lod_graph_adenocarcinoma, ncol = 1) + plot_annotation(tag_levels = "A")
 ```
+`r supp_figure_count$label_text("lod_adenocarcinoma")`.
+Adenocarcinoma dataset count medians by number of samples feature was present in.
+**A**: Log10 of medians for present values copmared to the number of samples the feature was present in.
+**B**: Log10 of minimum median for each value of number of samples the feature was present in.
 
 ```{r}
 #| label: lod_egfrgenotype
@@ -118,6 +122,10 @@ wrap_plots(lod_graph_adenocarcinoma, ncol = 1) + plot_annotation(tag_levels = "A
 #| fig.height: 8 
 wrap_plots(lod_graph_egfrgenotype, ncol = 1) + plot_annotation(tag_levels = "A")
 ```
+`r supp_figure_count$label_text("lod_egfrgenotype")`.
+EGFR genotype dataset count medians by number of samples feature was present in.
+**A**: Log10 of medians for present values copmared to the number of samples the feature was present in.
+**B**: Log10 of minimum median for each value of number of samples the feature was present in.
 
 ```{r}
 #| label: lod_egfrgenotypetumorculture
@@ -125,6 +133,10 @@ wrap_plots(lod_graph_egfrgenotype, ncol = 1) + plot_annotation(tag_levels = "A")
 #| fig.height: 8 
 wrap_plots(lod_graph_egfrgenotypetumorculture, ncol = 1) + plot_annotation(tag_levels = "A")
 ```
+`r supp_figure_count$label_text("lod_egfrgenotypetumorculture")`.
+EGFR genotype and tumor culture dataset count medians by number of samples feature was present in.
+**A**: Log10 of medians for present values copmared to the number of samples the feature was present in.
+**B**: Log10 of minimum median for each value of number of samples the feature was present in.
 
 ```{r}
 #| label: lod_nsclc
@@ -132,6 +144,11 @@ wrap_plots(lod_graph_egfrgenotypetumorculture, ncol = 1) + plot_annotation(tag_l
 #| fig.height: 8
 wrap_plots(lod_graph_nsclc, ncol = 1) + plot_annotation(tag_levels = "A")
 ```
+`r supp_figure_count$label_text("lod_nsclc")`.
+Non-small-cell-lung-cancer (NSCLC) lipidomics dataset count medians by number of samples feature was present in.
+**A**: Log10 of medians for present values copmared to the number of samples the feature was present in.
+**B**: Log10 of minimum median for each value of number of samples the feature was present in.
+
 
 ```{r}
 #| label: lod_ratstamina
@@ -139,7 +156,10 @@ wrap_plots(lod_graph_nsclc, ncol = 1) + plot_annotation(tag_levels = "A")
 #| fig.height: 8
 wrap_plots(lod_graph_ratstamina, ncol = 1) + plot_annotation(tag_levels = "A")
 ```
-
+`r supp_figure_count$label_text("lod_ratstamina")`.
+Rat stamina dataset count medians by number of samples feature was present in.
+**A**: Log10 of medians for present values copmared to the number of samples the feature was present in.
+**B**: Log10 of minimum median for each value of number of samples the feature was present in.
 
 ## Simulated Data
 
@@ -216,6 +236,12 @@ This version of Pearson correlation recreates the median sample-sample correlati
 
 Finally, we note the actual samples recorded as outliers by Gierlinski and coworkers, noted as "Manuscript".
 
+In `r supp_figure_count$label_text("yeast_outliers")` and `r supp_table_count$label_text("yeast_outliers")` we can see how the determination of outliers was not made solely on the basis of correlation alone, but on a combination of factors that lead to some of the higher correlating samples (using raw counts and Pearson correlaion) being considered outliers where lower correlating samples were not listed as being outliers.
+
+Regardless, using ICI-Kt or ICI-Kt * Completeness in this instance, the outliers using the simple distribution summary statistics and an outlier having to be > 1.5 median error, the outliers are mostly a superset of the outliers determined by Gierlinski et al, with the exception of three samples specific to their data: Snf2.24, WT.22, and WT.28.
+
+It should be noted that it seems that Gierlinski et al used an eyeball cutoff for the outliers based on the combined score of correlation, outlier fraction, and read coverage chi-square fitness, with samples having a combined log-score > -2.8 (evaluated by RMF eyeball on a zoomed in graph and a ruler), a value that is never stated in the manuscript, and which seems arbitrary from the data.
+
 ```{r load_yeast_outliers}
 manual_method = c("icikt" = "IK",
                                                  "icikt_complete" = "IKC",
@@ -271,13 +297,16 @@ Median correlations for each of the yeast RNA-Seq sample to all other samples in
 yeast_table = compare_outlier_tables(yeast_single2, compare_yeast, sort_var = "manuscript", map_method = manual_method)
 ```
 
-In `r supp_figure_count$label_text("yeast_outliers")` and `r supp_table_count$label_text("yeast_outliers")` we can see how the determination of outliers was not made solely on the basis of correlation alone, but on a combination of factors that lead to some of the higher correlating samples (using raw counts and Pearson correlaion) being considered outliers where lower correlating samples were not listed as being outliers.
 
-Regardless, using ICI-Kt or ICI-Kt * Completeness in this instance, the outliers using the simple distribution summary statistics and an outlier having to be > 1.5 median error, the outliers are mostly a superset of the outliers determined by Gierlinski et al, with the exception of three samples specific to their data: Snf2.24, WT.22, and WT.28.
-
-It should be noted that it seems that Gierlinski et al used an eyeball cutoff for the outliers based on the combined score of correlation, outlier fraction, and read coverage chi-square fitness, with samples having a combined log-score > -2.8 (evaluated by RMF eyeball on a zoomed in graph and a ruler), a value that is never stated in the manuscript, and which seems arbitrary from the data.
 
 ### EGFR RNASeq Genotype
+
+`r supp_table_count$label_text("egfrgenotype_outliers")` indicates the outliers determined with each correlation method.
+Discussions with the Brainson group have determined that some of the samples in the sorted group were run on different days with different technicians, which may explain the two sorted outliers.
+
+`r supp_figure_count$label_text("egfrgenotype_outliers")` visualizes the sample-specific median of each metric calculated from the Brainson RNA-Seq data set.
+Likewise, `r supp_table_count$label_text("egfrgenotype_outliers")` lists the outliers detected based on each metric.
+In this example, Pearson shows superior sensitivity to outlier detection, likely due to the larger spread in median Pearson correlation values.
 
 ```{r egfrgenotype_load}
 
@@ -311,44 +340,31 @@ egfrgenotype_table = compare_outlier_tables(egfrgenotype_single, compare_egfrgen
 ```
 
 
-`r supp_table_count$label_text("egfrgenotype_outliers")` indicates the outliers determined with each correlation method.
-Discussions with the Brainson group have determined that some of the samples in the sorted group were run on different days with different technicians, which may explain the two sorted outliers.
+### EGFR RNASeq Genotype & Tumor Type
 
-`r figure_count$label_text("egfrgenotype_outliers")` visualizes the sample-specific median of each metric calculated from the Brainson RNA-Seq data set.
-Likewise, `r table_count$label_text("egfrgenotype_outliers")` lists the outliers detected based on each metric.
-In this example, Pearson shows superior sensitivity to outlier detection, likely due to the larger spread in median Pearson correlation values.
+```{r}
+#| label: setup_egfrgenotypetumorculture
+all_egfrgenotypetumorculture_outliers = rbind_outliers(egfrgenotypetumorculture_outliers) |>
+  perc_to_number()
+```
 
-
-```{r egfrgenotype_outliers, dn_id = figure_count}
-compare_egfrgenotype_main = c("icikt", "icikt_complete", "pearson_log1p")
-egfrgenotype_single %>%
-  add_method() %>%
-  dplyr::filter(which %in% compare_egfrgenotype_main) %>%
+```{r}
+#| label: egfrgenotypetumorculture_outliers
+egfrgenotypetumorculture_single %>%
+  add_method(other_method) %>%
+  dplyr::filter(which %in% compare_egfrgenotype) %>%
   ggplot(aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
-  geom_sina() + 
+  geom_sina() +
   facet_wrap(~ method, nrow = 1) +
   labs(x = "Sample Class", y = "Median Correlation") +
-  theme(legend.position = c(0.75, 0.2))
+  theme(axis.text.x = element_text(angle = 90))
 ```
 
-`r figure_count$label_text("egfrgenotype_outliers")`. 
-Median correlations for each of the Brainson RNA-Seq samples to all other samples in the same group, using either ICI-Kt, ICI-Kt * completeness or Pearson Log(x + 1) correlation.
 
-`r table_count$label_text("egfrgenotype_outliers")`.
-Brainson dataset median correlation values and outlier determination for each outlier from each of the correlation methods.
-
-```{r egfrgenotype_table}
-egfrgenotype_table = compare_outlier_tables(egfrgenotype_single, compare_egfrgenotype_main, sort_var = "pearson_log1p")
-
-if (!is.null(egfrgenotype_table)) {
-  egfrgenotype_ft_out = egfrgenotype_table %>%
-  set_nice_widths(sample_width = 1.5) %>%
-  put_outlier_right()
-  print(egfrgenotype_ft_out)
-}
+```{r}
+#| label: egfrgenotypetumorculture_table
+egfrgenotypetumorculture_table = compare_outlier_tables(egfrgenotypetumorculture_single, compare_egfrgenotype, "pearson_log1p", map_method = other_method)
 ```
-
-### EGFR RNASeq Genotype & Tumor Type
 
 ### TCGA Adenocarcinoma
 
@@ -381,7 +397,8 @@ adenocarcinoma_single %>%
   ggplot(aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
   geom_sina() +
   facet_wrap(~ method, nrow = 1) +
-  labs(x = "Sample Class", y = "Median Correlation")
+  labs(x = "Sample Class", y = "Median Correlation") +
+  theme(axis.text.x = element_text(angle = 90))
 ```
 
 `r supp_figure_count$label_text("adenocarcinoma_outliers")`.
@@ -394,7 +411,6 @@ adenocarcinoma_table = compare_outlier_tables(adenocarcinoma_single, compare_ade
 ```
 
 ```{r summarize_adeno}
-supp_table_count$increment("adenocarcinoma_mad")
 adenocarcinoma_variation = adenocarcinoma_single %>%
   add_method(map_method = other_method) %>%
   dplyr::filter(which %in% compare_adeno) %>%
@@ -426,56 +442,76 @@ As `r supp_figure_count$label_text("adenocarcinoma_outliers")` and `r supp_table
 Also of note is that ICI-Kt * Completeness is the only measure where the variance measure for both groups is similar.
 For both ICI-Kt and Pearson correlation, the tumor samples variance measures are `r adenocarcinoma_ratios[["ICI-Kt"]]`x and `r adenocarcinoma_ratios[["Pearson Log(x + 1)"]]`x greater than normal, respectively.
 
-`r figure_count$label_text("adenocarcinoma_outliers")` visualizes the sample-specific median metric value calculated from the TCGA RNA-Seq data set, with `r table_count$label_text("adenocarcinoma_outliers")` listing the outliers detected from each metric.
+`r supp_figure_count$label_text("adenocarcinoma_outliers")` visualizes the sample-specific median metric value calculated from the TCGA RNA-Seq data set, with `r supp_table_count$label_text("adenocarcinoma_outliers")` listing the outliers detected from each metric.
 In this example, the ICI-Kt * completeness correlation demonstrated superior sensitivity for outlier detection, likely due to its better sensitivity to measurement completeness.
 The wider spread of measurement completeness is expected, since TCGA is an aggregate of samples collected from various human cancer patents as compared to the first two examples which were collected from specific experiments in cell culture (`r supp_table_count$label_text("adenocarcinoma_mad")`).
 The wider spread of measurement completeness is expected, since TCGA is an aggregate of samples collected from various human cancer patients as compared to the first two examples which were collected from specific experiments in cell culture. 
 However, the outliers detected are not a complete superset of the outliers detected by ICI-Kt and Pearson, probably due to the integration of completeness and correlation.
 
-```{r adenocarcinoma_outliers, dn_id = figure_count}
-compare_adenocarcinoma_main = c("icikt", "icikt_complete", "pearson_log1p")
-adenocarcinoma_single %>%
-  add_method() %>%
-  dplyr::filter(which %in% compare_adenocarcinoma_main) %>%
-  ggplot(aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
-  geom_sina() + 
-  facet_wrap(~ method, nrow = 1) +
-  labs(x = "Sample Class", y = "Median Correlation") +
-  theme(legend.position = c(0.75, 0.2))
-```
-
-`r figure_count$label_text("adenocarcinoma_outliers")`.
-Median correlations for each of the TCGA adenocarcinoma RNA-Seq samples to all other samples in the same group, using either ICI-Kt, ICI-Kt * completeness or Pearson Log(x + 1) correlation.
-
-`r table_count$label_text("adenocarcinoma_outliers")`.
-TCGA adenocarcinoma dataset median correlation values and outlier determination for each outlier from each of the correlation methods.
-
-```{r adenocarcinoma_table}
-adenocarcinoma_table = compare_outlier_tables(adenocarcinoma_single, compare_adenocarcinoma_main, sort_var = "pearson_log1p")
-adenocarcinoma_ft_out = adenocarcinoma_table %>%
-  set_nice_widths() %>%
-  put_outlier_right()
-adenocarcinoma_ft_out
-```
 
 ### NSCLC Lipidomics
 
+```{r}
+#| label: setup_nsclc
+all_nsclc_outliers = rbind_outliers(nsclc_outliers) |>
+  perc_to_number()
+```
+
+```{r}
+#| label: nsclc_outliers
+nsclc_single %>%
+  add_method(other_method) %>%
+  dplyr::filter(which %in% compare_egfrgenotype) %>%
+  ggplot(aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
+  geom_sina() +
+  facet_wrap(~ method, nrow = 1) +
+  labs(x = "Sample Class", y = "Median Correlation") +
+  theme(axis.text.x = element_text(angle = 90))
+```
+
+
+```{r}
+#| label: nsclc_table
+nsclc_table = compare_outlier_tables(nsclc_single, compare_egfrgenotype, "pearson_log1p", map_method = other_method)
+```
+
 
 ### Rat Stamina Metabolomics
+
+```{r}
+#| label: setup_ratstamina
+all_ratstamina_outliers = rbind_outliers(ratstamina_outliers) |>
+  perc_to_number()
+```
+
+```{r}
+#| label: ratstamina_outliers
+ratstamina_single %>%
+  add_method(other_method) %>%
+  dplyr::filter(which %in% compare_egfrgenotype) %>%
+  ggplot(aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
+  geom_sina() +
+  facet_wrap(~ method, nrow = 1) +
+  labs(x = "Sample Class", y = "Median Correlation") +
+  theme(axis.text.x = element_text(angle = 90))
+```
+
+
+```{r}
+#| label: ratstamina_table
+ratstamina_table = compare_outlier_tables(ratstamina_single, compare_egfrgenotype, "pearson_log1p", map_method = other_method)
+```
 
 
 ## Effect of Increasing Presence in Samples
 
 One sure way to limit the effect of missing values on correlation values is to impose the condition that a gene has a non-zero count in a minimum percentage of the samples in one of the classes.
-In all of the example plots above, and the tables in the main manuscript text, a gene had to be present in at least **one sample**.
+In all of the example plots above, and the tables in Supplemental Tables, a gene had to be present in at least **one sample**.
 Here, we explore what happens if we increase the number of samples required for a gene to be present in at 25% and 50% of a class for the yeast samples and adenocarcinoma samples, and 25%, 50%, 75% and all samples of a class for the Brainson samples.
-We also examine the effect using all possible correlation measures.
+
 
 ### Yeast Samples
 
-```{r increment_count_yeast}
-
-```
 
 ```{r yeast_by_method, dn_id = supp_figure_count}
 all_yeast2 = all_yeast %>%
@@ -610,7 +646,7 @@ Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Com
 ```{r save_supp_objects}
 saveRDS(supp_figure_count, file = here::here("doc/supp_figure_count.rds"))
 saveRDS(supp_table_count, file = here::here("doc/supp_table_count.rds"))
-save(yeast_table, egfrgenotype_table, adenocarcinoma_table, file = here::here("doc/supp_stuff.rda"))
+save(yeast_table, egfrgenotype_table, egfrgenotypetumorculture_table, adenocarcinoma_table, nsclc_table, ratstamina_table, file = here::here("doc/supp_stuff.rda"))
 ```
 
 ## References
