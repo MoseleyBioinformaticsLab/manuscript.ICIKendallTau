@@ -2,6 +2,7 @@ group_study = function(counts_info, id)
 {
   # counts_info = tar_read(yeast_counts_info)
   # counts_info = tar_read(nsclc_counts_info)
+  # counts_info = tar_read(egfrgenotypetumorculture_counts_info)
   counts_df = tibble::as_tibble(counts_info$counts)
   if (is.null(rownames(counts_info$counts))) {
     counts_df$feature = seq_len(nrow(counts_df))

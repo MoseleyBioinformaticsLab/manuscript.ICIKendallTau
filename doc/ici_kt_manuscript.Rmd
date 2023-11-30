@@ -55,6 +55,7 @@ load(here::here("doc/supp_stuff.rda"))
 #| label: load-dependencies
 tar_load(c(supp_materials,
            supp_tables,
+           dataset_summary,
            lod_graph_yeast,
            realistic_comparison_plot,
            censored_compare_plots,
@@ -81,7 +82,8 @@ figure_count$increment(c("problem",
                          "egfrgenotype_outliers",
                          "adenocarcinoma_outliers"))
 
-table_count$increment(c("yeast_outliers",
+table_count$increment(c("datasets",
+                        "yeast_outliers",
                         "egfrgenotype_outliers",
                         "adenocarcinoma_outliers"))
 
@@ -386,6 +388,20 @@ We used the *targets* package to manage calculation dependencies [@landauTargets
 For the comparisons of time taken using different numbers of samples to evaluate the algorithmic complexity, calculations were run on a single laptop Intel i7 core clocked at 2.2 GHz.
 
 ## Results
+
+### Datasets
+
+In `r table_count$label_text("datasets")` we provide a summary of the number of features (measurements), samples, treatments or conditions, and the number of replicates per condition for each of the experimental datasets.
+
+`r table_count$label_text("datasets")`. Number of features, samples, treatments, and replicates in each condition for each dataset.
+```{r}
+dataset_summary |>
+  flextable() |>
+  font(fontname = "Calibri", part = "all") |>
+  fontsize(size = 11, part = "header") |>
+  fontsize(size = 10, part = "body") |>
+  set_table_properties(layout = "autofit")
+```
 
 ### Limit of Detection As a Cause for Missingness
 

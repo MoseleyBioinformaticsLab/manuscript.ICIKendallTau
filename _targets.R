@@ -13,7 +13,14 @@ dataset_variables = tibble::tibble(character = c("yeast_counts_info",
                                   "ratstamina_counts_info",
                                   "nsclc_counts_info")) |>
   dplyr::mutate(id = gsub("_.*", "", character),
-                sym = rlang::syms(character))
+                sym = rlang::syms(character),
+                Measurement = c("RNA-Seq",
+                                "RNA-Seq",
+                                "RNA-Seq",
+                                "RNA-Seq",
+                                "RNA-Seq",
+                                "Metabolomics",
+                                "Lipidomics"))
 
 correlation_methods = c("ici",
                                     "ici_completeness",
@@ -246,6 +253,22 @@ feature_correlation_map = tar_map(dataset_feature_correlation,
                                                                              feature_annotations, 
                                                                              "pathway", 
                                                                              metabolite_kegg)))
+## dataset summaries -----
+dataset_summary_map = tar_map(dataset_variables,
+                               names = id,
+                               tar_target(summary_n,
+                                          create_dataset_summary(sym)))
+dataset_summary_combine = tar_combine(dataset_summary_n,
+                                      dataset_summary_map,
+                                      command = bind_rows(!!!.x))
+
+dataset_summary_plan = tar_plan(dataset_summary = dplyr::bind_cols(
+  dataset_variables[, c("id", "Measurement")], dataset_summary_n
+) |>
+  dplyr::mutate(Dataset = id,
+                id = NULL) |>
+  dplyr::select(Dataset, Measurement, Features, Samples, Conditions, Replicates)
+)
 
 # documents -----
 documents_plan = tar_plan(
@@ -264,5 +287,8 @@ list(small_realistic_examples,
      limit_of_detection_map,
      sample_outlier_plan,
      feature_correlation_map,
+     dataset_summary_map,
+     dataset_summary_combine,
+     dataset_summary_plan,
      performance_plan,
      documents_plan)
