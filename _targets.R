@@ -200,6 +200,14 @@ sample_outlier_plan = tar_plan(
   
   egfrgenotypetumorculture_single = get_single_outlier(egfrgenotypetumorculture_outliers),
   
+  tar_target(typeandtumorculture_outliers,
+             filter_generate_outliers(typeandtumorculture_counts_info$counts,
+                                      typeandtumorculture_counts_info$info,
+                                      egfrgenotype_n, "sample", "treatment"),
+             pattern = map(egfrgenotype_n),
+             iteration = "list"),
+  typeandtumorculture_single = get_single_outlier(typeandtumorculture_outliers),
+  
   yeast_paper_outliers = c("WT.21", "WT.22", "WT.25", "WT.28", "WT.34", "WT.36",
                            "Snf2.06", "Snf2.13", "Snf2.25", "Snf2.35"),
   
