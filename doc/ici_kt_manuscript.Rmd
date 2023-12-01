@@ -595,7 +595,11 @@ Yeast dataset median correlation values and outlier determination for each outli
 yeast_table = compare_outlier_tables(yeast_single, compare_yeast_main, sort_var = "pearson_log1p")
 yeast_ft_out = yeast_table %>%
   set_nice_widths() %>%
-  put_outlier_right()
+  put_outlier_right() %>%
+  font(fontname = "Calibri", part = "all") |>
+  fontsize(size = 11, part = "header") |>
+  fontsize(size = 10, part = "body")
+  
 yeast_ft_out
 ```
 
