@@ -55,6 +55,7 @@ load(here::here("doc/supp_stuff.rda"))
 #| label: load-dependencies
 tar_load(c(supp_materials,
            supp_tables,
+           dataset_summary,
            lod_graph_yeast,
            realistic_comparison_plot,
            censored_compare_plots,
@@ -81,7 +82,8 @@ figure_count$increment(c("problem",
                          "egfrgenotype_outliers",
                          "adenocarcinoma_outliers"))
 
-table_count$increment(c("yeast_outliers",
+table_count$increment(c("datasets",
+                        "yeast_outliers",
                         "egfrgenotype_outliers",
                         "adenocarcinoma_outliers"))
 
@@ -387,6 +389,20 @@ For the comparisons of time taken using different numbers of samples to evaluate
 
 ## Results
 
+### Datasets
+
+In `r table_count$label_text("datasets")` we provide a summary of the number of features (measurements), samples, treatments or conditions, and the number of replicates per condition for each of the experimental datasets.
+
+`r table_count$label_text("datasets")`. Number of features, samples, treatments, and replicates in each condition for each dataset.
+```{r}
+dataset_summary |>
+  flextable() |>
+  font(fontname = "Calibri", part = "all") |>
+  fontsize(size = 11, part = "header") |>
+  fontsize(size = 10, part = "body") |>
+  set_table_properties(layout = "autofit")
+```
+
 ### Limit of Detection As a Cause for Missingness
 
 We are aware of only one previous investigation of the causes of missingness in metabolomics datasets [@doCharacterizationMissingValues2018].
@@ -579,7 +595,11 @@ Yeast dataset median correlation values and outlier determination for each outli
 yeast_table = compare_outlier_tables(yeast_single, compare_yeast_main, sort_var = "pearson_log1p")
 yeast_ft_out = yeast_table %>%
   set_nice_widths() %>%
-  put_outlier_right()
+  put_outlier_right() %>%
+  font(fontname = "Calibri", part = "all") |>
+  fontsize(size = 11, part = "header") |>
+  fontsize(size = 10, part = "body")
+  
 yeast_ft_out
 ```
 
