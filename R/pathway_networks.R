@@ -264,8 +264,11 @@ compound_annotation = function(data_file, type = "pathway")
   annotation_obj
 }
 
-get_feature_annotations = function(kegg_data)
+get_feature_annotations = function(kegg_data,
+                                   nsclc_lipidclasses)
 {
+  #tar_load(kegg_data)
+  #tar_load(nsclc_lipidclasses)
   compound_pathway = compound_annotation(kegg_data, "pathway")
   compound_network = compound_annotation(kegg_data, "network")
   compound_module = compound_annotation(kegg_data, "module")
@@ -307,9 +310,27 @@ get_feature_annotations = function(kegg_data)
   human_id_reactome = dplyr::left_join(human_entrez, human_reactome, by = "ENTREZID", relationship = "many-to-many")
   human_annotation = create_feature_annotation_object(human_id_reactome)
   
+  nsclc_annotation_df = readRDS(nsclc_lipidclasses)
+  nsclc_annotation_df_categories = nsclc_annotation_df |>
+    dplyr::mutate(ID = feature_id,
+                  REACTOMEID = Voted.Categories)
+  nsclc_annotation_categories = create_feature_annotation_object(nsclc_annotation_df_categories)
+  
+  nsclc_annotation_df_classes = nsclc_annotation_df |>
+    dplyr::mutate(ID = feature_id,
+                  REACTOMEID = Voted.Classes)
+  nsclc_annotation_classes = create_feature_annotation_object(nsclc_annotation_df_classes)
+  
+  nsclc_emfs = nsclc_annotation_df |>
+    dplyr::select(feature_id, sudo_EMF, emf) |>
+    dplyr::distinct()
+  
   list(human = human_annotation,
        mouse = mouse_annotation,
        yeast = yeast_annotation,
+       nsclc_categories = nsclc_annotation_categories,
+       nsclc_classes = nsclc_annotation_classes,
+       nsclc_emfs = nsclc_emfs,
        kegg_pathway = compound_pathway,
        kegg_module = compound_module,
        kegg_network = compound_network)
@@ -323,13 +344,24 @@ create_feature_annotation_object = function(annotation_df)
   split_data = split(annotation_df$ID, annotation_df$REACTOMEID) |>
     purrr::map(unique)
   
-  pathway_meta = annotation_df |>
-    dplyr::select(PATHNAME, REACTOMEID) |>
-    dplyr::distinct()
-  pathway_description = pathway_meta[["PATHNAME"]]
-  names(pathway_description) = pathway_meta[["REACTOMEID"]]
-  pathway_description = pathway_description[names(split_data)]
-  annotation_obj = categoryCompare2::annotation(split_data,
-                                                description = pathway_description)
+  if (!is.null(annotation_df[["PATHNAME"]]))
+  {
+    pathway_meta = annotation_df |>
+      dplyr::select(PATHNAME, REACTOMEID) |>
+      dplyr::distinct()
+    pathway_description = pathway_meta[["PATHNAME"]]
+    names(pathway_description) = pathway_meta[["REACTOMEID"]]
+    pathway_description = pathway_description[names(split_data)]
+    annotation_obj = categoryCompare2::annotation(split_data,
+                                                  description = pathway_description)
+  } else {
+    annotation_obj = categoryCompare2::annotation(split_data)
+  }
+  
   annotation_obj
+}
+
+average_emf_correlations = function(nsclc_partial_cor)
+{
+  
 }
