@@ -124,4 +124,14 @@ feature_id_2_class = feature_id_2_class |>
 
 feature_id_2_voted = dplyr::left_join(feature_id_2_class[, c("feature_id", "sudo_EMF", "emf")], voted_data,
                                       by = "emf")
+
+dup_feature_id = feature_id_2_voted |>
+  dplyr::select(feature_id, sudo_EMF) |>
+  dplyr::distinct() |>
+  dplyr::filter(duplicated(feature_id)) |>
+  dplyr::pull(feature_id)
+
+feature_id_2_voted = feature_id_2_voted |>
+  dplyr::filter(!(feature_id %in% dup_feature_id))
 saveRDS(feature_id_2_voted, file = "data/nsclc_feature_lipid_classes.rds")
+

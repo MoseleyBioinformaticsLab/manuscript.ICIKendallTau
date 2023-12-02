@@ -26,3 +26,11 @@ brainson_out2 = list(counts = deseq_norm, info = brainsonrnaseq_info2,
                      data_id = "brainsonrnaseq_egfrgenotypetumorculture")
 
 saveRDS(brainson_out2, file = here::here("data", "brainsonrnaseq_type_counts_info_tumor.rds"))
+
+brainsonrnaseq_info3 = brainsonrnaseq_info |>
+  dplyr::mutate(treatment = paste0(type, ".", tumor))
+
+brainson_out3 = list(counts = deseq_norm, info = brainsonrnaseq_info3,
+                     data_id = "brainson_typeandtumorcultures")
+
+saveRDS(brainson_out3, file = here::here("data", "brainsonrnaseq_type_counts_info_typetumor.rds"))
