@@ -48,14 +48,16 @@ calculate_qratio = function(network, annotations)
 
 calculate_feature_network_qratio = function(partial_correlations, annotations, 
                                             compound_type = "pathway",
-                                            compound_mapping = metabolite_kegg)
+                                            compound_mapping = metabolite_kegg,
+                                            lipid_type = "categories")
 {
   # partial_correlations = tar_read(feature_partial_cor_ici_yeast)
   # partial_correlations = tar_read(feature_partial_cor_ici_ratstamina)
+  # partial_correlations = tar_read(feature_partial_cor_ici_nsclc)
   # annotations = tar_read(feature_annotations)
   # compound_type = "pathway"
   # compound_mapping = tar_read(metabolite_kegg)
-  # 
+  # lipid_type = "categories"
   if (is.na(partial_correlations$pcor[["partial_cor"]][1])) {
     network_partitioning = list(partitions = tibble::tibble(id = NA, ratio = NA, n_features = NA),
                                 q_value = NA)
@@ -98,7 +100,14 @@ calculate_feature_network_qratio = function(partial_correlations, annotations,
     } else if (grepl("egfrgenotype", partial_correlations$data_id)) {
       use_annotation = annotations$mouse@annotation_features
     } else if (grepl("nsclc", partial_correlations$data_id)) {
-      use_annotation = annotations$lipid_class@annotation_features
+      if (lipid_type %in% "classes") {
+        use_annotation = annotations$nsclc_classes@annotation_features
+      } else {
+        use_annotation = annotations$nsclc_categories@annotation_features
+      }
+      average_correlations = average_emf_correlations(network_correlations,
+                                                      annotations$nsclc_emfs)
+      network_correlations = average_correlations
     }
     
     network_partitioning = calculate_qratio(network_correlations, use_annotation)
@@ -312,12 +321,12 @@ get_feature_annotations = function(kegg_data,
   
   nsclc_annotation_df = readRDS(nsclc_lipidclasses)
   nsclc_annotation_df_categories = nsclc_annotation_df |>
-    dplyr::mutate(ID = feature_id,
+    dplyr::mutate(ID = emf,
                   REACTOMEID = Voted.Categories)
   nsclc_annotation_categories = create_feature_annotation_object(nsclc_annotation_df_categories)
   
   nsclc_annotation_df_classes = nsclc_annotation_df |>
-    dplyr::mutate(ID = feature_id,
+    dplyr::mutate(ID = emf,
                   REACTOMEID = Voted.Classes)
   nsclc_annotation_classes = create_feature_annotation_object(nsclc_annotation_df_classes)
   
@@ -361,7 +370,36 @@ create_feature_annotation_object = function(annotation_df)
   annotation_obj
 }
 
-average_emf_correlations = function(nsclc_partial_cor)
+average_emf_correlations = function(nsclc_partial_cor,
+                                    nsclc_emf_mapping)
 {
-  
+  # nsclc_partial_cor = network_correlations
+  # nsclc_emf_mapping = annotations$nsclc_emfs
+  nsclc_partial_cor = nsclc_partial_cor |>
+    dplyr::filter((start_node %in% nsclc_emf_mapping$feature_id) & (end_node %in% nsclc_emf_mapping$feature_id))
+  nsclc_partial_cor_emf = dplyr::left_join(nsclc_partial_cor,
+                                           nsclc_emf_mapping |>
+                                             dplyr::transmute(feature_id = feature_id,
+                                                              start_emf = emf),
+                                           by = c("start_node" = "feature_id"),
+                                           relationship = "many-to-many")
+  nsclc_partial_cor_emf = dplyr::left_join(nsclc_partial_cor_emf,
+                                           nsclc_emf_mapping |>
+                                             dplyr::transmute(feature_id = feature_id,
+                                                              end_emf = emf),
+                                           by = c("end_node" = "feature_id"),
+                                           relationship = "many-to-many")
+  cross_emf = nsclc_partial_cor_emf |>
+    dplyr::filter(!(start_emf == end_emf) ) |>
+    dplyr::mutate(cross_emf_id = paste0(start_emf, ".", end_emf))
+  average_cross_emf = cross_emf |>
+    dplyr::group_by(cross_emf_id) |>
+    dplyr::summarise(weight2 = sqrt(mean(weight ^2))) |>
+    dplyr::mutate(weight = weight2)
+  split_emfs = stringr::str_split_fixed(average_cross_emf$cross_emf_id, "\\.", 2)
+  average_cross_emf$start_node = split_emfs[, 1]
+  average_cross_emf$end_node = split_emfs[, 2]
+  average_cross_emf = average_cross_emf |>
+    dplyr::select(start_node, end_node, weight)
+  average_cross_emf
 }
