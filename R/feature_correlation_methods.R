@@ -91,7 +91,8 @@ kt = function(counts_info, id, keep_num, sample_col, class_col)
   }
   counts_filter = t(keep_non_zero_percentage(t(counts), sample_classes = info[[filter_col]],
                                              keep_num = keep_num))
-  tmp_out = ici_kendalltau(counts_filter, global_na = c(NA), scale_max = FALSE, diag_good = FALSE, return_matrix = FALSE)
+  counts_filter[counts_filter == 0] = NA
+  tmp_out = kt_fast(t(counts_filter), return_matrix = FALSE)
   future::plan(multicore)
   list(cor = tmp_out,
        data_id = counts_info$data_id,
