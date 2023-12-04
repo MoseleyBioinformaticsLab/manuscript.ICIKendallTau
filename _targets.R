@@ -270,7 +270,7 @@ feature_qratio_combine_map = tar_combine(feature_qratio_comparisons,
                                          command = bind_rows(!!!.x))
 
 feature_qratio_summary_plan = tar_plan(
-  feature_qratio_summary = feature_qratio_comparions |>
+  feature_qratio_summary = feature_qratio_comparisons |>
     dplyr::filter(!is.na(q_value)) |>
     dplyr::select(q_value, data_id, method_id, full_id) |>
     dplyr::distinct() |>
