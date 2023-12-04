@@ -93,7 +93,7 @@ kt = function(counts_info, id, keep_num, sample_col, class_col)
                                              keep_num = keep_num))
   counts_filter[counts_filter == 0] = NA
   tmp_out = kt_fast(t(counts_filter), return_matrix = FALSE)
-  tmp_out = tmp_out |>
+  tmp_out$cor = tmp_out$cor |>
     dplyr::transmute(s1 = s1, s2 = s2,
                      raw = tau,
                      pval = pvalue)
