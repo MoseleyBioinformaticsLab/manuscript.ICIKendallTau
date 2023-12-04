@@ -269,7 +269,7 @@ feature_qratio_combine_map = tar_combine(feature_qratio_comparisons,
                                          feature_correlation_map[[3]],
                                          command = bind_rows(!!!.x))
 
-feature_qratio_summary_map = tar_plan(
+feature_qratio_summary_plan = tar_plan(
   feature_qratio_summary = feature_qratio_comparions |>
     dplyr::filter(!is.na(q_value)) |>
     dplyr::select(q_value, data_id, method_id, full_id) |>
@@ -312,6 +312,7 @@ list(small_realistic_examples,
      sample_outlier_plan,
      feature_correlation_map,
      feature_qratio_combine_map,
+     feature_qratio_summary_plan,
      dataset_summary_map,
      dataset_summary_combine,
      dataset_summary_plan,
