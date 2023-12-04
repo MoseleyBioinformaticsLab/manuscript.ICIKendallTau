@@ -268,6 +268,15 @@ feature_correlation_map = tar_map(dataset_feature_correlation,
 feature_qratio_combine_map = tar_combine(feature_qratio_comparisons,
                                          feature_correlation_map[[3]],
                                          command = bind_rows(!!!.x))
+
+feature_qratio_summary_map = tar_plan(
+  feature_qratio_summary = feature_qratio_comparions |>
+    dplyr::filter(!is.na(q_value)) |>
+    dplyr::select(q_value, data_id, method_id, full_id) |>
+    dplyr::distinct() |>
+    dplyr::group_by(data_id) |>
+    dplyr::arrange(q_value)
+)
 ## dataset summaries -----
 dataset_summary_map = tar_map(dataset_variables,
                                names = id,
