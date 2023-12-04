@@ -264,6 +264,10 @@ feature_correlation_map = tar_map(dataset_feature_correlation,
                                                                              feature_annotations, 
                                                                              "pathway", 
                                                                              metabolite_kegg)))
+
+feature_qratio_combine_map = tar_combine(feature_qratio_comparisons,
+                                         feature_correlation_map[[3]],
+                                         command = bind_rows(!!!.x))
 ## dataset summaries -----
 dataset_summary_map = tar_map(dataset_variables,
                                names = id,
@@ -298,6 +302,7 @@ list(small_realistic_examples,
      limit_of_detection_map,
      sample_outlier_plan,
      feature_correlation_map,
+     feature_qratio_combine_map,
      dataset_summary_map,
      dataset_summary_combine,
      dataset_summary_plan,
