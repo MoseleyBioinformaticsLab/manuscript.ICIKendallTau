@@ -275,7 +275,7 @@ feature_qratio_summary_plan = tar_plan(
     dplyr::select(q_value, data_id, method_id, full_id) |>
     dplyr::distinct() |>
     dplyr::group_by(data_id) |>
-    dplyr::arrange(q_value)
+    dplyr::arrange(dplyr::desc(q_value))
 )
 ## dataset summaries -----
 dataset_summary_map = tar_map(dataset_variables,
