@@ -28,7 +28,12 @@ ici = function(counts_info, id, keep_num, sample_col, class_col)
   # }
   counts_filter = t(keep_non_zero_percentage(t(counts), sample_classes = info[[filter_col]],
                                              keep_num = keep_num))
-  tmp_out = ici_kendalltau(counts_filter, global_na = c(NA, 0), return_matrix = FALSE)
+  if (nrow(counts_filter) < 25000) {
+    tmp_out = ici_kendalltau(counts_filter, global_na = c(NA, 0), return_matrix = FALSE)
+  } else {
+    tmp_out = "NA"
+  }
+  
   future::plan(multicore)
   list(cor = tmp_out,
        data_id = counts_info$data_id,
@@ -58,8 +63,13 @@ ici_completeness = function(counts_info, id, keep_num, sample_col, class_col)
   }
   counts_filter = t(keep_non_zero_percentage(t(counts), sample_classes = info[[filter_col]],
                                              keep_num = keep_num))
-  counts_completeness = pairwise_completeness(counts_filter, return_matrix = FALSE)
-  tmp_out = ici_kendalltau(counts_filter, global_na = c(NA, 0), return_matrix = FALSE)
+  if (nrow(counts_filter) < 25000) {
+    counts_completeness = pairwise_completeness(counts_filter, return_matrix = FALSE)
+    tmp_out = ici_kendalltau(counts_filter, global_na = c(NA, 0), return_matrix = FALSE)
+    
+  } else {
+    tmp_out = "NA"
+  }
   future::plan(multicore)
   list(cor = tmp_out,
        completeness = counts_completeness,
@@ -72,7 +82,7 @@ ici_completeness = function(counts_info, id, keep_num, sample_col, class_col)
 kt = function(counts_info, id, keep_num, sample_col, class_col)
 {
   # counts_info = tar_read(yeast_counts_info)
-  # keep_num = 1
+  # keep_num = 0.25
   # sample_col = "sample"
   # class_col = "treatment"
   n_workers = future::nbrOfWorkers()
@@ -92,12 +102,16 @@ kt = function(counts_info, id, keep_num, sample_col, class_col)
   counts_filter = t(keep_non_zero_percentage(t(counts), sample_classes = info[[filter_col]],
                                              keep_num = keep_num))
   counts_filter[counts_filter == 0] = NA
-  tmp_out = kt_fast(t(counts_filter), use = "pairwise.complete.obs", return_matrix = FALSE)
-  tmp_out$cor = tmp_out$tau |>
-    dplyr::transmute(s1 = s1, s2 = s2,
-                     cor = tau,
-                     pval = pvalue)
-  tmp_out$tau = NULL
+  if (nrow(counts_filter) < 25000) {
+    tmp_out = kt_fast(t(counts_filter), use = "pairwise.complete.obs", return_matrix = FALSE)
+    tmp_out$cor = tmp_out$tau |>
+      dplyr::transmute(s1 = s1, s2 = s2,
+                       cor = tau,
+                       pval = pvalue)
+    tmp_out$tau = NULL
+  } else {
+    tmp_out = "NA"
+  }
   future::plan(multicore)
   list(cor = tmp_out,
        data_id = counts_info$data_id,
@@ -121,10 +135,15 @@ pearson_base_nozero = function(counts_info, id, keep_num, sample_col, class_col)
   }
   counts_filter = t(keep_non_zero_percentage(t(counts), sample_classes = info[[filter_col]],
                                              keep_num = keep_num))
-  counts_filter_na = counts_filter
-  counts_filter_na[counts_filter == 0] = NA
-  # this one should match the Gierlinski paper values for median correlations
-  tmp_out = pearson_wrapper(t(counts_filter_na))
+  if (nrow(counts_filter) < 25000) {
+    counts_filter_na = counts_filter
+    counts_filter_na[counts_filter == 0] = NA
+    # this one should match the Gierlinski paper values for median correlations
+    tmp_out = pearson_wrapper(t(counts_filter_na))
+    
+  } else {
+    tmp_out = "NA"
+  }
   list(cor = tmp_out,
        data_id = counts_info$data_id,
        method_id = "pearson_base_nozero",
@@ -146,7 +165,12 @@ pearson_base = function(counts_info, id, keep_num, sample_col, class_col)
   }
   counts_filter = t(keep_non_zero_percentage(t(counts), sample_classes = info[[filter_col]],
                                              keep_num = keep_num))
-  tmp_out = pearson_wrapper(t(counts_filter))
+  if (nrow(counts_filter) < 25000) {
+    tmp_out = pearson_wrapper(t(counts_filter))
+  } else {
+    tmp_out = "NA"
+  }
+  
   list(cor = tmp_out,
        data_id = counts_info$data_id,
        method_id = "pearson_base",
@@ -173,7 +197,12 @@ pearson_log1p = function(counts_info, id, keep_num, sample_col, class_col)
   }
   counts_filter = t(keep_non_zero_percentage(t(counts), sample_classes = info[[filter_col]],
                                              keep_num = keep_num))
-  tmp_out = pearson_wrapper(log1p(t(counts_filter)))
+  if (nrow(counts_filter) < 25000) {
+    tmp_out = pearson_wrapper(log1p(t(counts_filter)))
+    
+  } else {
+    tmp_out = "NA"
+  }
   list(cor = tmp_out,
        data_id = counts_info$data_id,
        method_id = "pearson_log1p",
@@ -195,9 +224,14 @@ pearson_log = function(counts_info, id, keep_num, sample_col, class_col)
   }
   counts_filter = t(keep_non_zero_percentage(t(counts), sample_classes = info[[filter_col]],
                                              keep_num = keep_num))
-  log_counts = log(counts_filter)
-  log_counts[is.infinite(log_counts)] = NA
-  tmp_out = pearson_wrapper(t(log_counts))
+  if (nrow(counts_filter) < 25000) {
+    log_counts = log(counts_filter)
+    log_counts[is.infinite(log_counts)] = NA
+    tmp_out = pearson_wrapper(t(log_counts))
+    
+  } else {
+    tmp_out = "NA"
+  }
   list(cor = tmp_out,
        data_id = counts_info$data_id,
        method_id = "pearson_log",
