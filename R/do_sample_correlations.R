@@ -1,16 +1,18 @@
 run_cor_everyway = function(sample_counts, sample_completeness){
   
   ici_cor = ici_kendalltau(t(sample_counts), global_na = c(NA, 0))$cor
-  ici_cor_kt = ici_kendalltau(t(sample_counts), global_na = c(NA), scale_max = FALSE, diag_good = FALSE)$cor
+  
   sample_counts_na = sample_counts
   sample_counts_na[sample_counts_na == 0] = NA
+  
+  kt = kt_fast(sample_counts_na, use = "pairwise.complete.obs", return_matrix = TRUE)$tau
   # this one should match the Gierlinski paper values for median correlations
-  pearson_base_nozero = cor(sample_counts_na, method = "pearson", use = "pairwise.complete")
-  pearson_base = cor(sample_counts, method = "pearson", use = "pairwise.complete")
-  pearson_log1p = cor(log1p(sample_counts), method = "pearson", use = "pairwise.complete")
+  pearson_base_nozero = cor(sample_counts_na, method = "pearson", use = "pairwise.complete.obs")
+  pearson_base = cor(sample_counts, method = "pearson", use = "pairwise.complete.obs")
+  pearson_log1p = cor(log1p(sample_counts), method = "pearson", use = "pairwise.complete.obs")
   log_counts = log(sample_counts)
   log_counts[is.infinite(log_counts)] = NA
-  pearson_log = cor(log_counts, method = "pearson", use = "pairwise.complete")
+  pearson_log = cor(log_counts, method = "pearson", use = "pairwise.complete.obs")
   
   cor_vals = list(icikt = ici_cor,
                   icikt_complete = ici_cor * sample_completeness,
@@ -18,7 +20,7 @@ run_cor_everyway = function(sample_counts, sample_completeness){
                   pearson_base_nozero = pearson_base_nozero,
                   pearson_log1p = pearson_log1p,
                   pearson_log = pearson_log,
-                  kt_base = ici_cor_kt
+                  kt_base = kt
                   )
   cor_vals
 }
