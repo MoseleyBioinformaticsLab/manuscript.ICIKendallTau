@@ -69,6 +69,7 @@ ici_completeness = function(counts_info, id, keep_num, sample_col, class_col)
     
   } else {
     tmp_out = "NA"
+    counts_completeness = "NA"
   }
   future::plan(multicore)
   list(cor = tmp_out,
