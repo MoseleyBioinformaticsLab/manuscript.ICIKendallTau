@@ -162,6 +162,14 @@ calculate_partial_cor_pvalues = function(feature_data)
   # feature_data = tar_read(feature_correlation_ici_yeast)
   # feature_data = tar_read(feature_correlation_pearson_base_nozero_ratstamina)
   # feature_data = tar_read(feature_correlation_ici_completeness_ratstamina)
+  if (inherits(feature_data$cor, "character")) {
+    pcor_p_values = tibble::tibble(partial_cor = NA, id = NA)
+    return(list(pcor = pcor_p_values,
+                data_id = feature_data$data_id,
+                method_id = feature_data$method_id,
+                full_id = feature_data$full_id))
+  } 
+  
   if (inherits(feature_data$cor, "data.frame")) {
     feature_correlations = feature_data$cor |>
       dplyr::transmute(s1 = s1,
@@ -186,33 +194,31 @@ calculate_partial_cor_pvalues = function(feature_data)
   
   message("converting to matrix form ...\n")
   cor_matrix = long_df_2_cor_matrix(feature_correlations |> dplyr::select(s1, s2, cor))
-  if (nrow(cor_matrix) >= 25000) {
+  
+  diag(cor_matrix) = 1
+  cor_matrix[is.na(cor_matrix)] = 0
+  message("calculating partial correlation ...\n")
+  pcor_vals = try(cor_to_pcor(cor_matrix))
+  
+  if (inherits(pcor_vals, "try-error")) {
     pcor_p_values = tibble::tibble(partial_cor = NA, id = NA)
   } else {
-    diag(cor_matrix) = 1
-    cor_matrix[is.na(cor_matrix)] = 0
-    message("calculating partial correlation ...\n")
-    pcor_vals = try(cor_to_pcor(cor_matrix))
-    
-    if (inherits(pcor_vals, "try-error")) {
-      pcor_p_values = tibble::tibble(partial_cor = NA, id = NA)
-    } else {
-      pcor_long = cor_matrix_2_long_df(pcor_vals)
-      pcor_long = pcor_long |>
-        dplyr::filter(!is.na(cor)) |>
-        dplyr::mutate(partial_cor = cor,
-                      cor = NULL,
-                      id = paste0(s1, ".", s2))
-      pcor_long = dplyr::left_join(feature_correlations[, c("cor", "id")], pcor_long, by = "id")
-      pcor_long = pcor_long |>
-        dplyr::filter(!(s1 == s2))
-      message("adjusting p-values")
-      pcor_long = pcor_long |>
-        dplyr::filter(!is.na(partial_cor))
-      pcor_p_values = pcor_pvalue_extreme(pcor_long)
-    }
+    pcor_long = cor_matrix_2_long_df(pcor_vals)
+    pcor_long = pcor_long |>
+      dplyr::filter(!is.na(cor)) |>
+      dplyr::mutate(partial_cor = cor,
+                    cor = NULL,
+                    id = paste0(s1, ".", s2))
+    pcor_long = dplyr::left_join(feature_correlations[, c("cor", "id")], pcor_long, by = "id")
+    pcor_long = pcor_long |>
+      dplyr::filter(!(s1 == s2))
+    message("adjusting p-values")
+    pcor_long = pcor_long |>
+      dplyr::filter(!is.na(partial_cor))
+    pcor_p_values = pcor_pvalue_extreme(pcor_long)
   }
-  
+
+
   
   #pcor_vals[upper.tri(pcor_vals)] = NA
   
