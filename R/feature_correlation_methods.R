@@ -95,7 +95,7 @@ kt = function(counts_info, id, keep_num, sample_col, class_col)
   tmp_out = kt_fast(t(counts_filter), use = "pairwise.complete.obs", return_matrix = FALSE)
   tmp_out$cor = tmp_out$tau |>
     dplyr::transmute(s1 = s1, s2 = s2,
-                     raw = tau,
+                     cor = tau,
                      pval = pvalue)
   tmp_out$tau = NULL
   future::plan(multicore)
