@@ -272,10 +272,10 @@ feature_qratio_combine_map = tar_combine(feature_qratio_comparisons,
 feature_qratio_summary_plan = tar_plan(
   feature_qratio_summary = feature_qratio_comparisons |>
     dplyr::filter(!is.na(q_value)) |>
-    dplyr::select(q_value, data_id, method_id, full_id) |>
+    dplyr::select(data_id, method_id, q_value) |>
     dplyr::distinct() |>
     dplyr::group_by(data_id) |>
-    dplyr::arrange(dplyr::desc(q_value))
+    dplyr::arrange(dplyr::desc(q_value), .by_group = TRUE)
 )
 ## dataset summaries -----
 dataset_summary_map = tar_map(dataset_variables,
