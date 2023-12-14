@@ -409,3 +409,47 @@ average_emf_correlations = function(nsclc_partial_cor,
     dplyr::select(start_node, end_node, weight)
   average_cross_emf
 }
+
+cleanup_qratio_table = function(feature_qratio_summary)
+{
+  # tar_load(feature_qratio_summary)
+  map_method = tibble::tribble(~method_id, ~Method,
+                               "ici", "ICI-Kt",
+                 "ici_completeness", "ICI-Kt * Completeness",
+                 "pearson_base", "Pearson Base",
+                 "pearson_base_nozero", "Pearson No Zeros",
+                 "pearson_log1p", "Pearson Log(x + 1)",
+                 "pearson_log", "Pearson Log(x)",
+                 "kt", "Kendall-tau")
+  map_dataset = tibble::tribble(~data_id, ~Dataset,
+                                "barton_yeast", "Yeast RNA-Seq",
+                  "brainsonrnaseq_egfrgenotype", "EGFR Genotype RNA-Seq",
+                  "mwtab_ratstamina", "Rat Stamina Metabolomics",
+                  "nsclc", "NSCLC Lipidomics")
+  feature_qratio_summary = dplyr::left_join(feature_qratio_summary,
+                                            map_method, by = "method_id")
+  feature_qratio_summary = dplyr::left_join(feature_qratio_summary,
+                                            map_dataset, by = "data_id")
+  feature_qratio_out = feature_qratio_summary |>
+    dplyr::ungroup() |>
+    dplyr::transmute(Dataset,
+                     Method,
+                     Q = q_value)
+  feature_qratio_wide = feature_qratio_out |>
+    tidyr::pivot_wider(id_cols = Method, values_from = "Q", names_from = Dataset)
+  feature_qratio_ft = flextable::flextable(feature_qratio_wide)
+  feature_qratio_ft = flextable::colformat_double(feature_qratio_ft, digits = 3)
+  
+  highlight_locs = matrix(c(1, 2,
+                            1, 3,
+                            2, 4,
+                            2, 5),
+                          nrow = 4,
+                          byrow = TRUE)
+  feature_qratio_highlight = feature_qratio_ft
+  for (irow in seq_len(nrow(highlight_locs))) {
+    feature_qratio_highlight = flextable::bold(feature_qratio_highlight, i = highlight_locs[irow, 1],
+                                               j = highlight_locs[irow, 2], part = "body")
+  }
+  feature_qratio_highlight
+}

@@ -66,7 +66,8 @@ tar_load(c(supp_materials,
            random_censored_cor,
            logtransform_censored_cor,
            single_core_perf,
-           time_multi
+           time_multi,
+           feature_qratio_summary
 ))
 
 ```
@@ -85,7 +86,8 @@ figure_count$increment(c("problem",
 table_count$increment(c("datasets",
                         "yeast_outliers",
                         "egfrgenotype_outliers",
-                        "adenocarcinoma_outliers"))
+                        "adenocarcinoma_outliers",
+                        "partitioning"))
 
 ```
 
@@ -610,7 +612,14 @@ In this example, Pearson shows superior sensitivity to outlier detection, likely
 
 ### Partitioning of Feature - Feature Networks
 
-
+```{r}
+qratio_display_table = cleanup_qratio_table(feature_qratio_summary)
+qratio_display_table = qratio_display_table |> font(fontname = "Calibri", part = "all") |>
+  fontsize(size = 11, part = "header") |>
+  fontsize(size = 10, part = "body")
+qratio_display_table = set_table_properties(qratio_display_table, layout = "autofit")
+qratio_display_table
+```
 
 ## Discussion and Conclusion
 
