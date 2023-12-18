@@ -337,8 +337,6 @@ For details on the samples, their processing, and generation of assignments, see
 Samples were grouped by the instrument (two different instruments were used to collect the data) and whether they were taken from normal or tumor tissue for the calculation of median abundance across samples.
 Assigned peaks and un-assigned peaks were matched to each other by finding peaks within a 0.5 ppm cutoff.
 We only considered peaks matched that had a single assigned and a single un-assigned peak match together.
-Assigned molecular formulas were then classified into one or more lipid categories using our lipid classifier tool [@mitchellDerivingLipidClassification2020].
-For each matched peak, we used voting of the lipid categories and classes of the assignments to ascribe a single category and lipid class (where possible).
 
 ### Rat Stamina and Feeding Metabolomics Data Set
 
@@ -348,12 +346,15 @@ The data can be accessed directly via it's Project DOI: https://dx.doi.org/10.21
 The mass-spectrometry peak intensities, and sample metadata were taken directly from the MWTAB json file provided by Metabolomics Workbench.
 Peak intensities were normalized by the non-zero peak abundances in each sample.
 Samples were grouped by the combination of feeding status (ad lib or calorie restricted) and oxidative capacity (low or high) for the calculation of median abundance across samples.
-Metabolite annotations are based on Kyoto Encyclopedia of Genes and Genomes (KEGG) pathways that map from the provided KEGG compound IDs to various KEGG pathways.
+
+
+### Feature Annotations
+
+Pathway annotations for gene transcripts in the RNA-Seq datasets were obtained from Reactome pathways in the reactome.db Bioconductor package as well as organism specific annotation packages [@joshi-topeReactomeKnowledgebaseBiological2005; @ligtenbergReactomeDbSet2023].
+Metabolite annotations for the rat stamina metabolites are based on Kyoto Encyclopedia of Genes and Genomes (KEGG) pathways that map from the provided KEGG compound IDs to various KEGG pathways [@kanehisaKEGGKyotoEncyclopedia2000].
 Compound - pathway annotations were fetched using the kegg-pull python package [@huckvaleKegg_pullSoftwarePackage2023].
-
-### Gene Annotations
-
-Pathway annotations for RNA-Seq were obtained from Reactome pathways in the reactome.db Bioconductor package as well as organism specific annotation packages [@joshi-topeReactomeKnowledgebaseBiological2005; @ligtenbergReactomeDbSet2023].
+Lipid features from the NSCLC lipidomics with assignments are classified into one or more lipid categories using our lipid classifier tool [@mitchellDerivingLipidClassification2020].
+For each assigned peak, we used voting of the lipid categories and classes from multiple assignments to ascribe a single category and lipid class (where possible).
 
 ### Number of Non-Missing Values and Median Values
 
@@ -365,7 +366,7 @@ Additionally, the Kendall-tau correlation of the minimum median and number of pr
 
 ### Feature - Feature Networks and Partitioning
 
-For each of the datasets, we trimmed to features present in 25% or more of **any** of the sample classes (see above for the various classes of sampels in each dataset).
+For each of the datasets, we trimmed to features present in 25% or more of **any** of the sample classes (see above for the various classes of samples in each dataset).
 Various correlation measures are calculated between all remaining features.
 For any given correlation, we generate the feature-feature network for that data set - correlation combination.
 The dataset correlations are transformed to partial correlation.
@@ -373,9 +374,9 @@ From the distribution of partial correlation values, we consider the fraction of
 The network is then trimmed to only the edges that have a positive weight.
 For each feature annotation (see Gene Annotations), we calculate three sums of the edge weights.
 
-  1. The total sum of edge weights for all edges with features that are annotated to one or more of the annotations (total_sum).
-  1. The within annotation edge weight sum, where both start and end nodes are annotated to the same annotation.
-  1. The outer annotation edge weight sum, where the start node is part of the annotated set, and the end node is annotated to one of the other annotations.
+  1. The total sum of edge weights for all edges with features that are annotated to one or more of the annotations (*annotated*).
+  1. The *within* annotation edge weight sum, where both start and end nodes are annotated to the same annotation.
+  1. The *outer* annotation edge weight sum, where the start node is part of the annotated set, and the end node is annotated to one of the other annotations.
   
 The partitioning ratio (or q-ratio) is then:
 
@@ -612,6 +613,14 @@ In this example, Pearson shows superior sensitivity to outlier detection, likely
 
 ### Partitioning of Feature - Feature Networks
 
+Feature - feature correlations (for those features present in 25% or more of the samples of a class) for each dataset were calculated using each of the correlation methods (see Methods).
+From those feature - feature correlations, partial correlations are calculated, and significant edges retained.
+Feature annotations from either reactome pathways (RNA-Seq), KEGG pathways (metabolomics), or lipid class (lipidomics) were used to determine if the edges within annotations were more present than outside of annotations.
+
+`r table_count$label_text("partitioning")` lists the summed partitioning values for each dataset and method.
+For each of the datasets examined, ICI-Kt or ICI-Kt completeness gave the most positive summed partitioning values.
+
+`r table_count$label_text("partitioning")`. Partitioning ratios for feature-feature correlation networks generated using each method for each dataset.
 ```{r}
 qratio_display_table = cleanup_qratio_table(feature_qratio_summary)
 qratio_display_table = qratio_display_table |> font(fontname = "Calibri", part = "all") |>
