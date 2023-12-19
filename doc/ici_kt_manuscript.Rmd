@@ -501,7 +501,7 @@ In fact, regressing the time to number of samples using a formula with the expec
 As we implemented a relatively easy way to make use of multiple cores using `future`, we also verified that increases in run time using multiple cores was reasonable as well.
 `r figure_count$label_text("performance")`B shows that as samples are added, the run time quickly increases logarithmically, similar to increasing samples on a single core (see `r figure_count$label_text("performance")`A).
 
-```{r performance, dn_id = figure_count}
+```{r performance, dn_id = figure_count, fig.height = 8}
 single_core_perf = single_core_perf %>%
   dplyr::mutate(method2 = dplyr::case_when(
     method %in% "ici_kt" ~ "ICIKendallTau::ici_kt()",
@@ -531,14 +531,14 @@ inset_perf = ggplot(core_perf2, aes(x = n, y = time, color = method)) +
         panel.background = element_rect(fill = "white")) +
   labs(x = "", y = "")
 
-single_core = s_perf_plot + inset_element(inset_perf, 0.1, 0.72, 1, 1)
+single_core = s_perf_plot + inset_element(inset_perf, 0.1, 0.72, 1, 1, ignore_tag = TRUE)
 multi_core = time_multi |>
   ggplot(aes(x = n_sample, y = log2(time))) +
   geom_line(linewidth = 2) +
   geom_smooth(method = "lm", formula = y ~ (x), se = FALSE) +
   labs(x = "Number of Samples",
        y = "Log2(Time) (s)")
-s_perf_plot + inset_element(inset_perf, 0.1, 0.72, 1, 1, ignore_tag = TRUE) + multi_core + plot_annotation(tag_levels = "A")
+(s_perf_plot + inset_element(inset_perf, 0.1, 0.72, 1, 1)) / multi_core + plot_annotation(tag_levels = list(c("A", "", "B")))
 ```
 
 `r figure_count$label_text("performance")`. (A) Comparison of the *Rcpp* *mergesort* *ici_kt*, and base R's *cor* function using the "pearson" and "kendall" methods as the number of features are increased from 100 to 5000.
