@@ -2,6 +2,10 @@ filter_generate_outliers = function(counts, info, keep_num, sample_col, class_co
   # counts_info = tar_read(yeast_counts_info)
   # counts = counts_info$counts
   # info = counts_info$info
+  # keep_num = 1
+  # sample_col = "sample"
+  # class_col = "treatment"
+  # 
   # 
   # counts_info = tar_read(nsclc_counts_info)
   # counts = counts_info$counts
