@@ -46,6 +46,7 @@ tar_load(c(lod_graph_adenocarcinoma,
            negative_kt,
            all_kt,
            negative_pearson,
+           censored_value_plots,
            complexity_figure,
            yeast_paper_outliers,
            yeast_outliers,
@@ -72,6 +73,7 @@ supp_figure_count$increment(c("lod_adenocarcinoma",
                             "kt_pearson",
                             "ici_distribution",
                             "kt_distribution",
+                            "leftcensored",
                             "complexity",
                             "yeast_outliers",
                             "egfrgenotype_outliers",
@@ -163,6 +165,8 @@ Rat stamina dataset count medians by number of samples feature was present in.
 
 ## Simulated Data
 
+### Simple Data Set
+
 The simplest simulated data set includes three samples, where two are perfectly correlated, and the third perfectly anti-correlated. 
 We then created missing values (replaced value with NA) in each sample systematically, and computed the ICI-Kt, Pearson, and Kendall-tau correlations.
 
@@ -209,6 +213,18 @@ kt_plot
 
 `r supp_figure_count$label_text("kt_distribution")`.
 Kendall-tau correlation as missing values are varied between two samples and replaced with 0 before calculating Kendall-tau.
+
+### Semi-Realistic Data Set
+
+```{r leftcensored, fig.height = 8, fig.width = 9, dn_id = supp_figure_count}
+wrap_plots(censored_value_plots, ncol = 1) + plot_annotation(tag_levels = "A")
+```
+
+`r supp_figure_count$label_text("leftcensored")`.
+Effect of introducing missing values from a cutoff (A & B) or randomly (C) on different measures of correlation, including ICI-Kt, Kendall with pairwise complete, Kendall replacing missing with 0, Pearson with pairwise complete, and Pearson replacing missing with 0. 
+A) Missing values introduced by setting an increasing cutoff. 
+B) Missing values introduced by setting an increasing cutoff, and then log-transforming the values before calculating correlation. 
+C) Missing values introduced at random. For the random case, each sample of random positions was repeated 100 times.
 
 ## Algorithmic Complexity
 
