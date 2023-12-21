@@ -54,7 +54,8 @@ load(here::here("doc/supp_stuff.rda"))
 
 ```{r}
 #| label: load-dependencies
-tar_load(c(supp_materials,
+tar_load(c(references,
+           supp_materials,
            supp_tables,
            dataset_summary,
            lod_graph_yeast,

@@ -296,6 +296,9 @@ dataset_summary_plan = tar_plan(dataset_summary = dplyr::bind_cols(
 
 # documents -----
 documents_plan = tar_plan(
+  tar_target(references,
+             "doc/icikt_references.json",
+             format = "file"),
   tar_render(supp_materials,
               "doc/supplemental_materials.Rmd"),
   tar_render(supp_tables,
