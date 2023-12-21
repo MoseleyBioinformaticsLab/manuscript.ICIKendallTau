@@ -60,7 +60,7 @@ tar_load(c(references,
            dataset_summary,
            lod_graph_yeast,
            realistic_comparison_plot,
-           censored_compare_plots,
+           censored_value_plots,
            egfrgenotype_single,
            yeast_single,
            adenocarcinoma_single,
@@ -473,11 +473,11 @@ In a naive treatment of the left-centered missing data, if the values below the 
 Likewise, Pearson correlation replacing missing with 0 shows a parabolic effect with increasing missing values.
 
 ```{r leftcensored, fig.height = 8, fig.width = 9, dn_id = figure_count}
-left_plot = purrr::map(censored_compare_plots$left, \(x){x + theme(axis.text = element_text(size = 8))}) |> wrap_plots(ncol = 1)
-log_plot = purrr::map(censored_compare_plots$log, \(x){x + theme(axis.text = element_text(size = 8))}) |> wrap_plots(ncol = 1)
-random_plot = purrr::map(censored_compare_plots$random, \(x){x + theme(axis.text = element_text(size = 8))}) |> wrap_plots(ncol = 1)
-
-(left_plot | log_plot | random_plot)
+censored_value_plots = purrr::map(censored_value_plots, \(x){
+  x + theme(strip.background = element_rect(fill = "white", color = "white"),
+            panel.border = element_blank())
+})
+wrap_plots(censored_value_plots, ncol = 1) + plot_annotation(tag_levels = "A")
 ```
 
 `r figure_count$label_text("leftcensored")`. Effect of introducing missing values from a cutoff (**A** & **B**) or randomly (**C**) on different measures of correlation, including ICI-Kt, Kendall with pairwise complete, Kendall replacing missing with 0, Pearson with pairwise complete, and Pearson replacing missing with 0.

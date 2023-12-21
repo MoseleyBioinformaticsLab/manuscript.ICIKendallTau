@@ -218,7 +218,11 @@ Kendall-tau correlation as missing values are varied between two samples and rep
 ### Semi-Realistic Data Set
 
 ```{r leftcensored, fig.height = 8, fig.width = 9, dn_id = supp_figure_count}
-wrap_plots(censored_value_plots, ncol = 1) + plot_annotation(tag_levels = "A")
+left_plot = purrr::map(censored_compare_plots$left, \(x){x + theme(axis.text = element_text(size = 8))}) |> wrap_plots(ncol = 1)
+log_plot = purrr::map(censored_compare_plots$log, \(x){x + theme(axis.text = element_text(size = 8))}) |> wrap_plots(ncol = 1)
+random_plot = purrr::map(censored_compare_plots$random, \(x){x + theme(axis.text = element_text(size = 8))}) |> wrap_plots(ncol = 1)
+
+(left_plot | log_plot | random_plot)
 ```
 
 `r supp_figure_count$label_text("leftcensored")`.
