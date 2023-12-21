@@ -22,6 +22,7 @@ output:
     pandoc_args:
       - '--lua-filter=scholarly-metadata.lua'
       - '--lua-filter=author-info-blocks.lua'
+date: '`r Sys.time()`'
 bibliography: '`r here::here("doc/icikt_references.json")`'
 csl: plos-computational-biology.csl
 editor_options: 
