@@ -113,7 +113,7 @@ supp_table_count$increment(c("yeast_outliers",
 
 In addition to the yeast RNA-seq dataset, we investigated the relationship of median abundance and minimum median abundance of present features with the number of present features across samples for the other four datasets, including TCGA Adenocarcinoma RNA-seq, Brainson Tumor Cultures RNA-seq, RCSIRM Non small cell lung cancer lipidomics, and rat diabetes metabolomics from Metabolomics Workbench.
 
-As shown in `r supp_figure_count$label_text(c("lod_adenocarcinoma", "lod_tumorcultures", "lod_nsclc", "lod_ratstamina"))`, there is a direct relationship between the minimum median value and number of samples a feature is present in.
+As shown in `r supp_figure_count$label_text(c("lod_adenocarcinoma", "lod_egfrgenotype", "lod_egfrgenotypetumorculture", "lod_typeandtumorculture", "lod_nsclc", "lod_ratstamina"))`, there is a direct relationship between the minimum median value and number of samples a feature is present in, unless the grouping of replicate samples is incorrect, as shown in `r supp_figure_count$label_text("lod_egfrgenotypetumorculture")`.
 
 ```{r}
 #| label: lod_adenocarcinoma 

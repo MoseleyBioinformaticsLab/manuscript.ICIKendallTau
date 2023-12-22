@@ -42,11 +42,15 @@ create_median_plot = function(median_stuff, xlimit)
   use_locations = use_locations |>
     dplyr::mutate(cor_label = paste0("\u03C4: ", format(cor, digits = 2)))
   
+  nrow = 1
+  if (n_treatments > 6) {
+    nrow = 2
+  }
   out_plot = log_medians |>
     ggplot(aes(x = log_median, y = n_present)) +
     geom_point() +
     geom_label(data = use_locations, aes(x = cor_x, y = cor_y, label = cor_label), hjust = 0) +
-    facet_wrap(~ treatment, nrow = 1, scales = "free") +
+    facet_wrap(~ treatment, nrow = nrow, scales = "free") +
     theme(strip.background = NULL,
           strip.text.x = element_text(hjust = 0)) +
     labs(x = "Log10(Median-Present)", y = "N-Present")
@@ -57,6 +61,10 @@ create_median_plot = function(median_stuff, xlimit)
 create_min_median_plot = function(median_stuff)
 {
   # tmp = tar_read(correlate_medians_yeast)
+  # median_stuff = tmp$median_min
+  # xlimit = tmp$quantile
+  # 
+  # tmp = tar_read(correlate_medians_typeandtumorculture)
   # median_stuff = tmp$median_min
   # xlimit = tmp$quantile
   n_treatments = length(unique(median_stuff$medians$treatment))
@@ -76,11 +84,16 @@ create_min_median_plot = function(median_stuff)
   use_locations = use_locations |>
     dplyr::mutate(cor_label = paste0("\u03C4: ", format(cor, digits = 2)))
   
+  nrow = 1
+  if (n_treatments > 6) {
+    nrow = 2
+  }
+  
   out_plot = log_medians |>
     ggplot(aes(x = log_median, y = n_present)) +
     geom_point() +
     geom_label(data = use_locations, aes(x = cor_x, y = cor_y, label = cor_label), hjust = 0) +
-    facet_wrap(~ treatment, nrow = 1, scales = "free") +
+    facet_wrap(~ treatment, nrow = nrow, scales = "free") +
     theme(strip.background = NULL,
           strip.text.x = element_text(hjust = 0)) +
     labs(x = "Log10(Median-Present-Min)", y = "N-Present")
