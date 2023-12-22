@@ -606,6 +606,12 @@ yeast_ft_out = yeast_table %>%
 yeast_ft_out
 ```
 
+[Here we really need to dig into those other datasets, and how things look]. 
+
+[And then dig into what happens as we vary the features kept].
+
+[There is a graph of outliers missing in EGFR section of supplemental].
+
 `r figure_count$label_text("egfrgenotype_outliers")` visualizes the sample-specific median of each metric calculated from the Brainson RNA-Seq data set.
 Likewise, `r table_count$label_text("egfrgenotype_outliers")` lists the outliers detected based on each metric.
 In this example, Pearson shows superior sensitivity to outlier detection, likely due to the larger spread in median Pearson correlation values.
