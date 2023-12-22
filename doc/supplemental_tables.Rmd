@@ -40,7 +40,7 @@ yeast_ft_out
 
 
 `r supp_table_count$label_text("egfrgenotype_outliers")`.
-Brainson dataset median correlation values and outlier determination for each outlier from each of the correlation methods.
+EGFR RNA-Seq dataset using genotype as the grouping variable median correlation values and outlier determination for each outlier from each of the correlation methods.
 Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; PB: Pearson Base, PN: Pearson No Zero; PL1: Pearson Log(x + 1); PL: Pearson Log(x); Kt: Kendall-tau.
 
 ```{r egfrgenotype_table2}
@@ -49,6 +49,30 @@ egfrgenotype_ft_out = egfrgenotype_table %>%
   put_outlier_right() %>%
   fontsize(size = 7, part = "all")
 egfrgenotype_ft_out
+```
+
+`r supp_table_count$label_text("egfrgenotypetumorculture_outliers")`.
+EGFR RNA-Seq dataset using growth method as the grouping variable median correlation values and outlier determination for each outlier from each of the correlation methods.
+Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; PB: Pearson Base, PN: Pearson No Zero; PL1: Pearson Log(x + 1); PL: Pearson Log(x); Kt: Kendall-tau.
+
+```{r egfrgenotypetumorculture_table2}
+egfrgenotypetumorculture_ft_out = egfrgenotypetumorculture_table %>%
+  set_nice_widths(sample_width = 1.1, outlier_width = 0.5, cor_width = 0.7) %>%
+  put_outlier_right() %>%
+  fontsize(size = 7, part = "all")
+egfrgenotypetumorculture_ft_out
+```
+
+`r supp_table_count$label_text("typeandtumorculture_outliers")`.
+EGFR RNA-Seq dataset using genotype and growth method as the grouping variable median correlation values and outlier determination for each outlier from each of the correlation methods.
+Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; PB: Pearson Base, PN: Pearson No Zero; PL1: Pearson Log(x + 1); PL: Pearson Log(x); Kt: Kendall-tau.
+
+```{r typeandtumorculture_table2}
+typeandtumorculture_ft_out = typeandtumorculture_table %>%
+  set_nice_widths(sample_width = 1.1, outlier_width = 0.5, cor_width = 0.7) %>%
+  put_outlier_right() %>%
+  fontsize(size = 7, part = "all")
+typeandtumorculture_ft_out
 ```
 
 
@@ -62,4 +86,28 @@ adenocarcinoma_ft_out = adenocarcinoma_table %>%
   put_outlier_right() %>%
   fontsize(size = 7, part = "all")
 adenocarcinoma_ft_out
+```
+
+`r supp_table_count$label_text("nsclc_outliers")`.
+NSCLC lipidomics dataset median correlation values and outlier determination for each outlier from each of the correlation methods.
+Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; PB: Pearson Base, PN: Pearson No Zero; PL1: Pearson Log(x + 1); PL: Pearson Log(x); Kt: Kendall-tau.
+
+```{r nsclc_table2}
+nsclc_ft_out = nsclc_table %>%
+  set_nice_widths(sample_width = 0.52, outlier_width = 0.5, cor_width = 0.7) %>%
+  put_outlier_right() %>%
+  fontsize(size = 7, part = "all")
+nsclc_ft_out
+```
+
+`r supp_table_count$label_text("ratstamina_outliers")`.
+Rat stamina metabolomics dataset median correlation values and outlier determination for each outlier from each of the correlation methods.
+Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; PB: Pearson Base, PN: Pearson No Zero; PL1: Pearson Log(x + 1); PL: Pearson Log(x); Kt: Kendall-tau.
+
+```{r ratstamina_table2}
+ratstamina_ft_out = ratstamina_table %>%
+  set_nice_widths(sample_width = 0.52, outlier_width = 0.5, cor_width = 0.7) %>%
+  put_outlier_right() %>%
+  fontsize(size = 7, part = "all")
+ratstamina_ft_out
 ```
