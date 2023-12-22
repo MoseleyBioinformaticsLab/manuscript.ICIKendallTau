@@ -44,7 +44,7 @@ create_median_plot = function(median_stuff, xlimit)
   
   nrow = 1
   if (n_treatments > 6) {
-    nrow = 2
+    nrow = 3
   }
   out_plot = log_medians |>
     ggplot(aes(x = log_median, y = n_present)) +
@@ -86,7 +86,7 @@ create_min_median_plot = function(median_stuff)
   
   nrow = 1
   if (n_treatments > 6) {
-    nrow = 2
+    nrow = 3
   }
   
   out_plot = log_medians |>
