@@ -40,6 +40,7 @@ tar_load(c(references,
            lod_graph_adenocarcinoma,
            lod_graph_egfrgenotype,
            lod_graph_egfrgenotypetumorculture,
+           lod_graph_typeandtumorculture,
            lod_graph_nsclc,
            lod_graph_ratstamina,
            positive_kt,
@@ -56,6 +57,8 @@ tar_load(c(references,
            egfrgenotype_single,
            egfrgenotypetumorculture_outliers,
            egfrgenotypetumorculture_single,
+           typeandtumorculture_outliers,
+           typeandtumorculture_single,
            adenocarcinoma_outliers,
            adenocarcinoma_single,
            nsclc_outliers,
@@ -69,6 +72,7 @@ tar_load(c(references,
 supp_figure_count$increment(c("lod_adenocarcinoma",
                               "lod_egfrgenotype",
                               "lod_egfrgenotypetumorculture",
+                              "lod_typeandtumorculture",
                               "lod_nsclc",
                               "lod_ratstamina",
                             "kt_pearson",
@@ -116,7 +120,7 @@ wrap_plots(lod_graph_adenocarcinoma, ncol = 1) + plot_annotation(tag_levels = "A
 ```
 `r supp_figure_count$label_text("lod_adenocarcinoma")`.
 Adenocarcinoma dataset count medians by number of samples feature was present in.
-**A**: Log10 of medians for present values copmared to the number of samples the feature was present in.
+**A**: Log10 of medians for present values compared to the number of samples the feature was present in.
 **B**: Log10 of minimum median for each value of number of samples the feature was present in.
 
 ```{r}
@@ -127,7 +131,7 @@ wrap_plots(lod_graph_egfrgenotype, ncol = 1) + plot_annotation(tag_levels = "A")
 ```
 `r supp_figure_count$label_text("lod_egfrgenotype")`.
 EGFR genotype dataset count medians by number of samples feature was present in.
-**A**: Log10 of medians for present values copmared to the number of samples the feature was present in.
+**A**: Log10 of medians for present values compared to the number of samples the feature was present in.
 **B**: Log10 of minimum median for each value of number of samples the feature was present in.
 
 ```{r}
@@ -138,7 +142,18 @@ wrap_plots(lod_graph_egfrgenotypetumorculture, ncol = 1) + plot_annotation(tag_l
 ```
 `r supp_figure_count$label_text("lod_egfrgenotypetumorculture")`.
 EGFR genotype and tumor culture dataset count medians by number of samples feature was present in.
-**A**: Log10 of medians for present values copmared to the number of samples the feature was present in.
+**A**: Log10 of medians for present values compared to the number of samples the feature was present in.
+**B**: Log10 of minimum median for each value of number of samples the feature was present in.
+
+```{r}
+#| label: lod_typeandtumorculture
+#| fig.width: 10
+#| fig.height: 8
+wrap_plots(lod_graph_typeandtumorculture, ncol = 1) + plot_annotation(tag_levels = "A")
+```
+`r supp_figure_count$label_text("lod_typeandtumorculture")`.
+EGFR genotype and tumor culture dataset count medians by number of samples feature was present in.
+**A**: Log10 of medians for present values compared to the number of samples the feature was present in.
 **B**: Log10 of minimum median for each value of number of samples the feature was present in.
 
 ```{r}
@@ -149,7 +164,7 @@ wrap_plots(lod_graph_nsclc, ncol = 1) + plot_annotation(tag_levels = "A")
 ```
 `r supp_figure_count$label_text("lod_nsclc")`.
 Non-small-cell-lung-cancer (NSCLC) lipidomics dataset count medians by number of samples feature was present in.
-**A**: Log10 of medians for present values copmared to the number of samples the feature was present in.
+**A**: Log10 of medians for present values compared to the number of samples the feature was present in.
 **B**: Log10 of minimum median for each value of number of samples the feature was present in.
 
 
@@ -161,7 +176,7 @@ wrap_plots(lod_graph_ratstamina, ncol = 1) + plot_annotation(tag_levels = "A")
 ```
 `r supp_figure_count$label_text("lod_ratstamina")`.
 Rat stamina dataset count medians by number of samples feature was present in.
-**A**: Log10 of medians for present values copmared to the number of samples the feature was present in.
+**A**: Log10 of medians for present values compared to the number of samples the feature was present in.
 **B**: Log10 of minimum median for each value of number of samples the feature was present in.
 
 ## Simulated Data
@@ -361,7 +376,7 @@ egfrgenotype_table = compare_outlier_tables(egfrgenotype_single, compare_egfrgen
 ```
 
 
-### EGFR RNASeq Genotype & Tumor Type
+### EGFR RNASeq Tumor Type
 
 ```{r}
 #| label: setup_egfrgenotypetumorculture
@@ -385,6 +400,32 @@ egfrgenotypetumorculture_single %>%
 ```{r}
 #| label: egfrgenotypetumorculture_table
 egfrgenotypetumorculture_table = compare_outlier_tables(egfrgenotypetumorculture_single, compare_egfrgenotype, "pearson_log1p", map_method = other_method)
+```
+
+### EGFR RNASeq Genotype And Tumor Type
+
+```{r}
+#| label: setup_typeandtumorculture
+all_typeandtumorculture_outliers = rbind_outliers(typeandtumorculture_outliers) |>
+  perc_to_number()
+```
+
+```{r}
+#| label: typeandtumorculture_outliers
+typeandtumorculture_single %>%
+  add_method(other_method) %>%
+  dplyr::filter(which %in% compare_egfrgenotype) %>%
+  ggplot(aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
+  geom_sina() +
+  facet_wrap(~ method, nrow = 1) +
+  labs(x = "Sample Class", y = "Median Correlation") +
+  theme(axis.text.x = element_text(angle = 90))
+```
+
+
+```{r}
+#| label: typeandtumorculture_table
+typeandtumorculture_table = compare_outlier_tables(typeandtumorculture_single, compare_egfrgenotype, "pearson_log1p", map_method = other_method)
 ```
 
 ### TCGA Adenocarcinoma
