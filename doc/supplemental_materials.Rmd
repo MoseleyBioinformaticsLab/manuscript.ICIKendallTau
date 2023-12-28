@@ -87,15 +87,22 @@ supp_figure_count$increment(c("lod_adenocarcinoma",
                             "adenocarcinoma_outliers",
                             "nsclc_outliers",
                             "ratstamina_outliers",
-                            "adenocarcinoma_by_method",
-                            "adenocarcinoma_by_keep_num",
-                            "adenocarcinoma_differences",
                             "yeast_by_method",
                             "yeast_by_keep_num",
                             "yeast_differences",
                             "egfrgenotype_by_method",
                             "egfrgenotype_by_keep_num",
-                            "egfrgenotype_differences"))
+                            "egfrgenotype_differences",
+                            "adenocarcinoma_by_method",
+                            "adenocarcinoma_by_keep_num",
+                            "adenocarcinoma_differences",
+                            "nsclc_by_method",
+                            "nsclc_by_keep_num",
+                            "nsclc_differences",
+                            "ratstamina_by_method",
+                            "ratstamina_by_keep_num",
+                            "ratstamina_differences"
+                            ))
 
 
 
@@ -151,7 +158,7 @@ EGFR genotype and tumor culture dataset count medians by number of samples featu
 ```{r}
 #| label: lod_typeandtumorculture
 #| fig.width: 10
-#| fig.height: 8
+#| fig.height: 12
 wrap_plots(lod_graph_typeandtumorculture, ncol = 1) + plot_annotation(tag_levels = "A")
 ```
 `r supp_figure_count$label_text("lod_typeandtumorculture")`.
@@ -398,7 +405,7 @@ egfrgenotypetumorculture_single %>%
   labs(x = "Sample Class", y = "Median Correlation") +
   theme(axis.text.x = element_text(angle = 90))
 ```
-
+`r supp_figure_count$label_text("egfrgenotypetumorculture_outliers")`.
 
 ```{r}
 #| label: egfrgenotypetumorculture_table
@@ -424,7 +431,7 @@ typeandtumorculture_single %>%
   labs(x = "Sample Class", y = "Median Correlation") +
   theme(axis.text.x = element_text(angle = 90))
 ```
-
+`r supp_figure_count$label_text("typeandtumorculture_outliers")`.
 
 ```{r}
 #| label: typeandtumorculture_table
@@ -510,7 +517,6 @@ For both ICI-Kt and Pearson correlation, the tumor samples variance measures are
 `r supp_figure_count$label_text("adenocarcinoma_outliers")` visualizes the sample-specific median metric value calculated from the TCGA RNA-Seq data set, with `r supp_table_count$label_text("adenocarcinoma_outliers")` listing the outliers detected from each metric.
 In this example, the ICI-Kt * completeness correlation demonstrated superior sensitivity for outlier detection, likely due to its better sensitivity to measurement completeness.
 The wider spread of measurement completeness is expected, since TCGA is an aggregate of samples collected from various human cancer patents as compared to the first two examples which were collected from specific experiments in cell culture (`r supp_table_count$label_text("adenocarcinoma_mad")`).
-The wider spread of measurement completeness is expected, since TCGA is an aggregate of samples collected from various human cancer patients as compared to the first two examples which were collected from specific experiments in cell culture. 
 However, the outliers detected are not a complete superset of the outliers detected by ICI-Kt and Pearson, probably due to the integration of completeness and correlation.
 
 
@@ -533,7 +539,7 @@ nsclc_single %>%
   labs(x = "Sample Class", y = "Median Correlation") +
   theme(axis.text.x = element_text(angle = 90))
 ```
-
+`r supp_figure_count$label_text("nsclc_outliers")`.
 
 ```{r}
 #| label: nsclc_table
@@ -560,6 +566,7 @@ ratstamina_single %>%
   labs(x = "Sample Class", y = "Median Correlation") +
   theme(axis.text.x = element_text(angle = 90))
 ```
+`r supp_figure_count$label_text("ratstamina_outliers")`.
 
 
 ```{r}
@@ -572,7 +579,7 @@ ratstamina_table = compare_outlier_tables(ratstamina_single, compare_egfrgenotyp
 
 One sure way to limit the effect of missing values on correlation values is to impose the condition that a gene has a non-zero count in a minimum percentage of the samples in one of the classes.
 In all of the example plots above, and the tables in Supplemental Tables, a gene had to be present in at least **one sample**.
-Here, we explore what happens if we increase the number of samples required for a gene to be present in at 25% and 50% of a class for the yeast samples and adenocarcinoma samples, and 25%, 50%, 75% and all samples of a class for the Brainson samples.
+Here, we explore what happens if we increase the number of samples required for a gene to be present in at 25% and 50% of a class for the yeast samples and adenocarcinoma samples, and 25%, 50%, 75% and all samples of a class for the EGFR samples.
 
 
 ### Yeast Samples
@@ -708,10 +715,100 @@ ggplot(adenocarcinoma_diffs, aes(x = keep_num, y = diff)) +
 Difference of normal and tumor medians and MADs  by correlation method and applying different fractional cutoffs for TCGA adenocarcinoma RNA-seq data.
 Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; Kt: Kendall-tau; PB: Pearson Base (raw values); PL: Pearson Log(x); PL1: Pearson Log(x + 1); PN0: Pearson No Zeros.
 
+
+### NSCLC
+
+
+```{r nsclc_by_method, dn_id = supp_figure_count}
+nsclc_method = add_method(all_nsclc_outliers, other_method) %>%
+  clear_outliers()
+ggplot(nsclc_method, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) + 
+  geom_sina() +
+  facet_grid(keep_num ~ method) +
+  theme(axis.text.x = element_text(angle = 90)) +
+  labs(x = "Sample Class", y = "Median Correlation")
+```
+
+`r supp_figure_count$label_text("nsclc_by_method")`. 
+Median correlations by correlation method and applying different fractional cutoffs for NSCLC lipidomics  data.
+Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; Kt: Kendall-tau; PB: Pearson Base (raw values); PL: Pearson Log(x); PL1: Pearson Log(x + 1); PN0: Pearson No Zeros.
+
+```{r nsclc_by_keep_num, dn_id = supp_figure_count, fig.height = 10}
+ggplot(nsclc_method, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
+  geom_sina() +
+  facet_grid(method ~ keep_num) +
+  theme(axis.text.x = element_text(angle = 90)) +
+  labs(x = "Sample Class", y = "Median Correlation")
+```
+
+`r supp_figure_count$label_text("nsclc_by_keep_num")`. 
+Median correlations by correlation method and applying different fractional cutoffs for NSCLC lipidomics data.
+Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; Kt: Kendall-tau; PB: Pearson Base (raw values); PL: Pearson Log(x); PL1: Pearson Log(x + 1); PN0: Pearson No Zeros.
+
+```{r nsclc_differences, dn_id = supp_figure_count}
+nsclc_summary = calculate_variation(nsclc_method)
+nsclc_diffs = calculate_differences(nsclc_summary)
+
+ggplot(nsclc_diffs, aes(x = keep_num, y = diff)) + 
+  geom_col() +
+  facet_grid(which_diff ~ method) +
+  labs(x = "Keep Fraction", y = "Normal / Tumor Differences") +
+  theme(axis.text.x = element_text(angle = 90))
+```
+
+`r supp_figure_count$label_text("nsclc_differences")`. 
+Difference of normal and tumor medians and MADs  by correlation method and applying different fractional cutoffs for NSCLC lipidomics data.
+Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; Kt: Kendall-tau; PB: Pearson Base (raw values); PL: Pearson Log(x); PL1: Pearson Log(x + 1); PN0: Pearson No Zeros.
+
+
+### Rat Stamina
+
+
+```{r ratstamina_by_method, dn_id = supp_figure_count}
+ratstamina_method = add_method(all_ratstamina_outliers, other_method) %>%
+  clear_outliers()
+ggplot(ratstamina_method, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) + 
+  geom_sina() +
+  facet_grid(keep_num ~ method) +
+  theme(axis.text.x = element_text(angle = 90)) +
+  labs(x = "Sample Class", y = "Median Correlation")
+```
+
+`r supp_figure_count$label_text("ratstamina_by_method")`. 
+Median correlations by correlation method and applying different fractional cutoffs for rat stamina metabolomics  data.
+Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; Kt: Kendall-tau; PB: Pearson Base (raw values); PL: Pearson Log(x); PL1: Pearson Log(x + 1); PN0: Pearson No Zeros.
+
+```{r ratstamina_by_keep_num, dn_id = supp_figure_count, fig.height = 10}
+ggplot(ratstamina_method, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
+  geom_sina() +
+  facet_grid(method ~ keep_num) +
+  theme(axis.text.x = element_text(angle = 90)) +
+  labs(x = "Sample Class", y = "Median Correlation")
+```
+
+`r supp_figure_count$label_text("ratstamina_by_keep_num")`. 
+Median correlations by correlation method and applying different fractional cutoffs for rat stamina metabolomics data.
+Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; Kt: Kendall-tau; PB: Pearson Base (raw values); PL: Pearson Log(x); PL1: Pearson Log(x + 1); PN0: Pearson No Zeros.
+
+```{r ratstamina_differences, dn_id = supp_figure_count}
+ratstamina_summary = calculate_variation(ratstamina_method)
+ratstamina_diffs = calculate_differences(ratstamina_summary)
+
+ggplot(ratstamina_diffs, aes(x = keep_num, y = diff)) + 
+  geom_col() +
+  facet_grid(which_diff ~ method) +
+  labs(x = "Keep Fraction", y = "Normal / Tumor Differences") +
+  theme(axis.text.x = element_text(angle = 90))
+```
+
+`r supp_figure_count$label_text("ratstamina_differences")`. 
+Difference of normal and tumor medians and MADs  by correlation method and applying different fractional cutoffs for NSCLC lipidomics data.
+Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; Kt: Kendall-tau; PB: Pearson Base (raw values); PL: Pearson Log(x); PL1: Pearson Log(x + 1); PN0: Pearson No Zeros.
+
 ```{r save_supp_objects}
 saveRDS(supp_figure_count, file = here::here("doc/supp_figure_count.rds"))
 saveRDS(supp_table_count, file = here::here("doc/supp_table_count.rds"))
-save(yeast_table, egfrgenotype_table, egfrgenotypetumorculture_table, adenocarcinoma_table, nsclc_table, ratstamina_table, file = here::here("doc/supp_stuff.rda"))
+save(yeast_table, egfrgenotype_table, egfrgenotypetumorculture_table, typeandtumorculture_table, adenocarcinoma_table, nsclc_table, ratstamina_table, file = here::here("doc/supp_stuff.rda"))
 ```
 
 ## References
