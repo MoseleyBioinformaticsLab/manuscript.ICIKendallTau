@@ -115,6 +115,6 @@ compare_outlier_tables = function(outlier_list, keep_compare, sort_var, map_meth
   ft_out = add_header_row(ft_out,
                             values = rle_which$values,
                             colwidths = rle_which$lengths)
-  ft_out = colformat_double(ft_out, digits = 2)
+  ft_out = colformat_double(ft_out, digits = 3)
   ft_out
 }
