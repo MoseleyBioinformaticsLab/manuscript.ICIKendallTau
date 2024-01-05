@@ -117,37 +117,37 @@ small_realistic_examples = tar_plan(
 # loading real data ---------
 loading_real_data = tar_plan(
   tar_target(adenocarcinoma_file,
-             here::here("data/recount_adenocarcinoma_count_info.rds"),
+             "data/recount_adenocarcinoma_count_info.rds",
              format = "file"),
   adenocarcinoma_counts_info = readRDS(adenocarcinoma_file),
   
   tar_target(barton_yeast_file,
-             here::here("data/barton_yeast_counts_info.rds"),
+             "data/barton_yeast_counts_info.rds",
              format = "file"),
   yeast_counts_info = readRDS(barton_yeast_file),
   
   tar_target(brainson_egfrgenotype_file,
-             here::here("data/brainsonrnaseq_type_counts_info.rds"),
+             "data/brainsonrnaseq_type_counts_info.rds",
              format = "file"),
   egfrgenotype_counts_info = readRDS(brainson_egfrgenotype_file),
   
   tar_target(brainson_tumorcultures_file,
-             here::here("data/brainsonrnaseq_type_counts_info_tumor.rds"),
+             "data/brainsonrnaseq_type_counts_info_tumor.rds",
              format = "file"),
   egfrgenotypetumorculture_counts_info = readRDS(brainson_tumorcultures_file),
   
   tar_target(brainson_typeandtumorcultures_file,
-             here::here("data/brainsonrnaseq_type_counts_info_typetumor.rds"),
+             "data/brainsonrnaseq_type_counts_info_typetumor.rds",
              format = "file"),
   typeandtumorculture_counts_info = readRDS(brainson_typeandtumorcultures_file),
   
   tar_target(mwtab_ratstamina_file,
-             here::here("data/mwtab_st000017_an000034_count_info.rds"),
+             "data/mwtab_st000017_an000034_count_info.rds",
              format = "file"),
   ratstamina_counts_info = readRDS(mwtab_ratstamina_file),
   
   tar_target(rcsirm_nsclc_file,
-             here::here("data/nsclc_count_info.rds"),
+             "data/nsclc_count_info.rds",
              format = "file"),
   nsclc_counts_info = readRDS(rcsirm_nsclc_file)
 )
