@@ -100,9 +100,9 @@ Typically, missing values are either ignored completely by removing them or are 
 In both cases, the correlation value will be impacted based on a perspective that missing data represents no useful information.
 However, missing values occur in real data sets for a variety of reasons. 
 In omics data sets that are derived from analytical measurements, the primary reason for missing values is that a specific measurable phenomenon falls below the detection limits of the analytical instrumentation.
-These missing data are not missing at random, but represent some information by their "missingness".
-Therefore, we propose an information-content-informed Kendall-tau (ICI-Kt) correlation coefficient that allows missing values to carry explicit information in the determination of concordant and discordant pairs.
-With both simulated and real data sets from RNA-seq, metabolomics and lipidomics experiments, we demonstrate that the ICI-Kt allows for the inclusion of missing data values as interpretable information, which allows improved determination of outlier samples prior to differential analysis of omics datasets.
+These missing data are not missing at random, but represent some information by virtue of their "missingness".
+Therefore, we propose the information-content-informed Kendall-tau (ICI-Kt) correlation coefficient that allows missing values to carry explicit information in the determination of concordant and discordant pairs.
+With both simulated and real data sets from RNA-seq, metabolomics and lipidomics experiments, we demonstrate that the ICI-Kt allows for the inclusion of missing data values as interpretable information, which allows improved determination of outlier samples, and improved feature-feature network construction, without explicitly using imputation.
 Moreover, our implementation of ICI-Kt uses a mergesort-like algorithm that provides O(nlog(n)) computational performance, a significant improvement over the Kendall-tau correlation available in base R. 
 
 The ICI-Kt correlation calculation is available in an R package and Python module on GitHub at https://github.com/moseleyBioinformaticsLab/ICIKendallTau and https://github.com/moseleyBioinformaticsLab/icikt, respectively.
@@ -156,7 +156,7 @@ Modifying Pearson would either involve imputing new values, or finding a way to 
 While Spearman uses ranks, many of the modifications for handling identical ranks and ties do not seem amenable to working with missing values.
 In contrast, Kendall-tau's use of concordant and discordant pair counts seems most amenable to the creation of new definitions that incorporate missingness while still working within the original definition of the correlation coefficient, as shown below.
 
-In this manuscript, we propose new definitions of concordant and discordant rank pairs that include missing values, as well as methods for incorporating missing values into the number of tied values for the equivalent of the modified Kendall-tau coefficient, information-content-informed Kendall-tau (ICI-Kt).
+In this work, we propose new definitions of concordant and discordant rank pairs that include missing values, as well as methods for incorporating missing values into the number of tied values for the equivalent of the modified Kendall-tau coefficient, information-content-informed Kendall-tau (ICI-Kt).
 We examine the effect of missing values on various simulated data-sets, comparing ICI-Kt with other simpler methods of handling the missing values, namely removing them or imputing them to zero.
 Given the detrimental effects of including outlier samples in differential analyses, we also evaluate the ability of ICI-Kt to capture sample-sample pairwise similarities and the determination of outlier samples prior to differential analyses.
 Finally, we examine how feature-feature networks derived from various feature-feature correlations change within annotations depending on the correlation method used.
@@ -273,15 +273,6 @@ We used the *multiprocessing* Python package to distribute the sample-sample com
 This package includes both an application programming interface (API) with equivalent parameter options to the R package implementation and a command line interface (CLI) for generating straight-forward correlation matrix analyses without the need to write Python scripts.
 
 
-### Computing Environment
-
-Most calculations were run on a virtual machine with 80 virtual cores, and 1 TB of RAM.
-The virtual machine is running on top of a 50 node cluster, each with 4 10-core processors, 3TB of RAM and an 8TB solid-state-drive array, provided by the Kentucky Research Informatics Cloud (KyRIC).
-KyRIC manages the virtual machines via an OpenStack instance.
-We do note that the calculations in general do **not require** this much compute resources; however, the VM was created for other compute requiring high memory resources, and was convenient to use for this work.
-We used the *targets* package to manage calculation dependencies [@landauTargetsPackageDynamic2021b].
-For the comparisons of time taken using different numbers of samples to evaluate the algorithmic complexity, calculations were run on a single laptop Intel i7 core clocked at 2.2 GHz.
-
 ### Simulated Data Sets
 
 Simulated feature vectors (analytical samples) are generated by drawing 1000 random values from a log-normal distribution with a mean of 1 and standard deviation (sd) of 0.5 and sorting them in ascending order.
@@ -296,12 +287,12 @@ Missing values are created in these statistical samples via two methods: 1) by c
 
 ### Brainson EGFR Lung Tumor RNA-Seq Data Set
 
-This RNA-Seq dataset is from null and knock-in EGFR mice mutants.
+This RNA-Seq dataset is from null and knock-in EGFR genotype mice mutants.
 Genotypes include Null (no mutant-EGFR inducible expression), Heterozygous (only one copy of mutant-EGFR), and Homozygous (two copies of mutant EGFR).
 For each mutant, cells were also grown in different ways and sequenced: (1) 2D plates; (2) 3D organoids; (3) cells sorted and selected using FACS; (4) total tumor without sorting.
 See Chen et al [-@chenCellularOriginsEGFRDriven2021] for the full experimental details.
 Counts were normalized using `DESeq2` with either the genotype, the growth environment, or the combination of them as the grouping factor.
-Samples were grouped by their genotype or growth environment for the calculation of median abundance across samples.
+Samples were grouped by their genotype, growth environment, or their combination for the calculation of median abundance across samples.
 
 ### Yeast RNA-Seq Data Set
 
@@ -337,7 +328,7 @@ Samples were grouped by the instrument (two different instruments were used to c
 The previously assigned peaks were matched to the un-assigned peaks by finding peaks within a 0.5 ppm cutoff.
 For lipid category and class voting, we only considered peaks matched that had a single assigned and a single un-assigned peak match together.
 
-### Rat Stamina and Feeding Metabolomics Data Set
+### Rat Stamina and Feeding Metabolomics Data Set (Rat)
 
 This metabolomics data was collected as part of a study on muscle selection of fuel source and oxidative capacity in outbred rats [@overmyerMaximalOxidativeCapacity2015].
 This data is available at the NIH Common Fund's National Metabolomics Data Repository (NMDR) website, the Metabolomics Workbench, https://www.metabolomicsworkbench.org where it has been assigned Project ID (PR000016). 
@@ -560,13 +551,12 @@ outlier_figure_text = figure_count$label_text(c("yeast_outliers"))
 outlier_table_text = table_count$label_text(c("yeast_outliers"))
 ```
 
-
 We analyzed datasets from RNA-Seq (3), lipidomics, and small molecule metabolomics for possible outliers using a variety of  different correlation and correlation-related metrics: (1) ICI-Kt; (2) ICI-Kt scaled by *completeness* (see Methods); (3) Pearson correlation; (4) Pearson using pairwise complete features; (5) Pearson on log(value + 1); (6) Pearson on log(value); and (7) Kendall-tau.
 We primarily concentrate on the ICI-Kt, ICI-Kt * completeness, and Pearson log(x + 1) here, but all outliers by method are shown in the Supplemental materials (`r supp_figure_count$label_text(c("yeast_outliers", "adenocarcinoma_outliers"))`, `r supp_table_count$label_text(c("yeast_outliers", "egfrgenotype_outliers"))`).
 Additionally, we compared how the outliers change if we require that a feature is present in at least a certain fraction of samples of a class with each different correlation measure (`r supp_figure_count$label_text(c("yeast_by_method", "adenocarcinoma_differences"))`).
-For each dataset and correlation-related metric, the median correlation for a sample was calculated amongst the samples for each sub-group of samples corresponding to an experimental condition of interest (disease, mutant, how cells were grown).
+For each dataset and correlation-related metric, the median correlation for a sample was calculated amongst the samples for each sub-group of samples corresponding to an experimental condition of interest (disease, mutant, how cells were grown, condition, etc).
 
-```{r load_yeast_outliers}
+```{r set_main_comparisons}
 compare_yeast_main = c("icikt", "icikt_complete", "pearson_log1p")
 ```
 
@@ -577,14 +567,12 @@ We also note that these outliers seem to be a superset of the outliers noted by 
 
 
 ```{r yeast_outliers, dn_id = figure_count}
-yeast_single %>%
+yeast_single_plot = yeast_single %>%
   add_method() %>%
   dplyr::filter(which %in% compare_yeast_main) %>%
-  ggplot(aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
-  geom_sina() +
-  facet_wrap(~ method, nrow = 1) +
-  labs(x = "Sample Class", y = "Median Correlation") +
-  theme(legend.position = c(0.75, 0.2))
+  create_outlier_parallel_plot()
+yeast_single_plot +
+  theme(legend.position = c(0.8, 0.15))
 ```
 
 `r figure_count$label_text("yeast_outliers")`.
@@ -595,13 +583,12 @@ Median correlations for each of the yeast RNA-Seq sample to all other samples in
 Yeast dataset median correlation values and outlier determination for each outlier from each of the correlation methods.
 
 ```{r yeast_outlier_table}
-yeast_table = compare_outlier_tables(yeast_single, compare_yeast_main, sort_var = "pearson_log1p")
+yeast_table = compare_outlier_tables_bold(yeast_single, compare_yeast_main, sort_var = "pearson_log1p")
 yeast_ft_out = yeast_table %>%
-  set_nice_widths() %>%
-  put_outlier_right() %>%
   font(fontname = "Calibri", part = "all") |>
   fontsize(size = 11, part = "header") |>
-  fontsize(size = 10, part = "body")
+  fontsize(size = 10, part = "body") |>
+  set_table_properties(layout = "autofit")
   
 yeast_ft_out
 ```

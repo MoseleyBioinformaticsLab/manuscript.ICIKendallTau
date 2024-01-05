@@ -252,11 +252,6 @@ create_correlation_networks = function(counts_info, keep_num, sample_col, class_
   counts_cor
 }
 
-cpp_wrapper = function(code) {
-  out <- Rcpp::sourceCpp(code)
-  body(out) <- rlang::call2("{", code, body(out))
-  out
-}
 
 compound_annotation = function(data_file, type = "pathway")
 {

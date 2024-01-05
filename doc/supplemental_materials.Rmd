@@ -291,20 +291,20 @@ It should be noted that it seems that Gierlinski et al used an eyeball cutoff fo
 ```{r load_yeast_outliers}
 manual_method = c("icikt" = "IK",
                                                  "icikt_complete" = "IKC",
+                  "kt_base" = "Kt",
                                                  "pearson_base" = "PB",
                                                  "pearson_base_nozero" = "PN0",
                                                  "pearson_log1p" = "PL1",
                                                  "pearson_log" = "PL",
-                                                 "kt_base" = "Kt",
                                                  "manuscript" = "M")
 
 other_method = c("icikt" = "IK",
                                                  "icikt_complete" = "IKC",
+                                                 "kt_base" = "Kt",
                                                  "pearson_base" = "PB",
                                                  "pearson_base_nozero" = "PN0",
                                                  "pearson_log1p" = "PL1",
-                                                 "pearson_log" = "PL",
-                                                 "kt_base" = "Kt")
+                                                 "pearson_log" = "PL")
 
 
 
@@ -322,17 +322,15 @@ tmp_yeast[tmp_yeast$sample_id %in% yeast_paper_outliers, "outlier"] = TRUE
 tmp_yeast$which = "manuscript"
 yeast_single2 = rbind(yeast_single, tmp_yeast)
 
-compare_yeast = c("icikt", "icikt_complete", "pearson_base", "pearson_base_nozero", "pearson_log1p", "pearson_log", "kt_base", "manuscript")
+compare_yeast = c("icikt", "icikt_complete", "kt_base", "pearson_base", "pearson_base_nozero", "pearson_log1p", "pearson_log", "manuscript")
 ```
 
 ```{r yeast_outliers, dn_id = supp_figure_count}
-yeast_single2 %>%
+yeast_single2_plot = yeast_single2 %>%
   add_method(map_method = manual_method) %>%
   dplyr::filter(which %in% compare_yeast) %>%
-  ggplot(aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
-  geom_sina() +
-  facet_wrap(~ method, nrow = 1) +
-  labs(x = "Sample Class", y = "Median Correlation")
+  create_outlier_parallel_plot()
+yeast_single2_plot
 ```
 
 `r supp_figure_count$label_text("yeast_outliers")`.
@@ -340,7 +338,7 @@ Median correlations for each of the yeast RNA-Seq sample to all other samples in
 
 
 ```{r yeast_outlier_table}
-yeast_table = compare_outlier_tables(yeast_single2, compare_yeast, sort_var = "manuscript", map_method = manual_method)
+yeast_table = compare_outlier_tables_bold(yeast_single2, compare_yeast, sort_var = "manuscript", map_method = manual_method)
 ```
 
 
@@ -359,18 +357,15 @@ In this example, Pearson shows superior sensitivity to outlier detection, likely
 all_egfrgenotype = rbind_outliers(egfrgenotype_outliers) %>%
   perc_to_number()
 
-compare_egfrgenotype = c("icikt", "icikt_complete", "pearson_base", "pearson_base_nozero", "pearson_log1p", "pearson_log", "kt_base")
+compare_egfrgenotype = c("icikt", "icikt_complete", "kt_base", "pearson_base", "pearson_base_nozero", "pearson_log1p", "pearson_log")
 ```
 
 ```{r egfrgenotype_outliers, dn_id = supp_figure_count}
-egfrgenotype_single %>%
+egfrgenotype_single_plot = egfrgenotype_single %>%
   add_method(other_method) %>%
   dplyr::filter(which %in% compare_egfrgenotype) %>%
-  ggplot(aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
-  geom_sina() +
-  facet_wrap(~ method, nrow = 1) +
-  labs(x = "Sample Class", y = "Median Correlation") +
-  theme(axis.text.x = element_text(angle = 90))
+  create_outlier_parallel_plot()
+egfrgenotype_single_plot
 ```
 
 `r supp_figure_count$label_text("egfrgenotype_outliers")`.
@@ -382,7 +377,7 @@ Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Com
 This is due to having more genes with non-zero reads in general over the sorted samples.
 
 ```{r egfrgenotype_table}
-egfrgenotype_table = compare_outlier_tables(egfrgenotype_single, compare_egfrgenotype, "pearson_log1p", map_method = other_method)
+egfrgenotype_table = compare_outlier_tables_bold(egfrgenotype_single, compare_egfrgenotype, "pearson_log1p", map_method = other_method)
 ```
 
 
@@ -409,7 +404,7 @@ egfrgenotypetumorculture_single %>%
 
 ```{r}
 #| label: egfrgenotypetumorculture_table
-egfrgenotypetumorculture_table = compare_outlier_tables(egfrgenotypetumorculture_single, compare_egfrgenotype, "pearson_log1p", map_method = other_method)
+egfrgenotypetumorculture_table = compare_outlier_tables_bold(egfrgenotypetumorculture_single, compare_egfrgenotype, "pearson_log1p", map_method = other_method)
 ```
 
 ### EGFR RNASeq Genotype And Tumor Type
@@ -435,7 +430,7 @@ typeandtumorculture_single %>%
 
 ```{r}
 #| label: typeandtumorculture_table
-typeandtumorculture_table = compare_outlier_tables(typeandtumorculture_single, compare_egfrgenotype, "pearson_log1p", map_method = other_method)
+typeandtumorculture_table = compare_outlier_tables_bold(typeandtumorculture_single, compare_egfrgenotype, "pearson_log1p", map_method = other_method)
 ```
 
 ### TCGA Adenocarcinoma
@@ -479,7 +474,7 @@ Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Com
 
 
 ```{r adenocarcinoma_table}
-adenocarcinoma_table = compare_outlier_tables(adenocarcinoma_single, compare_adeno, "pearson_log1p", map_method = other_method)
+adenocarcinoma_table = compare_outlier_tables_bold(adenocarcinoma_single, compare_adeno, "pearson_log1p", map_method = other_method)
 ```
 
 ```{r summarize_adeno}
@@ -543,7 +538,7 @@ nsclc_single %>%
 
 ```{r}
 #| label: nsclc_table
-nsclc_table = compare_outlier_tables(nsclc_single, compare_egfrgenotype, "pearson_log1p", map_method = other_method)
+nsclc_table = compare_outlier_tables_bold(nsclc_single, compare_egfrgenotype, "pearson_log1p", map_method = other_method)
 ```
 
 
@@ -571,7 +566,7 @@ ratstamina_single %>%
 
 ```{r}
 #| label: ratstamina_table
-ratstamina_table = compare_outlier_tables(ratstamina_single, compare_egfrgenotype, "pearson_log1p", map_method = other_method)
+ratstamina_table = compare_outlier_tables_bold(ratstamina_single, compare_egfrgenotype, "pearson_log1p", map_method = other_method)
 ```
 
 
