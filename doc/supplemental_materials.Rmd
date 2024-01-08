@@ -82,8 +82,6 @@ supp_figure_count$increment(c("lod_adenocarcinoma",
                             "complexity",
                             "yeast_outliers",
                             "egfrgenotype_outliers",
-                            "egfrgenotypetumorculture_outliers",
-                            "typeandtumorculture_outliers",
                             "adenocarcinoma_outliers",
                             "nsclc_outliers",
                             "ratstamina_outliers",
@@ -381,51 +379,6 @@ egfrgenotype_table = compare_outlier_tables_bold(egfrgenotype_single, compare_eg
 ```
 
 
-### EGFR RNASeq Tumor Type
-
-```{r}
-#| label: setup_egfrgenotypetumorculture
-all_egfrgenotypetumorculture_outliers = rbind_outliers(egfrgenotypetumorculture_outliers) |>
-  perc_to_number()
-```
-
-```{r}
-#| label: egfrgenotypetumorculture_outliers
-egfrgenotypetumorculture_single_plot = egfrgenotypetumorculture_single %>%
-  add_method(other_method) %>%
-  dplyr::filter(which %in% compare_egfrgenotype) %>%
-  create_outlier_parallel_plot()
-egfrgenotypetumorculture_single_plot
-```
-`r supp_figure_count$label_text("egfrgenotypetumorculture_outliers")`.
-
-```{r}
-#| label: egfrgenotypetumorculture_table
-egfrgenotypetumorculture_table = compare_outlier_tables_bold(egfrgenotypetumorculture_single, compare_egfrgenotype, "pearson_log1p", map_method = other_method)
-```
-
-### EGFR RNASeq Genotype And Tumor Type
-
-```{r}
-#| label: setup_typeandtumorculture
-all_typeandtumorculture_outliers = rbind_outliers(typeandtumorculture_outliers) |>
-  perc_to_number()
-```
-
-```{r}
-#| label: typeandtumorculture_outliers
-typeandtumorculture_single_plot = typeandtumorculture_single %>%
-  add_method(other_method) %>%
-  dplyr::filter(which %in% compare_egfrgenotype) %>%
-  create_outlier_parallel_plot()
-typeandtumorculture_single_plot
-```
-`r supp_figure_count$label_text("typeandtumorculture_outliers")`.
-
-```{r}
-#| label: typeandtumorculture_table
-typeandtumorculture_table = compare_outlier_tables_bold(typeandtumorculture_single, compare_egfrgenotype, "pearson_log1p", map_method = other_method)
-```
 
 ### TCGA Adenocarcinoma
 
