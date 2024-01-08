@@ -81,14 +81,10 @@ figure_count$increment(c("problem",
                          "missing2cor",
                          "leftcensored",
                          "performance",
-                         "yeast_outliers",
-                         "egfrgenotype_outliers",
-                         "adenocarcinoma_outliers"))
+                         "yeast_outliers"))
 
 table_count$increment(c("datasets",
                         "yeast_outliers",
-                        "egfrgenotype_outliers",
-                        "adenocarcinoma_outliers",
                         "partitioning"))
 
 ```
@@ -405,14 +401,15 @@ We feel that this is critical, given that even with measurements acquired by Met
 Unfortunately, the KORA4 metabolomics dataset from Do et al. is not publicly available, so we could not attempt to redo their analysis of missing values with the same dataset.
 
 For each of the datasets we investigated (three RNA-seq, one metabolomics, one lipidomics), for each experimental group of samples, we calculated the median abundance and number of present entries for each feature (gene or metabolite, see Methods).
-As shown in `r figure_count$label_text("lod")`A for the yeast RNA-seq dataset (also see `r supp_figure_count$label_text(c("lod_adenocarcinoma", "lod_egfrgenotype", "lod_egfrgenotypetumorculture", 
-"lod_nsclc", "lod_ratstamina"))` in Supplemental Materials for the other datasets), there is clearly a relationship between the median abundance and the number of present entries.
+As shown in `r figure_count$label_text("lod")`A for the yeast RNA-seq dataset (also see `r supp_figure_count$label_text(c("lod_adenocarcinoma", "lod_egfrgenotype", "lod_egfrgenotypetumorculture", "lod_typeandtumorculture", "lod_nsclc", "lod_ratstamina"))` in Supplemental Materials for the other datasets), there is clearly a relationship between the median abundance and the number of present entries.
 In fact, as the number of present values increases, there is clearly a minimum median value below which the values do not cross.
-This relationship becomes clearer when calculating the minimum median value for each value of present features, and plotting them by number of present features, as shown in `r figure_count$label_text("lod")`B (see also `r supp_figure_count$label_text(c("lod_adenocarcinoma", "lod_egfrgenotype", "lod_egfrgenotypetumorculture", 
-"lod_nsclc", "lod_ratstamina"))` in Supplemental Materials for the other datasets).
+This relationship becomes clearer when calculating the minimum median value for each value of present features, and plotting them by number of present features, as shown in `r figure_count$label_text("lod")`B (see also `r supp_figure_count$label_text(c("lod_adenocarcinoma", "lod_egfrgenotype", "lod_egfrgenotypetumorculture", "lod_typeandtumorculture", "lod_nsclc", "lod_ratstamina"))` in Supplemental Materials for the other datasets).
 Given this relationship of the minimum median value observed and the number of present features, we believe that the **majority** of missing values in many -omics datasets are due to being below the limit of detection.
 
 This makes the ICI-Kt appropriate for use in many -omics datasets by allowing the inclusion and contribution of missing values due to being below the limit of detection.
+
+The LOD figures for alternative groupings of the EGFR genotype samples also demonstrate another interesting property (`r supp_figure_count$label_text(c("lod_egfrgenotype", "lod_egfrgenotypetumorculture", "lod_typeandtumorculture"))`), in that incorrect groupings of RNA-Seq samples at the normalization stage result in negatively correlating relationships of the number of present values and the lowest observed median value.
+
 
 ```{r}
 #| label: lod
@@ -599,9 +596,6 @@ yeast_ft_out
 
 [There is a graph of outliers missing in EGFR section of supplemental].
 
-`r figure_count$label_text("egfrgenotype_outliers")` visualizes the sample-specific median of each metric calculated from the Brainson RNA-Seq data set.
-Likewise, `r table_count$label_text("egfrgenotype_outliers")` lists the outliers detected based on each metric.
-In this example, Pearson shows superior sensitivity to outlier detection, likely due to the larger spread in median Pearson correlation values.
 
 
 ### Partitioning of Feature - Feature Networks
@@ -633,16 +627,17 @@ Alvo and Cabilio's work from 1995 [@alvoRankCorrelationMethods1995] is one of th
 But, in our understanding their framework applies to data that is missing at random versus non-random missing-values, as is the case for analytes that are below the detection limit.
 Additionally, there does not appear to be a software implementation of Alvo and Cabilio's method available.
 In the case of using sample-sample correlation to detect outliers, imputation does not solve any of the issues related to discovering outliers, as it should be applied **after** outlier samples are removed, otherwise the imputed values may not be useful.
+When used to create feature - feature networks based on partial correlations derived from the feature - feature correlations, ICI-Kt based methods also showed the best partitioning of features based on their known annotations.
 As far as we know, information-content-informed Kendall-tau (ICI-Kt) is the first correlation method that explicitly attempts to utilize non-random missing values that occur due to being below the detection limit.
 ICI-Kt **explicitly** treats left-censored missing values as correlative information while preserving the full deleterious effects of non-random missing values on the correlation metric.
-Moreover, the ICI-Kt can be combined with measurement completeness to create a composite metric that is quite sensitive to overall data quality on a sample-specific level.
+Moreover, ICI-Kt can be combined with measurement completeness to create a composite metric that is quite sensitive to overall data quality on a sample-specific level.
 Also, this ICI-Kt * completeness metric may have applications in cluster detection of single-cell omics data sets.
 
 The implementations of the ICI-Kt in the presented R and Python packages provide a rich set of options for customizing the correlation calculation for a variety of use-cases and interpretations.
 These packages handle missing values in log-transformed data in a safe manner and have O(nlogn) performance, making them computationally practical for real-world omics data sets.
 Also, these packages provide multiprocessing implementations that take full advantage of modern multi-core central processing units.
 
-As demonstrated with the three RNA-Seq datasets analyzed here, the "best" correlation-related metric will likely depend on the specific dataset and the specific data analysis step.
+As demonstrated with the datasets analyzed here, the "best" correlation-related metric will likely depend on the specific dataset and the specific data analysis step.
 Many factors affect this, especially correlation linearity and the modality of measurement value distributions.
 We would humbly suggest that for most omics datasets, the application of several correlation-related metrics simultaneously would be the best approach for outlier detection in quality control and quality assessment steps.
 Where one metric lacks outlier detection sensitivity, another metric will prove sensitive.
