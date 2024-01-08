@@ -542,16 +542,11 @@ Inset is the expanded view showing the full range of computation time in seconds
 
 #### Detecting Outlier Samples
 
-```{r setting_up_outliers}
 
-outlier_figure_text = figure_count$label_text(c("yeast_outliers"))
-outlier_table_text = table_count$label_text(c("yeast_outliers"))
-```
-
-We analyzed datasets from RNA-Seq (3), lipidomics, and small molecule metabolomics for possible outliers using a variety of  different correlation and correlation-related metrics: (1) ICI-Kt; (2) ICI-Kt scaled by *completeness* (see Methods); (3) Pearson correlation; (4) Pearson using pairwise complete features; (5) Pearson on log(value + 1); (6) Pearson on log(value); and (7) Kendall-tau.
-We primarily concentrate on the ICI-Kt, ICI-Kt * completeness, and Pearson log(x + 1) here, but all outliers by method are shown in the Supplemental materials (`r supp_figure_count$label_text(c("yeast_outliers", "adenocarcinoma_outliers"))`, `r supp_table_count$label_text(c("yeast_outliers", "egfrgenotype_outliers"))`).
+We analyzed datasets from RNA-Seq (3), lipidomics, and small molecule metabolomics for possible outliers using a variety of  different correlation and correlation-related metrics: (1) ICI-Kt; (2) ICI-Kt scaled by *completeness* (see Methods); (3) Kendall-tau; (4) Pearson correlation; (5) Pearson correlation with no zeros using pairwise complete features; (6) Pearson on log(value + 1); and (7) Pearson on log(value).
+We primarily concentrate on the ICI-Kt, ICI-Kt * completeness, and Pearson log(x + 1) here for a few of the datasets, but all outliers by method are shown in the Supplemental materials (`r supp_figure_count$label_text(c("yeast_outliers", "egfrgenotype_outliers", "adenocarcinoma_outliers", "nsclc_outliers", "ratstamina_outliers",))`, `r supp_table_count$label_text(c("yeast_outliers", "egfrgenotype_outliers", "adenocarcinoma_outliers", "nsclc_outliers", "ratstamina_outliers",))`).
 Additionally, we compared how the outliers change if we require that a feature is present in at least a certain fraction of samples of a class with each different correlation measure (`r supp_figure_count$label_text(c("yeast_by_method", "adenocarcinoma_differences"))`).
-For each dataset and correlation-related metric, the median correlation for a sample was calculated amongst the samples for each sub-group of samples corresponding to an experimental condition of interest (disease, mutant, how cells were grown, condition, etc).
+For each dataset and correlation-related metric, the median correlation for a sample was calculated amongst the samples for each sub-group of samples corresponding to an experimental condition of interest (disease, mutant, condition, etc).
 
 ```{r set_main_comparisons}
 compare_yeast_main = c("icikt", "icikt_complete", "pearson_log1p")
