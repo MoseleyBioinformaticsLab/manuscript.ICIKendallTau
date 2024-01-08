@@ -608,7 +608,7 @@ In this example, Pearson shows superior sensitivity to outlier detection, likely
 
 Feature - feature correlations (for those features present in 25% or more of the samples of a class) for each dataset were calculated using each of the correlation methods (see Methods).
 From those feature - feature correlations, partial correlations are calculated, and significant edges retained.
-Feature annotations from either reactome pathways (RNA-Seq), KEGG pathways (metabolomics), or lipid class (lipidomics) were used to determine if the edges within annotations were more present than outside of annotations.
+Feature annotations from either Reactome pathways (RNA-Seq), KEGG pathways (metabolomics), or lipid class (lipidomics) were used to determine if the edges within annotations were more present than outside of annotations.
 
 `r table_count$label_text("partitioning")` lists the summed partitioning values for each dataset and method.
 For each of the datasets examined, ICI-Kt or ICI-Kt completeness gave the most positive summed partitioning values.

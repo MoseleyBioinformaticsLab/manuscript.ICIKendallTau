@@ -391,14 +391,11 @@ all_egfrgenotypetumorculture_outliers = rbind_outliers(egfrgenotypetumorculture_
 
 ```{r}
 #| label: egfrgenotypetumorculture_outliers
-egfrgenotypetumorculture_single %>%
+egfrgenotypetumorculture_single_plot = egfrgenotypetumorculture_single %>%
   add_method(other_method) %>%
   dplyr::filter(which %in% compare_egfrgenotype) %>%
-  ggplot(aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
-  geom_sina() +
-  facet_wrap(~ method, nrow = 1) +
-  labs(x = "Sample Class", y = "Median Correlation") +
-  theme(axis.text.x = element_text(angle = 90))
+  create_outlier_parallel_plot()
+egfrgenotypetumorculture_single_plot
 ```
 `r supp_figure_count$label_text("egfrgenotypetumorculture_outliers")`.
 
@@ -417,14 +414,11 @@ all_typeandtumorculture_outliers = rbind_outliers(typeandtumorculture_outliers) 
 
 ```{r}
 #| label: typeandtumorculture_outliers
-typeandtumorculture_single %>%
+typeandtumorculture_single_plot = typeandtumorculture_single %>%
   add_method(other_method) %>%
   dplyr::filter(which %in% compare_egfrgenotype) %>%
-  ggplot(aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
-  geom_sina() +
-  facet_wrap(~ method, nrow = 1) +
-  labs(x = "Sample Class", y = "Median Correlation") +
-  theme(axis.text.x = element_text(angle = 90))
+  create_outlier_parallel_plot()
+typeandtumorculture_single_plot
 ```
 `r supp_figure_count$label_text("typeandtumorculture_outliers")`.
 
@@ -453,19 +447,19 @@ new_adeno = unique(all_adeno[, c("sample_id", "sample_class")]) %>%
 
 all_adeno2 = dplyr::left_join(new_adeno, all_adeno, by = c("old_sample" = "sample_id"))
 adenocarcinoma_single = dplyr::left_join(adenocarcinoma_single, new_adeno, by = c("sample_id" = "old_sample"))
+adenocarcinoma_single = adenocarcinoma_single |>
+  dplyr::mutate(sample_id = sample_id.y,
+                sample_id.y = NULL)
 
-compare_adeno = c("icikt", "icikt_complete", "pearson_base", "pearson_base_nozero", "pearson_log1p", "pearson_log", "kt_base")
+compare_adeno = c("icikt", "icikt_complete", "kt_base", "pearson_base", "pearson_base_nozero", "pearson_log1p", "pearson_log")
 ```
 
 ```{r adenocarcinoma_outliers, dn_id = supp_figure_count}
-adenocarcinoma_single %>%
+adenocarcinoma_single_plot = adenocarcinoma_single %>%
   add_method(map_method = other_method) %>%
   dplyr::filter(which %in% compare_adeno) %>%
-  ggplot(aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
-  geom_sina() +
-  facet_wrap(~ method, nrow = 1) +
-  labs(x = "Sample Class", y = "Median Correlation") +
-  theme(axis.text.x = element_text(angle = 90))
+  create_outlier_parallel_plot()
+adenocarcinoma_single_plot
 ```
 
 `r supp_figure_count$label_text("adenocarcinoma_outliers")`.
@@ -495,6 +489,11 @@ adenocarcinoma_variation_wide = adenocarcinoma_variation %>%
   autofit() 
 ```
 
+As `r supp_figure_count$label_text("adenocarcinoma_outliers")` and `r supp_table_count$label_text("adenocarcinoma_outliers")`, although there are not many outliers in these relatively large groups, Pearson correlation using log-transformed values results in the most outliers.
+Also of note is that ICI-Kt * Completeness is the only measure where the variance measure for both groups is similar.
+For both ICI-Kt and Pearson correlation, the tumor samples variance measures are `r adenocarcinoma_ratios[["ICI-Kt"]]`x and `r adenocarcinoma_ratios[["Pearson Log(x + 1)"]]`x greater than normal, respectively.
+
+
 `r supp_table_count$label_text("adenocarcinoma_mad")`.
 Adenocarcinoma median-absolute-deviations (MAD) for each group of sample median correlations in each type of tissue.
 
@@ -505,9 +504,6 @@ Adenocarcinoma median-absolute-deviations (MAD) for each group of sample median 
 autofit(adenocarcinoma_variation_wide)
 ```
 
-As `r supp_figure_count$label_text("adenocarcinoma_outliers")` and `r supp_table_count$label_text("adenocarcinoma_outliers")`, although there are not many outliers in these relatively large groups, Pearson correlation using log-transformed values results in the most outliers.
-Also of note is that ICI-Kt * Completeness is the only measure where the variance measure for both groups is similar.
-For both ICI-Kt and Pearson correlation, the tumor samples variance measures are `r adenocarcinoma_ratios[["ICI-Kt"]]`x and `r adenocarcinoma_ratios[["Pearson Log(x + 1)"]]`x greater than normal, respectively.
 
 `r supp_figure_count$label_text("adenocarcinoma_outliers")` visualizes the sample-specific median metric value calculated from the TCGA RNA-Seq data set, with `r supp_table_count$label_text("adenocarcinoma_outliers")` listing the outliers detected from each metric.
 In this example, the ICI-Kt * completeness correlation demonstrated superior sensitivity for outlier detection, likely due to its better sensitivity to measurement completeness.
@@ -525,14 +521,11 @@ all_nsclc_outliers = rbind_outliers(nsclc_outliers) |>
 
 ```{r}
 #| label: nsclc_outliers
-nsclc_single %>%
+nsclc_single_plot = nsclc_single %>%
   add_method(other_method) %>%
   dplyr::filter(which %in% compare_egfrgenotype) %>%
-  ggplot(aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
-  geom_sina() +
-  facet_wrap(~ method, nrow = 1) +
-  labs(x = "Sample Class", y = "Median Correlation") +
-  theme(axis.text.x = element_text(angle = 90))
+  create_outlier_parallel_plot()
+nsclc_single_plot
 ```
 `r supp_figure_count$label_text("nsclc_outliers")`.
 
@@ -552,14 +545,11 @@ all_ratstamina_outliers = rbind_outliers(ratstamina_outliers) |>
 
 ```{r}
 #| label: ratstamina_outliers
-ratstamina_single %>%
+ratstamina_single_plot = ratstamina_single %>%
   add_method(other_method) %>%
   dplyr::filter(which %in% compare_egfrgenotype) %>%
-  ggplot(aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
-  geom_sina() +
-  facet_wrap(~ method, nrow = 1) +
-  labs(x = "Sample Class", y = "Median Correlation") +
-  theme(axis.text.x = element_text(angle = 90))
+  create_outlier_parallel_plot()
+ratstamina_single_plot
 ```
 `r supp_figure_count$label_text("ratstamina_outliers")`.
 
@@ -584,10 +574,10 @@ Here, we explore what happens if we increase the number of samples required for 
 all_yeast2 = all_yeast %>%
   add_method(other_method) %>%
   clear_outliers()
-ggplot(all_yeast2, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) + 
+ggplot(all_yeast2, aes(x = method, y = med_cor, color = outlier, group = method)) + 
   geom_sina() +
-  facet_grid(keep_num ~ method) +
-  labs(x = "Sample Class", y = "Median Correlation")
+  facet_grid(sample_class ~ keep_num) +
+  labs(x = "Method", y = "Median Correlation")
 ```
 
 `r supp_figure_count$label_text("yeast_by_method")`.
@@ -595,10 +585,11 @@ Median correlations by correlation method and applying different fractional cuto
 Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; Kt: Kendall-tau; PB: Pearson Base (raw values); PL: Pearson Log(x); PL1: Pearson Log(x + 1); PN0: Pearson No Zeros.
 
 ```{r yeast_by_keep_num, dn_id = supp_figure_count}
-ggplot(all_yeast2, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
+ggplot(all_yeast2, aes(x = keep_num, y = med_cor, color = outlier, group = keep_num)) +
   geom_sina() +
-  facet_grid(method ~ keep_num) +
-  labs(x = "Sample Class", y = "Median Correlation")
+  facet_grid(sample_class ~ method) +
+  labs(x = "Keep Fraction", y = "Median Correlation") +
+  theme(axis.text.x = element_text(angle = 90))
 ```
 
 `r supp_figure_count$label_text("yeast_by_keep_num")`.
@@ -630,11 +621,11 @@ Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Com
 egfrgenotype_classes = c("wt", "het", "null")
 all_egfrgenotype_method = add_method(all_egfrgenotype, map_method = other_method) %>%
   dplyr::filter(sample_class %in% egfrgenotype_classes)
-ggplot(all_egfrgenotype_method, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) + 
+ggplot(all_egfrgenotype_method, aes(x = method, y = med_cor, color = outlier, group = method)) + 
   geom_sina() +
-  facet_grid(keep_num ~ method) +
-  theme(axis.text.x = element_text(size = 10)) +
-  labs(x = "Sample Class", y = "Median Correlation")
+  facet_grid(sample_class ~ keep_num) +
+  theme(axis.text.x = element_text(angle = 90)) +
+  labs(x = "Method", y = "Median Correlation")
 ```
 
 `r supp_figure_count$label_text("egfrgenotype_by_method")`.
@@ -642,10 +633,11 @@ Median correlations by correlation method and applying different fractional cuto
 Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; Kt: Kendall-tau; PB: Pearson Base (raw values); PL: Pearson Log(x); PL1: Pearson Log(x + 1); PN0: Pearson No Zeros.
 
 ```{r egfrgenotype_by_keep_num, dn_id = supp_figure_count}
-ggplot(all_egfrgenotype_method, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) + 
+ggplot(all_egfrgenotype_method, aes(x = keep_num, y = med_cor, color = outlier, group = keep_num)) +
   geom_sina() +
-  facet_grid(method ~ keep_num) +
-  labs(x = "Sample Class", y = "Median Correlation")
+  facet_grid(sample_class ~ method) +
+  labs(x = "Keep Fraction", y = "Median Correlation") +
+  theme(axis.text.x = element_text(angle = 90))
 ```
 
 `r supp_figure_count$label_text("egfrgenotype_by_keep_num")`.
@@ -673,11 +665,11 @@ Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Com
 ```{r adenocarcinoma_by_method, dn_id = supp_figure_count}
 adenocarcinoma_method = add_method(all_adeno2, other_method) %>%
   clear_outliers()
-ggplot(adenocarcinoma_method, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) + 
+ggplot(adenocarcinoma_method, aes(x = method, y = med_cor, color = outlier, group = method)) + 
   geom_sina() +
-  facet_grid(keep_num ~ method) +
+  facet_grid(sample_class ~ keep_num) +
   theme(axis.text.x = element_text(angle = 90)) +
-  labs(x = "Sample Class", y = "Median Correlation")
+  labs(x = "Method", y = "Median Correlation")
 ```
 
 `r supp_figure_count$label_text("adenocarcinoma_by_method")`. 
@@ -685,10 +677,11 @@ Median correlations by correlation method and applying different fractional cuto
 Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; Kt: Kendall-tau; PB: Pearson Base (raw values); PL: Pearson Log(x); PL1: Pearson Log(x + 1); PN0: Pearson No Zeros.
 
 ```{r adenocarcinoma_by_keep_num, dn_id = supp_figure_count}
-ggplot(adenocarcinoma_method, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
+ggplot(adenocarcinoma_method, aes(x = keep_num, y = med_cor, color = outlier, group = keep_num)) +
   geom_sina() +
-  facet_grid(method ~ keep_num) +
-  labs(x = "Sample Class", y = "Median Correlation")
+  facet_grid(sample_class ~ method) +
+  labs(x = "Keep Fraction", y = "Median Correlation") +
+  theme(axis.text.x = element_text(angle = 90))
 ```
 
 `r supp_figure_count$label_text("adenocarcinoma_by_keep_num")`. 
@@ -717,11 +710,11 @@ Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Com
 ```{r nsclc_by_method, dn_id = supp_figure_count}
 nsclc_method = add_method(all_nsclc_outliers, other_method) %>%
   clear_outliers()
-ggplot(nsclc_method, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) + 
+ggplot(nsclc_method, aes(x = method, y = med_cor, color = outlier, group = method)) + 
   geom_sina() +
-  facet_grid(keep_num ~ method) +
+  facet_grid(sample_class ~ keep_num) +
   theme(axis.text.x = element_text(angle = 90)) +
-  labs(x = "Sample Class", y = "Median Correlation")
+  labs(x = "Method", y = "Median Correlation")
 ```
 
 `r supp_figure_count$label_text("nsclc_by_method")`. 
@@ -729,11 +722,11 @@ Median correlations by correlation method and applying different fractional cuto
 Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; Kt: Kendall-tau; PB: Pearson Base (raw values); PL: Pearson Log(x); PL1: Pearson Log(x + 1); PN0: Pearson No Zeros.
 
 ```{r nsclc_by_keep_num, dn_id = supp_figure_count, fig.height = 10}
-ggplot(nsclc_method, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
+ggplot(nsclc_method, aes(x = keep_num, y = med_cor, color = outlier, group = keep_num)) +
   geom_sina() +
-  facet_grid(method ~ keep_num) +
-  theme(axis.text.x = element_text(angle = 90)) +
-  labs(x = "Sample Class", y = "Median Correlation")
+  facet_grid(sample_class ~ method) +
+  labs(x = "Keep Fraction", y = "Median Correlation") +
+  theme(axis.text.x = element_text(angle = 90))
 ```
 
 `r supp_figure_count$label_text("nsclc_by_keep_num")`. 
@@ -762,11 +755,11 @@ Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Com
 ```{r ratstamina_by_method, dn_id = supp_figure_count}
 ratstamina_method = add_method(all_ratstamina_outliers, other_method) %>%
   clear_outliers()
-ggplot(ratstamina_method, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) + 
+ggplot(ratstamina_method, aes(x = method, y = med_cor, color = outlier, group = method)) + 
   geom_sina() +
-  facet_grid(keep_num ~ method) +
+  facet_grid(sample_class ~ keep_num) +
   theme(axis.text.x = element_text(angle = 90)) +
-  labs(x = "Sample Class", y = "Median Correlation")
+  labs(x = "Method", y = "Median Correlation")
 ```
 
 `r supp_figure_count$label_text("ratstamina_by_method")`. 
@@ -774,11 +767,11 @@ Median correlations by correlation method and applying different fractional cuto
 Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; Kt: Kendall-tau; PB: Pearson Base (raw values); PL: Pearson Log(x); PL1: Pearson Log(x + 1); PN0: Pearson No Zeros.
 
 ```{r ratstamina_by_keep_num, dn_id = supp_figure_count, fig.height = 10}
-ggplot(ratstamina_method, aes(x = sample_class, y = med_cor, color = outlier, group = sample_class)) +
+ggplot(ratstamina_method, aes(x = keep_num, y = med_cor, color = outlier, group = keep_num)) +
   geom_sina() +
-  facet_grid(method ~ keep_num) +
-  theme(axis.text.x = element_text(angle = 90)) +
-  labs(x = "Sample Class", y = "Median Correlation")
+  facet_grid(sample_class ~ method) +
+  labs(x = "Keep Fraction", y = "Median Correlation") +
+  theme(axis.text.x = element_text(angle = 90))
 ```
 
 `r supp_figure_count$label_text("ratstamina_by_keep_num")`. 
