@@ -1,4 +1,5 @@
-calculate_qratio = function(network, annotations)
+calculate_qratio = function(network, annotations,
+                            use_weights = TRUE)
 {
   # network = network_correlations
   # annotations = use_annotation
@@ -9,6 +10,11 @@ calculate_qratio = function(network, annotations)
   # assume only the positive partial correlations are useful
   network = network |>
     dplyr::filter(weight > 0)
+  
+  if (!use_weights) {
+    network = network |>
+      dplyr::mutate(weight = 1)
+  }
   all_features_annotations = unique(unlist(annotations))
   
   network_all_nodes = unique(unlist(network[, c("start_node", "end_node")]))
@@ -49,7 +55,8 @@ calculate_qratio = function(network, annotations)
 calculate_feature_network_qratio = function(partial_correlations, annotations, 
                                             compound_type = "pathway",
                                             compound_mapping = metabolite_kegg,
-                                            lipid_type = "categories")
+                                            lipid_type = "categories",
+                                            use_weights = TRUE)
 {
   # partial_correlations = tar_read(feature_partial_cor_ici_yeast)
   # partial_correlations = tar_read(feature_partial_cor_ici_ratstamina)
@@ -110,7 +117,9 @@ calculate_feature_network_qratio = function(partial_correlations, annotations,
       network_correlations = average_correlations
     }
     
-    network_partitioning = calculate_qratio(network_correlations, use_annotation)
+    network_partitioning = calculate_qratio(network_correlations, 
+                                            use_annotation,
+                                            use_weights = use_weights)
   }
   
   

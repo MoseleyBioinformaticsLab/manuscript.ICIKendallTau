@@ -98,7 +98,7 @@ However, missing values occur in real data sets for a variety of reasons.
 In omics data sets that are derived from analytical measurements, the primary reason for missing values is that a specific measurable phenomenon falls below the detection limits of the analytical instrumentation.
 These missing data are not missing at random, but represent some information by virtue of their "missingness".
 Therefore, we propose the information-content-informed Kendall-tau (ICI-Kt) correlation coefficient that allows missing values to carry explicit information in the determination of concordant and discordant pairs.
-With both simulated and real data sets from RNA-seq, metabolomics and lipidomics experiments, we demonstrate that the ICI-Kt allows for the inclusion of missing data values as interpretable information, enabling both improved determination of outlier samples and improved feature-feature network construction, without explicitly using imputation.
+With both simulated and real data sets from RNA-seq, metabolomics, and lipidomics experiments, we demonstrate that the ICI-Kt allows for the inclusion of missing data values as interpretable information, enabling both improved determination of outlier samples and improved feature-feature network construction, without explicitly using imputation.
 Moreover, our implementation of ICI-Kt uses a mergesort-like algorithm that provides O(nlog(n)) computational performance, a significant improvement over the Kendall-tau correlation available in base R. 
 
 The ICI-Kt correlation calculation is available in an R package and Python module on GitHub at https://github.com/moseleyBioinformaticsLab/ICIKendallTau and https://github.com/moseleyBioinformaticsLab/icikt, respectively.
@@ -122,10 +122,10 @@ All analytical methods, and in particular the analytical methods used in omics w
 Some analytes will be missing at random because of spurious issues with either the instrument or the particular sample, but a larger number of missing measurements are left-censored due to analytes being below the effective detection limit of the instrument, as shown in `r figure_count$label_text("problem")`.
 Some analytical instruments are purposely designed to floor measurements when they occur below a certain signal to noise ratio threshold.
 Also, imputation of missing measurements in omics samples is an active area of research, which we will not cover here beyond to say that it is worthwhile and very necessary in many instances.
-However, when it comes to calculating correlation; there are very few methods that explicitly account for missing data that we know of.
+However, when it comes to calculating correlation, there are very few methods that explicitly account for missing data that we know of.
 In many cases, missing values are either ignored or imputed to zero (or another value) and then included in the correlation calculation.
 The two most common approaches for ignoring (i.e. dropping) values is to only use those measurements that are common across all samples (complete) or that are common between two samples being compared (pairwise complete).
-Both dropping or imputing missing values are likely to cause the calculate sample-sample correlation values to deviate from the real sample-sample correlation values, especially with respect to specific data interpretation perspectives.
+Both dropping or imputing missing values are likely to cause the calculated sample-sample correlation values to deviate from the real sample-sample correlation values, especially with respect to specific data interpretation perspectives.
 
 
 ```{r}
@@ -167,7 +167,7 @@ All of the code used for this manuscript is available on zenodo [@flightManuscri
 In the simplest form, the Kendall-tau correlation can be defined as:
 
 $$\tau = \frac{ | pairs_{concordant}  | - | pairs_{discordant}  |}{\left | pairs_{concordant} \right | + \left | pairs_{discordant} \right |}$$
-In this case a pair are any two x-y points, $x_i, y_i$ and $x_j, y_j$, with $i \neq j$, composed from two joint random variables X and Y, where $x_i$ represents the *ith value* in X and $y_i$ represents the *ith value* in Y.
+In this case, a pair are any two x-y points, $x_i, y_i$ and $x_j, y_j$, with $i \neq j$, composed from two joint random variables X and Y, where $x_i$ represents the *ith value* in X and $y_i$ represents the *ith value* in Y.
 In an omics context, X and Y can represent feature vectors for two experimental samples or two specific features across an ordered set of samples.
 A concordant pair has the following classical definition:
 
@@ -254,8 +254,8 @@ We note here that we **do not** consider this imputation of missing values.
 
 After this initial implementation, we used the *SciPy* [@virtanen_scipy_2020] *kendalltau* code as a model to create a mergesort based implementation in *Rcpp* that has a complexity of O(nlog(n)), in comparison to the pairwise testing that has a complexity of O(n^2) [@knight_mergesortkendall_1966].
 This provides a 460X speedup of the runtime to compare two feature vectors with lengths of 40,000.
-In comparison to directly counting the concordant and discordant pairs, some of the values in the mergesort implementation can reach the 32 bit default limit in C++.
-Therefore, we used 64 bit integers and floats where necessary in the *Rcpp* code.
+In comparison to directly counting the concordant and discordant pairs, some of the values in the mergesort implementation can reach the 32-bit default limit in C++.
+Therefore, we used 64-bit integers and floats where necessary in the *Rcpp* code.
 
 C++ (via *Rcpp* [@eddelbuettel_rcppseamless_2011; @eddelbuettel_seamlessbook_2013; @eddelbuettel_extendingrcpp_2018]) and R code implementations are in the src/kendallc.cpp and R/kendalltau.R files of the ICIKendallTau R package, hosted at https://github.com/MoseleyBioinformaticsLab/ICIKendallTau.
 The version of the package used in this manuscript is available on zenodo [@flightICIKendallTau2022].
@@ -394,7 +394,7 @@ $$Q = \sum_{i=1}^{annot}\frac{within_i}{annotated} - \left(\frac{outer_i}{annota
 ### Computing Environment
 
 Most calculations were run on a virtual machine running Ubuntu 18.04.6 LTS, with 80 virtual cores, and 1 TB of RAM.
-The virtual machine is running on top of a 50 node cluster, each with 4 10-core processors with hyperthreading, 3TB of RAM and an 8TB solid-state-drive array, provided by the Kentucky Research Informatics Cloud (KyRIC).
+The virtual machine is running on top of a 50 node cluster, each with 4 10-core Intel Xeon CPUs (E7-4820 v4 @ 2.00GHz) with hyperthreading, 3TB of RAM, an 8TB solid-state-drive array, and a 100Gbps Mellanox ConnectX-4 adapter, provided by the Kentucky Research Informatics Cloud (KyRIC).
 KyRIC manages the virtual machines via an OpenStack instance.
 We used the *targets* package to manage calculation dependencies [@landauTargetsPackageDynamic2021b].
 For the comparisons of time taken using different numbers of samples to evaluate the algorithmic complexity, calculations were run on a single laptop Intel i5-10210U core clocked at 1.6 GHz.
@@ -638,7 +638,7 @@ With the exception of the yeast dataset, the base Pearson (PB) and Pearson witho
 Feature-feature correlations (for those features present in 25% or more of the samples of a class) for each dataset were calculated using each of the correlation methods (see Methods).
 From those feature-feature correlations, partial correlations are calculated, and significant edges retained.
 Feature annotations from either Reactome pathways (RNA-Seq), KEGG pathways (metabolomics), or lipid class (lipidomics) were used to determine if the edges within annotations were more present than outside of annotations.
-The rationale for this analysis is that stronger positive partial correlations should be reflected within known pathways versus between pathways.
+The biochemical rationale for this analysis is that stronger positive partial correlations should be reflected within known pathways versus between pathways.
 
 `r table_count$label_text("partitioning")` lists the summed partitioning values for each dataset and method.
 For each of the datasets examined, ICI-Kt or ICI-Kt completeness gave the most positive summed partitioning values.
