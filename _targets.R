@@ -263,7 +263,13 @@ feature_correlation_map = tar_map(dataset_feature_correlation,
                                             calculate_feature_network_qratio(feature_partial_cor,
                                                                              feature_annotations, 
                                                                              "pathway", 
-                                                                             metabolite_kegg)))
+                                                                             metabolite_kegg)),
+                                 tar_target(feature_network_qratio_w1,
+                                            calculate_feature_network_qratio(feature_partial_cor,
+                                                                             feature_annotations, 
+                                                                             "pathway", 
+                                                                             metabolite_kegg,
+                                                                             use_weights = FALSE)))
 
 feature_qratio_combine_map = tar_combine(feature_qratio_comparisons,
                                          feature_correlation_map[[3]],
