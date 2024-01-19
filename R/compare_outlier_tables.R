@@ -225,21 +225,28 @@ create_outlier_parallel_plot = function(outlier_df)
   # "pearson_log" = "PL")
   # outlier_df = outlier_df |>
   #  add_method(other_method)
+  # outlier_df = outlier_df |>
+  #   dplyr::filter(method %in% c("IK", "IKC", "PL1"))
   at_least_one = outlier_df |>
     dplyr::filter(outlier) |>
     dplyr::pull(sample_id) |>
     unique()
+  
   outlier_only = outlier_df |>
     dplyr::filter(sample_id %in% at_least_one)
-  sina_base = ggplot(outlier_df, aes(x = method, y = med_cor)) +
-    geom_sina(color = "darkgrey")
+  
+  g_colors = scale_color_discrete()$palette(2)
+  outlier_colors = c("FALSE" = "darkgrey", "TRUE" = g_colors[1])
   out_plot = ggplot(outlier_df, aes(x = method, y = med_cor)) +
     geom_line(data = outlier_only, aes(x = method, y = med_cor, group = sample_id), color = "gray85") +
-    geom_sina(color = "darkgrey") +
-    geom_point(data = outlier_only, aes(x = method, y = med_cor, color = outlier)) +
+    geom_sina(aes(color = outlier, group = method), alpha = 0.8) +
+    scale_color_manual(values = outlier_colors) +
     facet_wrap(~ sample_class, ncol = 1) +
     theme(strip.background = NULL,
           strip.text.x = element_text(hjust = 0)) +
     labs(x = "Method", y = "Median Correlation")
   out_plot
+  
+  # geom_point(data = outlier_only, aes(x = method, y = med_cor, color = outlier)) +
+  
 }

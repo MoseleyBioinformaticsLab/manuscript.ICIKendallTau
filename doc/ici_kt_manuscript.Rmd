@@ -604,8 +604,8 @@ yeast_single_plot +
 
 `r figure_count$label_text("yeast_outliers")`.
 Median correlations for each of the yeast RNA-Seq sample to all other samples in the same group, using either ICI-Kt, ICI-Kt * completeness or Pearson Log(x + 1) correlation.
-Grey points are all of the sample median correlations for each correlation method, colored if they were an outlier in any of the methods shown.
-For a sample that is considered an outlier in any method, lines are drawn between methods.
+Points are colored red if they were an outlier using that correlation method.
+For a sample that is considered an outlier in any of the method, lines are drawn connecting them between methods.
 
 
 `r table_count$label_text("yeast_outliers")`.
