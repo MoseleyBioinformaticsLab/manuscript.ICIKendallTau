@@ -390,6 +390,11 @@ For each feature annotation (see Feature Annotations), we calculate three sums o
 The partitioning ratio (or q-ratio) is calculated as follows:
 
 $$Q = \sum_{i=1}^{annot}\frac{within_i}{annotated} - \left(\frac{outer_i}{annotated}\right)^2$$
+The partitioning ratio was originally designed as a method to determine the optimal clustering of networks, where each member of the network has only a single label [@doCharacterizationMissingValues2018; @krumsiekGaussianGraphicalModeling2011; @newmanFindingEvaluatingCommunity2004; @whiteSpectralClusteringApproach2005].
+In those cases, the partitioning ratio should range between 0 and 1 for non-partitioned and fully partitioned networks, respectively.
+None of the annotation sources we use have single labels for any features, and therefore the partitioning ratios have a much wider range.
+However, we expect that **better** partitioning of the network will be reflected by **more positive** partitioning ratios.
+
 
 ### Computing Environment
 

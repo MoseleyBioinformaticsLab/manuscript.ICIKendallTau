@@ -166,6 +166,48 @@ n_extreme = function(in_value_df)
 }
 
 
+compare_significant_partial_cor = function(feature_significant_combined)
+{
+  # tar_load(feature_significant_combined)
+  split_dataset = split(feature_significant_combined, feature_significant_combined$data_id)
+  
+  compared_indices = function(n1, n2)
+  {
+    l_n1 = length(n1)
+    l_n2 = length(n2)
+    len_union = length(base::union(n1, n2))
+    len_intersect = length(base::intersect(n1,n2))
+    min_len = min(c(l_n1, l_n2))
+    
+    jaccard = len_intersect / len_union
+    overlap = len_intersect / min_len
+    min_union = min_len + len_union
+    log_combined = (log(len_intersect) + log(min_union)) - (log(min_len) + log(len_union)) - log(2)
+    combined = exp(log_combined)
+    #combined = (len_intersect * (min_len + len_union)) / (min_len * len_union) / 2
+    
+    data.frame(n1 = l_n1, n2 = l_n2, min = min_len,
+               jaccard = jaccard, overlap = overlap, combined = combined)
+  }
+  
+  out_compared = purrr::map(split_dataset, \(in_data){
+    # in_data = split_dataset[[1]]
+    split_method = split(in_data, in_data$method_id)
+    ici_method = split_method[["ici"]]
+    
+    compare_ici = purrr::map(split_method, \(x){
+      tmp_compare = compared_indices(ici_method$start_end, x$start_end)
+      tmp_compare$d1 = "ici"
+      tmp_compare$d2 = x$method_id[1]
+      tmp_compare
+    }) |> purrr::list_rbind()
+    
+    compare_ici$data_id = in_data$data_id[1]
+    compare_ici
+  }) |> purrr::list_rbind()
+  out_compared
+}
+
 get_significant_partial_cor = function(feature_partial_cor)
 {
   # feature_partial_cor = tar_read(feature_partial_cor_ici_yeast)

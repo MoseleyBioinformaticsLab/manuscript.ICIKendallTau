@@ -289,6 +289,11 @@ feature_qratio_summary_plan = tar_plan(
     dplyr::group_by(data_id) |>
     dplyr::arrange(dplyr::desc(q_value), .by_group = TRUE)
 )
+
+feature_compare_summary_plan = tar_plan(
+  feature_compare_summary = compare_significant_partial_cor(feature_significant_combined)
+)
+
 ## dataset summaries -----
 dataset_summary_map = tar_map(dataset_variables,
                                names = id,
@@ -327,6 +332,7 @@ list(small_realistic_examples,
      sample_outlier_plan,
      feature_correlation_map,
      feature_significant_combine_map,
+     feature_compare_summary_plan,
      feature_qratio_combine_map,
      feature_qratio_summary_plan,
      dataset_summary_map,
