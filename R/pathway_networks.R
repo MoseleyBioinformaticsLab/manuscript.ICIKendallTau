@@ -166,6 +166,26 @@ n_extreme = function(in_value_df)
 }
 
 
+get_significant_partial_cor = function(feature_partial_cor)
+{
+  # feature_partial_cor = tar_read(feature_partial_cor_ici_yeast)
+  if (is.na(feature_partial_cor$pcor[["partial_cor"]][1])) {
+    return(NULL)
+  } else {
+    
+    network_correlations = feature_partial_cor$pcor |>
+      dplyr::filter(significant) |>
+      dplyr::transmute(start_node = s1,
+                       end_node = s2,
+                       weight = partial_cor) |>
+      dplyr::filter(weight > 0) |>
+      dplyr::mutate(start_end = paste0(start_node, ":", end_node),
+                    method_id = feature_partial_cor$method_id,
+                    data_id = feature_partial_cor$data_id)
+    return(network_correlations)
+  }
+}
+
 calculate_partial_cor_pvalues = function(feature_data)
 {
   # feature_data = tar_read(feature_correlation_ici_yeast)
