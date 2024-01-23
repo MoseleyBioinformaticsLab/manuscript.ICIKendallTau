@@ -321,7 +321,9 @@ documents_plan = tar_plan(
   tar_render(supp_tables,
              "doc/supplemental_tables.Rmd"),
   tar_render(manuscript,
-           "doc/ici_kt_manuscript.Rmd")
+           "doc/ici_kt_manuscript.Rmd"),
+  tar_render(similarity_tables, 
+             "doc/similarity_tables.Rmd")
 
 )
 

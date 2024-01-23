@@ -519,3 +519,15 @@ cleanup_qratio_table = function(feature_qratio_summary)
   }
   feature_qratio_highlight
 }
+
+cleanup_significant_compare_table = function(in_summary)
+{
+  # in_summary = tar_read(feature_compare_summary)
+  in_summary = in_summary |>
+    dplyr::filter(!(d1 == d2))
+  flex_summary = in_summary |>
+    flextable::flextable() |>
+    flextable::colformat_double(j = c(4, 5, 6), digits = 3) |>
+    flextable::set_table_properties(layout = "autofit")
+  flex_summary
+}
