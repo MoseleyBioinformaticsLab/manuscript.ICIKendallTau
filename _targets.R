@@ -259,8 +259,6 @@ feature_correlation_map = tar_map(dataset_feature_correlation,
                                             correlation(dataset, id, 0.25, "sample", "treatment")),
                                  tar_target(feature_partial_cor,
                                             calculate_partial_cor_pvalues(feature_correlation)),
-                                 tar_target(feature_partial_significant,
-                                            get_significant_partial_cor(feature_partial_cor)),
                                  tar_target(feature_network_qratio,
                                             calculate_feature_network_qratio(feature_partial_cor,
                                                                              feature_annotations, 
@@ -273,12 +271,9 @@ feature_correlation_map = tar_map(dataset_feature_correlation,
                                                                              metabolite_kegg,
                                                                              use_weights = FALSE)))
 
-feature_significant_combine_map = tar_combine(feature_significant_combined,
-                                              feature_correlation_map[[3]],
-                                              command = bind_rows(!!!.x))
 
 feature_qratio_combine_map = tar_combine(feature_qratio_comparisons,
-                                         feature_correlation_map[[4]],
+                                         feature_correlation_map[[3]],
                                          command = bind_rows(!!!.x))
 
 feature_qratio_summary_plan = tar_plan(
@@ -290,9 +285,6 @@ feature_qratio_summary_plan = tar_plan(
     dplyr::arrange(dplyr::desc(q_value), .by_group = TRUE)
 )
 
-feature_compare_summary_plan = tar_plan(
-  feature_compare_summary = compare_significant_partial_cor(feature_significant_combined)
-)
 
 ## dataset summaries -----
 dataset_summary_map = tar_map(dataset_variables,
@@ -322,8 +314,6 @@ documents_plan = tar_plan(
              "doc/supplemental_tables.Rmd"),
   tar_render(manuscript,
            "doc/ici_kt_manuscript.Rmd"),
-  tar_render(similarity_tables, 
-             "doc/similarity_tables.Rmd")
 
 )
 
@@ -333,8 +323,6 @@ list(small_realistic_examples,
      limit_of_detection_map,
      sample_outlier_plan,
      feature_correlation_map,
-     feature_significant_combine_map,
-     feature_compare_summary_plan,
      feature_qratio_combine_map,
      feature_qratio_summary_plan,
      dataset_summary_map,
