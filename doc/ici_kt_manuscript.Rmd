@@ -408,7 +408,7 @@ For the comparisons of time taken using different numbers of samples to evaluate
 
 ### Datasets
 
-In `r table_count$label_text("datasets")` we provide a summary of the number of features (measurements), samples, treatments or conditions, and the number of biological replicates per condition for each of the experimental datasets.
+In `r table_count$label_text("datasets")`, we provide a summary of the number of features (measurements), samples, treatments or conditions, and the number of biological replicates per condition for each of the experimental datasets.
 
 `r table_count$label_text("datasets")`. Number of features, samples, treatments, and biological replicates in each condition for each dataset.
 ```{r}
@@ -447,7 +447,7 @@ wrap_plots(lod_graph_yeast, ncol = 1) + plot_annotation(tag_levels = "A")
 
 `r figure_count$label_text("lod")`.
 Yeast dataset count medians by number of samples feature was present in.
-**A**: Log10 of medians for present values copmared to the number of samples the feature was present in.
+**A**: Log10 of medians for present values compared to the number of samples the feature was present in.
 **B**: Log10 of minimum median for each value of number of samples the feature was present in.
 
 ### Comparison To Other Correlation Measures
@@ -590,7 +590,7 @@ In this work, we used **only** the sample-sample median correlation to identify 
 Here, we calculated Pearson correlation using the raw counts, and with only those genes that had non-zero reads in both samples (also see PN0).
 This version of Pearson correlation recreates the median sample-sample correlations observed in the original report. 
 We denote the actual samples recorded as outliers by Gierlinski and coworkers with "Manuscript".
-In `r supp_figure_count$label_text("yeast_outliers")` and `r supp_table_count$label_text("yeast_outliers")` we can see how the determination of outliers was not made solely on the basis of correlation alone, but on a combination of factors that lead to some of the higher correlating samples (using raw counts and Pearson correlation) being considered outliers where lower correlating samples were not listed as being outliers.
+In `r supp_figure_count$label_text("yeast_outliers")` and `r supp_table_count$label_text("yeast_outliers")`, we can see how the determination of outliers was not made solely on the basis of correlation alone, but on a combination of factors that lead to some of the higher correlating samples (using raw counts and Pearson correlation) being considered outliers where lower correlating samples were not listed as being outliers.
 
 Regardless, using ICI-Kt or ICI-Kt * Completeness in this instance, the outliers using the simple distribution summary statistics and an outlier having to be greater than 1.5X median error, the outliers are mostly a superset of the outliers determined by Gierlinski et al., with the exception of three samples specific to their data: WT.22, WT.25, WT.28.
 
@@ -634,7 +634,7 @@ For both ICI-Kt and the various Pearson correlation, the tumor samples variance 
 
 Additionally, we compared how the outliers change if we require that a feature is present in at least a certain fraction of samples of a class with each different correlation measure (see `r supp_figure_count$label_text(c("yeast_by_method", "yeast_by_keep_num", "yeast_differences", "egfrgenotype_by_method", "egfrgenotype_by_keep_num", "egfrgenotype_differences", "adenocarcinoma_by_method", "adenocarcinoma_by_keep_num", "adenocarcinoma_differences", "nsclc_by_method", "nsclc_by_keep_num", "nsclc_differences", "ratstamina_by_method", "ratstamina_by_keep_num", "ratstamina_differences"))`).
 Although, in general the correlations remain the same, or show some downward trend with increasing fractions of samples required to be non-missing, IKC shows a different trend.
-This is due to overall there being a higher likelihood of pairwise samples being *complete* with the requirement for a feature to be in a greater fraction of a class of samples.
+Overall, this is due to there being a higher likelihood of pairwise samples being *complete* with the requirement for a feature to be in a greater fraction of a class of samples.
 
 With the exception of the yeast dataset, the base Pearson (PB) and Pearson without zeros (PN0) were the most likely methods to show higher changes in median and median-absolute-differences (MAD) between groups of samples (see Methods).
 
