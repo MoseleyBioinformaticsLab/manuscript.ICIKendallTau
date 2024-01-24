@@ -310,8 +310,6 @@ documents_plan = tar_plan(
              format = "file"),
   tar_render(supp_materials,
               "doc/supplemental_materials.Rmd"),
-  tar_render(supp_tables,
-             "doc/supplemental_tables.Rmd"),
   tar_render(manuscript,
            "doc/ici_kt_manuscript.Rmd"),
 

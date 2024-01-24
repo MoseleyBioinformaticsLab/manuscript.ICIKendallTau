@@ -329,6 +329,9 @@ Abbreviations for different measures are: IK: ICI-Kt; IKC: ICI-Kt * Completeness
 ```{r yeast_outlier_table}
 yeast_table = compare_outlier_tables_bold(yeast_single2, compare_yeast, sort_var = "manuscript", map_method = manual_method)
 yeast_table |>
+  font(fontname = "Calibri", part = "all") |>
+  fontsize(size = 11, part = "header") |>
+  fontsize(size = 10, part = "body") |>
   set_table_properties(layout = "autofit")
 ```
 
@@ -367,6 +370,9 @@ Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Com
 ```{r egfrgenotype_table}
 egfrgenotype_table = compare_outlier_tables_bold(egfrgenotype_single, compare_egfrgenotype, "pearson_log1p", map_method = other_method)
 egfrgenotype_table |>
+  font(fontname = "Calibri", part = "all") |>
+  fontsize(size = 11, part = "header") |>
+  fontsize(size = 10, part = "body") |>
   set_table_properties(layout = "autofit")
 ```
 
@@ -419,6 +425,9 @@ Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Com
 ```{r adenocarcinoma_table}
 adenocarcinoma_table = compare_outlier_tables_bold(adenocarcinoma_single, compare_adeno, "pearson_log1p", map_method = other_method)
 adenocarcinoma_table |>
+  font(fontname = "Calibri", part = "all") |>
+  fontsize(size = 11, part = "header") |>
+  fontsize(size = 10, part = "body") |>
   set_table_properties(layout = "autofit")
 ```
 
@@ -437,7 +446,10 @@ adenocarcinoma_variation_wide = adenocarcinoma_variation %>%
   tidyr::pivot_wider(names_from = sample_class, values_from = mad) %>%
   flextable() %>%
   colformat_double(digits = 3) %>%
-  autofit() 
+  font(fontname = "Calibri", part = "all") |>
+  fontsize(size = 11, part = "header") |>
+  fontsize(size = 10, part = "body") |>
+  set_table_properties(layout = "autofit")
 ```
 
 `r supp_table_count$label_text("adenocarcinoma_mad")`.
@@ -447,7 +459,7 @@ Adenocarcinoma median-absolute-deviations (MAD) for each group of sample median 
 ```{r summarize_adeno2}
 # %>%
 #   set_caption(caption = paste0(paste_label("Table S", supp_table_count, "adenocarcinoma_mad"), ". Adenocarcinoma median-absolute-deviations (MAD) for each group of sample median correlations in each type of tissue."), style = "paragraph")
-autofit(adenocarcinoma_variation_wide)
+adenocarcinoma_variation_wide
 ```
 
 
@@ -483,6 +495,9 @@ Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Com
 #| label: nsclc_table
 nsclc_table = compare_outlier_tables_bold(nsclc_single, compare_egfrgenotype, "pearson_log1p", map_method = other_method)
 nsclc_table |>
+  font(fontname = "Calibri", part = "all") |>
+  fontsize(size = 11, part = "header") |>
+  fontsize(size = 10, part = "body") |>
   set_table_properties(layout = "autofit")
 ```
 
@@ -519,6 +534,9 @@ Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Com
 #| label: ratstamina_table
 ratstamina_table = compare_outlier_tables_bold(ratstamina_single, compare_egfrgenotype, "pearson_log1p", map_method = other_method)
 ratstamina_table |>
+  font(fontname = "Calibri", part = "all") |>
+  fontsize(size = 11, part = "header") |>
+  fontsize(size = 10, part = "body") |>
   flextable::set_table_properties(layout = "autofit")
 ```
 

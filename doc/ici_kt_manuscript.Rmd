@@ -56,7 +56,6 @@ load(here::here("doc/supp_stuff.rda"))
 #| label: load-dependencies
 tar_load(c(references,
            supp_materials,
-           supp_tables,
            dataset_summary,
            lod_graph_yeast,
            realistic_comparison_plot,
