@@ -2132,6 +2132,30 @@
 		}
 	},
 	{
+		"id": "flightVisualizationQualityControlDevelopmentVisualization2021",
+		"type": "report",
+		"genre": "manual",
+		"title": "visualizationQualityControl: Development of visualization methods for quality control",
+		"URL": "https://moseleybioinformaticslab.github.io/visualizationQualityControl https://github.com/moseleybioinformaticslab/visualizationQualityControl",
+		"author": [
+			{
+				"family": "Flight",
+				"given": "Robert M"
+			},
+			{
+				"family": "Moseley",
+				"given": "Hunter NB"
+			}
+		],
+		"issued": {
+			"date-parts": [
+				[
+					"2021"
+				]
+			]
+		}
+	},
+	{
 		"id": "leekTacklingWidespreadCritical2010",
 		"type": "article-journal",
 		"abstract": "High-throughput technologies are widely used, for example to assay genetic variants, gene and protein expression, and epigenetic modifications. One often overlooked complication with such studies is batch effects, which occur because measurements are affected by laboratory conditions, reagent lots and personnel differences. This becomes a major problem when batch effects are correlated with an outcome of interest and lead to incorrect conclusions. Using both published studies and our own analyses, we argue that batch effects (as well as other technical and biological artefacts) are widespread and critical to address. We review experimental and computational approaches for doing so.",
@@ -3282,6 +3306,156 @@
 					"2005",
 					1,
 					1
+				]
+			]
+		}
+	},
+	{
+		"id": "behnelCythonBestBoth2011",
+		"type": "article-journal",
+		"abstract": "Cython is a Python language extension that allows explicit type declarations and is compiled directly to C. As such, it addresses Python's large overhead for numerical loops and the difficulty of efficiently using existing C and Fortran code, which Cython can interact with natively.",
+		"container-title": "Computing in Science & Engineering",
+		"DOI": "10.1109/MCSE.2010.118",
+		"ISSN": "1558-366X",
+		"issue": "2",
+		"note": "event-title: Computing in Science & Engineering",
+		"page": "31-39",
+		"source": "IEEE Xplore",
+		"title": "Cython: The Best of Both Worlds",
+		"title-short": "Cython",
+		"URL": "https://ieeexplore.ieee.org/document/5582062",
+		"volume": "13",
+		"author": [
+			{
+				"family": "Behnel",
+				"given": "Stefan"
+			},
+			{
+				"family": "Bradshaw",
+				"given": "Robert"
+			},
+			{
+				"family": "Citro",
+				"given": "Craig"
+			},
+			{
+				"family": "Dalcin",
+				"given": "Lisandro"
+			},
+			{
+				"family": "Seljebotn",
+				"given": "Dag Sverre"
+			},
+			{
+				"family": "Smith",
+				"given": "Kurt"
+			}
+		],
+		"accessed": {
+			"date-parts": [
+				[
+					"2024",
+					1,
+					16
+				]
+			]
+		},
+		"issued": {
+			"date-parts": [
+				[
+					"2011",
+					3
+				]
+			]
+		}
+	},
+	{
+		"id": "loveModeratedEstimationFold2014",
+		"type": "article-journal",
+		"abstract": "In comparative high-throughput sequencing assays, a fundamental task is the analysis of count data, such as read counts per gene in RNA-seq, for evidence of systematic changes across experimental conditions. Small replicate numbers, discreteness, large dynamic range and the presence of outliers require a suitable statistical approach. We present DESeq2, a method for differential analysis of count data, using shrinkage estimation for dispersions and fold changes to improve stability and interpretability of estimates. This enables a more quantitative analysis focused on the strength rather than the mere presence of differential expression. The DESeq2 package is available at http://www.bioconductor.org/packages/release/bioc/html/DESeq2.html.",
+		"container-title": "Genome Biology",
+		"DOI": "10.1186/s13059-014-0550-8",
+		"ISSN": "1474-760X",
+		"issue": "12",
+		"journalAbbreviation": "Genome Biology",
+		"page": "550",
+		"source": "BioMed Central",
+		"title": "Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2",
+		"URL": "https://doi.org/10.1186/s13059-014-0550-8",
+		"volume": "15",
+		"author": [
+			{
+				"family": "Love",
+				"given": "Michael I."
+			},
+			{
+				"family": "Huber",
+				"given": "Wolfgang"
+			},
+			{
+				"family": "Anders",
+				"given": "Simon"
+			}
+		],
+		"accessed": {
+			"date-parts": [
+				[
+					"2024",
+					1,
+					16
+				]
+			]
+		},
+		"issued": {
+			"date-parts": [
+				[
+					"2014",
+					12,
+					5
+				]
+			]
+		}
+	},
+	{
+		"id": "newmanFindingEvaluatingCommunity2004",
+		"type": "article-journal",
+		"abstract": "We propose and study a set of algorithms for discovering community structure in networks -- natural divisions of network nodes into densely connected subgroups. Our algorithms all share two definitive features: first, they involve iterative removal of edges from the network to split it into communities, the edges removed being identified using one of a number of possible \"betweenness\" measures, and second, these measures are, crucially, recalculated after each removal. We also propose a measure for the strength of the community structure found by our algorithms, which gives us an objective metric for choosing the number of communities into which a network should be divided. We demonstrate that our algorithms are highly effective at discovering community structure in both computer-generated and real-world network data, and show how they can be used to shed light on the sometimes dauntingly complex structure of networked systems.",
+		"container-title": "Physical Review E",
+		"DOI": "10.1103/PhysRevE.69.026113",
+		"ISSN": "1539-3755, 1550-2376",
+		"issue": "2",
+		"journalAbbreviation": "Phys. Rev. E",
+		"note": "arXiv:cond-mat/0308217",
+		"page": "026113",
+		"source": "arXiv.org",
+		"title": "Finding and evaluating community structure in networks",
+		"URL": "http://arxiv.org/abs/cond-mat/0308217",
+		"volume": "69",
+		"author": [
+			{
+				"family": "Newman",
+				"given": "M. E. J."
+			},
+			{
+				"family": "Girvan",
+				"given": "M."
+			}
+		],
+		"accessed": {
+			"date-parts": [
+				[
+					"2024",
+					1,
+					18
+				]
+			]
+		},
+		"issued": {
+			"date-parts": [
+				[
+					"2004",
+					2,
+					26
 				]
 			]
 		}
