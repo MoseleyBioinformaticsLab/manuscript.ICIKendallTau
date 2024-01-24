@@ -122,6 +122,7 @@ supp_table_count$increment(c("yeast_outliers",
 #| fig.height: 8
 wrap_plots(lod_graph_adenocarcinoma, ncol = 1) + plot_annotation(tag_levels = "A")
 ```
+
 `r supp_figure_count$label_text("lod_adenocarcinoma")`.
 Adenocarcinoma dataset count medians by number of samples feature was present in.
 **A**: Log10 of medians for present values compared to the number of samples the feature was present in.
@@ -133,6 +134,7 @@ Adenocarcinoma dataset count medians by number of samples feature was present in
 #| fig.height: 8 
 wrap_plots(lod_graph_egfrgenotype, ncol = 1) + plot_annotation(tag_levels = "A")
 ```
+
 `r supp_figure_count$label_text("lod_egfrgenotype")`.
 EGFR genotype dataset count medians by number of samples feature was present in.
 **A**: Log10 of medians for present values compared to the number of samples the feature was present in.
@@ -144,6 +146,7 @@ EGFR genotype dataset count medians by number of samples feature was present in.
 #| fig.height: 8 
 wrap_plots(lod_graph_egfrgenotypetumorculture, ncol = 1) + plot_annotation(tag_levels = "A")
 ```
+
 `r supp_figure_count$label_text("lod_egfrgenotypetumorculture")`.
 EGFR genotype and tumor culture dataset count medians by number of samples feature was present in.
 **A**: Log10 of medians for present values compared to the number of samples the feature was present in.
@@ -155,6 +158,7 @@ EGFR genotype and tumor culture dataset count medians by number of samples featu
 #| fig.height: 12
 wrap_plots(lod_graph_typeandtumorculture, ncol = 1) + plot_annotation(tag_levels = "A")
 ```
+
 `r supp_figure_count$label_text("lod_typeandtumorculture")`.
 EGFR genotype and tumor culture dataset count medians by number of samples feature was present in.
 **A**: Log10 of medians for present values compared to the number of samples the feature was present in.
@@ -166,6 +170,7 @@ EGFR genotype and tumor culture dataset count medians by number of samples featu
 #| fig.height: 8
 wrap_plots(lod_graph_nsclc, ncol = 1) + plot_annotation(tag_levels = "A")
 ```
+
 `r supp_figure_count$label_text("lod_nsclc")`.
 Non-small-cell-lung-cancer (NSCLC) lipidomics dataset count medians by number of samples feature was present in.
 **A**: Log10 of medians for present values compared to the number of samples the feature was present in.
@@ -178,6 +183,7 @@ Non-small-cell-lung-cancer (NSCLC) lipidomics dataset count medians by number of
 #| fig.height: 8
 wrap_plots(lod_graph_ratstamina, ncol = 1) + plot_annotation(tag_levels = "A")
 ```
+
 `r supp_figure_count$label_text("lod_ratstamina")`.
 Rat stamina dataset count medians by number of samples feature was present in.
 **A**: Log10 of medians for present values compared to the number of samples the feature was present in.
@@ -315,8 +321,15 @@ Median correlations for each of the yeast RNA-Seq samples to all other samples i
 Points are colored red if they were an outlier using that correlation method.
 For a sample that is considered an outlier in any of the method, lines are drawn connecting them between methods.
 
+
+`r supp_table_count$label_text("yeast_outliers")`.
+Yeast dataset median correlation values and outlier determination for each outlier from each of the correlation methods.
+Abbreviations for different measures are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; PB: Pearson Base, PN: Pearson No Zero; PL1: Pearson Log(x + 1); PL: Pearson Log(x); Kt: Kendall-tau.
+
 ```{r yeast_outlier_table}
 yeast_table = compare_outlier_tables_bold(yeast_single2, compare_yeast, sort_var = "manuscript", map_method = manual_method)
+yeast_table |>
+  set_table_properties(layout = "autofit")
 ```
 
 
@@ -346,8 +359,15 @@ Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Com
 Points are colored red if they were an outlier using that correlation method.
 For a sample that is considered an outlier in any of the method, lines are drawn connecting them between methods.
 
+
+`r supp_table_count$label_text("egfrgenotype_outliers")`.
+EGFR RNA-Seq dataset using genotype as the grouping variable median correlation values and outlier determination for each outlier from each of the correlation methods.
+Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; PB: Pearson Base, PN: Pearson No Zero; PL1: Pearson Log(x + 1); PL: Pearson Log(x); Kt: Kendall-tau.
+
 ```{r egfrgenotype_table}
 egfrgenotype_table = compare_outlier_tables_bold(egfrgenotype_single, compare_egfrgenotype, "pearson_log1p", map_method = other_method)
+egfrgenotype_table |>
+  set_table_properties(layout = "autofit")
 ```
 
 ### TCGA Adenocarcinoma
@@ -391,8 +411,15 @@ Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Com
 Points are colored red if they were an outlier using that correlation method.
 For a sample that is considered an outlier in any of the method, lines are drawn connecting them between methods.
 
+
+`r supp_table_count$label_text("adenocarcinoma_outliers")`.
+TGCA adenocarcinoma dataset median correlation values and outlier determination for each outlier from each of the correlation methods.
+Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; PB: Pearson Base, PN: Pearson No Zero; PL1: Pearson Log(x + 1); PL: Pearson Log(x); Kt: Kendall-tau.
+
 ```{r adenocarcinoma_table}
 adenocarcinoma_table = compare_outlier_tables_bold(adenocarcinoma_single, compare_adeno, "pearson_log1p", map_method = other_method)
+adenocarcinoma_table |>
+  set_table_properties(layout = "autofit")
 ```
 
 ```{r summarize_adeno}
@@ -412,7 +439,6 @@ adenocarcinoma_variation_wide = adenocarcinoma_variation %>%
   colformat_double(digits = 3) %>%
   autofit() 
 ```
-
 
 `r supp_table_count$label_text("adenocarcinoma_mad")`.
 Adenocarcinoma median-absolute-deviations (MAD) for each group of sample median correlations in each type of tissue.
@@ -441,15 +467,23 @@ nsclc_single_plot = nsclc_single %>%
   create_outlier_parallel_plot()
 nsclc_single_plot
 ```
+
 `r supp_figure_count$label_text("nsclc_outliers")`.
 Median correlations for each of the NSCLC lipidomics samples to all other samples in the same group, using different correlation measures on different data. 
 Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; PB: Pearson Base, PN: Pearson No Zero; PL1: Pearson Log(x + 1); PL: Pearson Log(x); Kt: Kendall-tau.
 Points are colored red if they were an outlier using that correlation method.
 For a sample that is considered an outlier in any of the method, lines are drawn connecting them between methods.
 
+
+`r supp_table_count$label_text("nsclc_outliers")`.
+NSCLC lipidomics dataset median correlation values and outlier determination for each outlier from each of the correlation methods.
+Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; PB: Pearson Base, PN: Pearson No Zero; PL1: Pearson Log(x + 1); PL: Pearson Log(x); Kt: Kendall-tau.
+
 ```{r}
 #| label: nsclc_table
 nsclc_table = compare_outlier_tables_bold(nsclc_single, compare_egfrgenotype, "pearson_log1p", map_method = other_method)
+nsclc_table |>
+  set_table_properties(layout = "autofit")
 ```
 
 
@@ -469,15 +503,23 @@ ratstamina_single_plot = ratstamina_single %>%
   create_outlier_parallel_plot()
 ratstamina_single_plot
 ```
+
 `r supp_figure_count$label_text("ratstamina_outliers")`.
 Median correlations for each of the rat stamina metabolomics samples to all other samples in the same group, using different correlation measures on different data. 
 Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; PB: Pearson Base, PN: Pearson No Zero; PL1: Pearson Log(x + 1); PL: Pearson Log(x); Kt: Kendall-tau.
 Points are colored red if they were an outlier using that correlation method.
 For a sample that is considered an outlier in any of the method, lines are drawn connecting them between methods.
 
+
+`r supp_table_count$label_text("ratstamina_outliers")`.
+Rat stamina metabolomics dataset median correlation values and outlier determination for each outlier from each of the correlation methods.
+Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; PB: Pearson Base, PN: Pearson No Zero; PL1: Pearson Log(x + 1); PL: Pearson Log(x); Kt: Kendall-tau.
+
 ```{r}
 #| label: ratstamina_table
 ratstamina_table = compare_outlier_tables_bold(ratstamina_single, compare_egfrgenotype, "pearson_log1p", map_method = other_method)
+ratstamina_table |>
+  flextable::set_table_properties(layout = "autofit")
 ```
 
 
