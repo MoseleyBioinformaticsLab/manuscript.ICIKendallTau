@@ -37,6 +37,7 @@ deseq_norm = counts(deseq_counts, normalized = TRUE)
 has_1 = rowSums(deseq_norm > 0) > 0
 deseq_norm = deseq_norm[has_1, ]
 
-out_count_info = list(counts = deseq_norm, info = adeno_info)
+out_count_info = list(counts = deseq_norm, info = adeno_info,
+                      data_id = "recount_adenocarcinoma")
 
 saveRDS(out_count_info, file = here::here("data/recount_adenocarcinoma_count_info.rds"))
