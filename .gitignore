@@ -14,3 +14,7 @@ actual_package
 *.rds
 *.rda
 data/kegg_compounds/
+exchange_data
+inverse_icikt
+!data/*.rds
+!data/*.rda
