@@ -23,6 +23,12 @@ To setup to be able to rerun everything here, you can clone the repo from [githu
 git clone https://github.com/MoseleyBioinformaticsLab/manuscript.ICIKendallTau.git
 ```
 
+```
+# download from zenodo
+wget https://zenodo.org/records/10573598/files/MoseleyBioinformaticsLab/manuscript.ICIKendallTau-draft_v4.1_2024-01-26.zip?download=1 --output-document=manuscript.ICIKendallTau.zip
+unzip manuscript.ICIKendallTau.zip
+```
+
 ```r
 # make sure renv is installed
 install.packages("renv")
