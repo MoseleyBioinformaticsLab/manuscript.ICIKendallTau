@@ -16,7 +16,12 @@ is contained within this repository.
 The repository used R 4.1.0, and {renv} 1.0.0
 For all of the other packages needed, see the file `renv.lock`.
 
-To setup to be able to rerun everything here, you can clone the repo from github or download it from Zenodo, and then from within that folder:
+To setup to be able to rerun everything here, you can clone the repo from [github](https://github.com/MoseleyBioinformaticsLab/manuscript.ICIKendallTau) or download it from [Zenodo](https://zenodo.org/doi/10.5281/zenodo.6309187), and then from within that folder:
+
+```
+# clone from github
+git clone https://github.com/MoseleyBioinformaticsLab/manuscript.ICIKendallTau.git
+```
 
 ```r
 # make sure renv is installed
@@ -27,20 +32,33 @@ renv::restore()
 
 ## Rerun All Underlying Analyses
 
+If you want to rerun everything from the beginning, you can do `tar_make()` on the project, and it should just run it.
+However, some of the calculations require a **lot** of compute resources, or will just take a long time, even with multiple cores.
+I would definitely recommend at the very least 64 GB of RAM, and you may need more depending on how many cores you are using.
+The compute node we ran on had 80 cores, and 1 TB of RAM, and we regularly used 500 GB of RAM for some of the calculations.
+
 ```r
 targets::tar_make()
 ```
 
 
-## Obtaining targets
+## Obtaining targets Cache
 
-To make it easier to at least generate the manuscript, there is a copy of the {drake} cache on Zenodo at [here]().
-You can download it using `wget`.
+To make it easier to at least generate the manuscript, there is a copy of the {targets} cache on Zenodo, in two parts [here](https://zenodo.org/doi/10.5281/zenodo.10570285) and [here](https://zenodo.org/doi/10.5281/zenodo.10570255).
+Make sure you have lots of room, there are 68 GB worth of files (and those are already compressed R data files).
+This is in three parts, and can be downloaded using `wget`.
+
+Having this cache, you have the state of the computations when we submitted the manuscript, and can examine almost any of the outputs you want by loading them using `tar_load(object)`.
 
 ```
-# make sure you are wherever you want the drake cache, like wherever
+# make sure you are wherever you want the targets cache, like wherever
 # you cloned the github repo to, at the top level of the directory.
-wget https://zenodo.org/record/6310898/files/manuscript.ICIKendallTau.drake_cache.tgz?download=1
-mv manuscript.ICIKendallTau.drake_cache.tgz?download=1 manuscript.ICIKendallTau.drake_cache.tgz
-tar -xzf manuscript.ICIKendallTau.targets_cache.tgz
+wget https://zenodo.org/records/10570286/files/manuscript.ICIKendallTau.targets_cache.parts0.tar?download=1 --output-document=manuscript.ICIKendallTau.targets_cache.parts0.tar
+wget https://zenodo.org/records/10570286/files/manuscript.ICIKendallTau.targets_cache.parts1.tar?download=1 --output-document=manuscript.ICIKendallTau.targets_cache.parts1.tar
+wget https://zenodo.org/records/10570256/files/manuscript.ICIKendallTau.targets_cache.parts2.tar?download=1 --output-document=manuscript.ICIKendallTau.targets_cache.parts2.tar
+
+# now untar them. Note the "k", this keeps the directory from getting overwritten by subsequent un-tar
+tar -xkvf manuscript.ICIKendallTau.targets_cache.parts0.tar
+tar -xkvf manuscript.ICIKendallTau.targets_cache.parts1.tar
+tar -xkvf manuscript.ICIKendallTau.targets_cache.parts2.tar
 ```
