@@ -1,0 +1,45 @@
+{
+    "creators": [
+        {
+            "orcid": "0000-0001-8141-7788",
+            "affiliation": "University of Kentucky",
+            "name": "Flight, Robert"
+        },
+        {
+            "orcid": "0000-0003-3995-5368",
+            "affiliation": "University of Kentucky",
+            "name": "Moseley, Hunter"
+        },
+        {
+            "affiliation": "University of Kentucky",
+            "name": "Bhatt, Praneeth"
+        }
+    ],
+
+    "license": "CC-BY 4.0",
+
+    "title": "Information-Content-Informed Kendall-tau Correlation: Utilizing Missing Values",
+
+    "related_identifiers": [
+        {
+            "scheme": "doi",
+            "identifier": "10.5281/zenodo.6311002",
+            "relation": "isSupplementedBy",
+            "resource_type": "software"
+        },
+        {
+            "scheme": "doi",
+            "identifier": "10.5281/zenodo.10570255",
+            "relation": "isSupplementedBy",
+            "resource_type": "software"
+        },
+        {
+            "scheme": "doi",
+            "identifier": "10.5281/zenodo.10570285",
+            "relation": "isSupplementedBy",
+            "resource_type": "software"
+        }
+    ]
+
+    
+}

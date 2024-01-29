@@ -5,11 +5,12 @@
 
 All the code for generating the manuscript:
 
-Information-Content-Informed Kendall-tau Correlation: Utilizing Missing Values
-Robert M Flight, Praneeth S Bhatt, Hunter NB Moseley
-[biorxiv](https://doi.org/10.1101/2022.02.24.481854)
+Information-Content-Informed Kendall-tau Correlation: Utilizing Missing Values, Robert M Flight, Praneeth S Bhatt, Hunter NB Moseley [biorxiv](https://doi.org/10.1101/2022.02.24.481854) is contained within this repository.
 
-is contained within this repository.
+## License
+
+The contents of this work are licensed under a CC-BY license.
+If you use any content, you must give attribution to this original work.
 
 ## R Packages Needed
 
@@ -34,6 +35,20 @@ unzip manuscript.ICIKendallTau.zip
 install.packages("renv")
 # restore the packages
 renv::restore()
+```
+
+The {ICIKendallTau} package on GitHub is now different than the one used for this manuscript, you should install the one archived on Zenodo (v 0.3.20).
+
+```
+wget https://zenodo.org/records/10580528/files/ICIKendallTau_0.3.20.tar.gz?download=1 --output-document=ICIKendallTau_0.3.20.tar.gz
+tar -xzvf ICIKendallTau_0.3.20.tar.gz
+cd ICIKendallTau
+```
+
+Then start an R session from within the directory, and install it.
+
+```r
+remotes::install_local()
 ```
 
 ## Rerun All Underlying Analyses

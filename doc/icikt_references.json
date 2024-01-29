@@ -2044,7 +2044,7 @@
 		}
 	},
 	{
-		"id": "flightICIKendallTau2022",
+		"id": "flightICIKendallTau2023",
 		"type": "document",
 		"abstract": "ICIKendallTau version used in the manuscript Information-Content-Informed Kendall-tau Correlation: Utilizing Missing Values Robert M Flight, Praneeth S Bhatt, Hunter NB Moseley",
 		"title": "ICIKendallTau",
@@ -2062,14 +2062,14 @@
 		"issued": {
 			"date-parts": [
 				[
-					"2022",
-					2
+					"2023",
+					12
 				]
 			]
 		}
 	},
 	{
-		"id": "flightManuscriptICIKendallTau2022",
+		"id": "flightManuscriptICIKendallTau2024",
 		"type": "document",
 		"title": "manuscript.ICIKendallTau",
 		"URL": "https://dx.doi.org/10.5281/zenodo.6309187",
@@ -2081,13 +2081,17 @@
 			{
 				"family": "Moseley",
 				"given": "Hunter N. B."
+			},
+			{
+				"family": "Bhatt",
+				"given": "Praneeth S."
 			}
 		],
 		"issued": {
 			"date-parts": [
 				[
-					"2022",
-					2
+					"2024",
+					1
 				]
 			]
 		}
