@@ -22,6 +22,8 @@ output:
     pandoc_args:
       - '--lua-filter=scholarly-metadata.lua'
       - '--lua-filter=author-info-blocks.lua'
+  rmarkdown::html_document:default:
+    self_contained: yes
 date: '`r Sys.time()`'
 bibliography: '`r here::here("doc/icikt_references.json")`'
 csl: plos-computational-biology.csl
@@ -33,7 +35,11 @@ editor_options:
 targets::tar_source("./packages.R")
 tar_source("R")
 
-unlink(here::here("doc", "ici_kt_manuscript_files"), recursive = TRUE)
+doc_type = knitr::opts_knit$get("rmarkdown.pandoc.to")
+if (doc_type %in% "docx") {
+  unlink(here::here("doc", "ici_kt_manuscript_files"), recursive = TRUE)
+}
+
 
 figure_count = dn_counter$new("Figure ", "_")
 table_count = dn_counter$new("Table ", "_")

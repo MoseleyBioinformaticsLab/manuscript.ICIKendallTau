@@ -14,7 +14,10 @@ editor_options:
 ```{r setup, include=FALSE}
 targets::tar_source(files = c("./packages.R", "R"))
 
-unlink(here::here("doc/supplemental_materials_files"), recursive = TRUE)
+doc_type = knitr::opts_knit$get("rmarkdown.pandoc.to")
+if (doc_type %in% "docx") {
+  unlink(here::here("doc", "supplemental_materials_files"), recursive = TRUE)
+}
 
 supp_figure_count = dn_counter$new("Figure ", "_", "S")
 supp_table_count = dn_counter$new("Table ", "_", "S")
