@@ -7,6 +7,13 @@ All the code for generating the manuscript:
 
 Information-Content-Informed Kendall-tau Correlation: Utilizing Missing Values, Robert M Flight, Praneeth S Bhatt, Hunter NB Moseley [biorxiv](https://doi.org/10.1101/2022.02.24.481854) is contained within this repository.
 
+The current versions can be obtained directly from this repository:
+
+  * [Manuscript html](doc/ici_kt_manuscript.html)
+  * [Supplemental html](doc/supplemental_materials.html)
+  * [Manuscript word](doc/ici_kt_manuscript.docx)
+  * [Supplemental word](doc/supplemental_materials.docx)
+
 ## License
 
 The contents of this work are licensed under a CC-BY license.
