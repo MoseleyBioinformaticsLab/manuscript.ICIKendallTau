@@ -9,10 +9,10 @@ Information-Content-Informed Kendall-tau Correlation: Utilizing Missing Values, 
 
 The current versions can be obtained directly from this repository:
 
-  * [Manuscript html](doc/ici_kt_manuscript.html)
-  * [Supplemental html](doc/supplemental_materials.html)
-  * [Manuscript word](doc/ici_kt_manuscript.docx)
-  * [Supplemental word](doc/supplemental_materials.docx)
+  * [Manuscript html](ici_kt_manuscript.html)
+  * [Supplemental html](supplemental_materials.html)
+  * [Manuscript word](ici_kt_manuscript.docx)
+  * [Supplemental word](supplemental_materials.docx)
 
 ## License
 
