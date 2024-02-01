@@ -7,8 +7,8 @@ raw_data/rse_gene_lung.Rdata
 references/
 old_resources/
 old_manuscript_versions/
-doc/supplemental_materials_2024*.*
-doc/ici_kt_manuscript_2024*.*
+docs/supplemental_materials_2024*.*
+docs/ici_kt_manuscript_2024*.*
 *.docx#
 renv
 !renv/activate.R
