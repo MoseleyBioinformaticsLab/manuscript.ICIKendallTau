@@ -25,7 +25,7 @@ output:
   rmarkdown::html_document:default:
     self_contained: yes
 date: '`r Sys.time()`'
-bibliography: '`r here::here("doc/icikt_references.json")`'
+bibliography: '`r here::here("docs/icikt_references.json")`'
 csl: plos-computational-biology.csl
 editor_options: 
   chunk_output_type: console
@@ -37,7 +37,7 @@ tar_source("R")
 
 doc_type = knitr::opts_knit$get("rmarkdown.pandoc.to")
 if (doc_type %in% "docx") {
-  unlink(here::here("doc", "ici_kt_manuscript_files"), recursive = TRUE)
+  unlink(here::here("docs", "ici_kt_manuscript_files"), recursive = TRUE)
 }
 
 
@@ -52,9 +52,9 @@ knitr::opts_chunk$set(echo = FALSE,
                       fig.process = figure_count$modify_path,
                       dpi = 600,
                       dev = "ragg_png")
-supp_figure_count = readRDS(here::here("doc/supp_figure_count.rds"))
-supp_table_count = readRDS(here::here("doc/supp_table_count.rds"))
-load(here::here("doc/supp_stuff.rda"))
+supp_figure_count = readRDS(here::here("docs/supp_figure_count.rds"))
+supp_table_count = readRDS(here::here("docs/supp_table_count.rds"))
+load(here::here("docs/supp_stuff.rda"))
 
 ```
 
@@ -136,7 +136,7 @@ Both dropping or imputing missing values are likely to cause the calculated samp
 ```{r}
 #| label: problem
 curr_dir = getwd()
-problem_loc = file.path(curr_dir, "doc", "the_problem.png")
+problem_loc = file.path(curr_dir, "docs", "the_problem.png")
 #message(problem_loc)
 #file.exists(problem_loc)
 knitr::include_graphics(problem_loc, rel_path = FALSE)

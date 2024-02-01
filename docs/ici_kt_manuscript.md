@@ -24,8 +24,8 @@ output:
       - '--lua-filter=author-info-blocks.lua'
   rmarkdown::html_document:default:
     self_contained: yes
-date: '2024-01-31 15:05:33.795949'
-bibliography: '/home/rmflight/Documents/manuscripts/in_progress/rmflight_ici-kendallt/doc/icikt_references.json'
+date: '2024-02-01 08:30:47.557145'
+bibliography: '/home/rmflight/Documents/manuscripts/in_progress/rmflight_ici-kendallt/docs/icikt_references.json'
 csl: plos-computational-biology.csl
 editor_options: 
   chunk_output_type: console
@@ -76,7 +76,7 @@ The two most common approaches for ignoring (i.e. dropping) values is to only us
 Both dropping or imputing missing values are likely to cause the calculated sample-sample correlation values to deviate from the real sample-sample correlation values, especially with respect to specific data interpretation perspectives.
 
 
-![](/home/rmflight/Documents/manuscripts/in_progress/rmflight_ici-kendallt/doc/the_problem.png)<!-- -->
+![](/home/rmflight/Documents/manuscripts/in_progress/rmflight_ici-kendallt/docs/the_problem.png)<!-- -->
 
 Figure 1. 
 Graphical description of the left-censored data problem.

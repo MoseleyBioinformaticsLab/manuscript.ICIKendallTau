@@ -5,7 +5,7 @@ date: '`r Sys.time()`'
 output: 
   rmarkdown::word_document:
     keep_md: true
-bibliography: '`r here::here("doc/icikt_references.json")`'
+bibliography: '`r here::here("docs/icikt_references.json")`'
 csl: plos-computational-biology.csl
 editor_options: 
   chunk_output_type: console
@@ -16,7 +16,7 @@ targets::tar_source(files = c("./packages.R", "R"))
 
 doc_type = knitr::opts_knit$get("rmarkdown.pandoc.to")
 if (doc_type %in% "docx") {
-  unlink(here::here("doc", "supplemental_materials_files"), recursive = TRUE)
+  unlink(here::here("docs", "supplemental_materials_files"), recursive = TRUE)
 }
 
 supp_figure_count = dn_counter$new("Figure ", "_", "S")
@@ -784,9 +784,9 @@ Difference of Ad lib feeding in high and low stamina medians and MADs  by correl
 Abbreviations for different measures and data are: IK: ICI-Kt; IKC: ICI-Kt * Completeness; Kt: Kendall-tau; PB: Pearson Base (raw values); PL: Pearson Log(x); PL1: Pearson Log(x + 1); PN0: Pearson No Zeros.
 
 ```{r save_supp_objects}
-saveRDS(supp_figure_count, file = here::here("doc/supp_figure_count.rds"))
-saveRDS(supp_table_count, file = here::here("doc/supp_table_count.rds"))
-save(yeast_table, egfrgenotype_table, adenocarcinoma_table, nsclc_table, ratstamina_table, adenocarcinoma_ratios, file = here::here("doc/supp_stuff.rda"))
+saveRDS(supp_figure_count, file = here::here("docs/supp_figure_count.rds"))
+saveRDS(supp_table_count, file = here::here("docs/supp_table_count.rds"))
+save(yeast_table, egfrgenotype_table, adenocarcinoma_table, nsclc_table, ratstamina_table, adenocarcinoma_ratios, file = here::here("docs/supp_stuff.rda"))
 ```
 
 ## References
