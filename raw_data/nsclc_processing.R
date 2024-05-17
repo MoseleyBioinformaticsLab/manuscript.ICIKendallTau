@@ -101,6 +101,15 @@ all_peaks = tibble::as_tibble(dplyr::bind_rows(all_peaks))
 all_peaks$used = FALSE
 all_peaks$iv = mz_to_iv(all_peaks$ObservedMZ, 0.5)
 
+nsclc_info = readRDS(here::here("raw_data/nsclc/nsclc_info"))
+match_samples = base::intersect(all_peaks$sample, nsclc_info$sample)
+
+nsclc_info = nsclc_info |>
+  dplyr::filter(sample %in% match_samples)
+rownames(nsclc_info) = nsclc_info$sample
+
+all_peaks = all_peaks |>
+  dplyr::filter(sample %in% match_samples)
 # checking that the number of peaks varies only a little
 # if we scramble the data differently
 # use_seeds = c(1234, 9034, 3042, 5467)
@@ -134,7 +143,7 @@ for (ipeak in seq_len(nrow(matched_heights))) {
 
 class_data = smirfeTools::import_emf_classifications(file.path(here::here("raw_data/nsclc"), "all_emfs_classified_2020-01-27.json"))
 
-nsclc_info = readRDS(here::here("raw_data/nsclc/nsclc_info"))
+
 nsclc_medians = readRDS(here::here("raw_data/nsclc/nsclc_scancentric_medians"))
 median_matrix = matrix(nsclc_medians$median, nrow = nrow(matched_heights),
                        ncol = ncol(matched_heights), byrow = TRUE)
@@ -146,6 +155,12 @@ matched_heights_norm[is.na(matched_heights_norm)] = 0
 rownames(matched_heights_norm) = paste0("f", seq_len(nrow(matched_heights_norm)))
 nsclc_info = nsclc_info |>
   dplyr::mutate(treatment = paste0(instrument, ":", disease))
+
+matched_heights_norm = matched_heights_norm[, match_samples]
+nsclc_info = nsclc_info[match_samples, ]
+all.equal(colnames(matched_heights_norm), nsclc_info$sample)
+
+
 out_norm = list(counts = matched_heights_norm, info = nsclc_info)
 out_norm$data_id = "nsclc"
 saveRDS(out_norm, here::here("data", "nsclc_count_info.rds"))
