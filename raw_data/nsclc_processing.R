@@ -145,6 +145,8 @@ class_data = smirfeTools::import_emf_classifications(file.path(here::here("raw_d
 
 
 nsclc_medians = readRDS(here::here("raw_data/nsclc/nsclc_scancentric_medians"))
+nsclc_medians = nsclc_medians |>
+  dplyr::filter(sample %in% match_samples)
 median_matrix = matrix(nsclc_medians$median, nrow = nrow(matched_heights),
                        ncol = ncol(matched_heights), byrow = TRUE)
 colnames(median_matrix) = nsclc_medians$sample
