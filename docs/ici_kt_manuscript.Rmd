@@ -348,13 +348,19 @@ Compound-pathway annotations were fetched using the *kegg-pull* Python package [
 Lipid features from the NSCLC lipidomics with assignments are classified into one or more lipid categories using our lipid classifier tool [@mitchellDerivingLipidClassification2020].
 For each assigned peak, we used voting of the lipid categories and classes from multiple assignments to ascribe a single category and lipid class (where possible).
 
-### Number of Non-Missing Values and Median Abundance
+### Number of Missing Values and Median Rank
 
-For each dataset, the samples were split by experimental factor of interest (see previous Methods for each dataset).
-Within each experimental factor, for each feature, the median for present values (or non-zero) was calculated, as well as the number of samples the feature was observed in.
-Subsequently, for all the medians with the same number of present values, the minimum median value was recorded.
-For correlations, the median of the $log10(median)$ across all present values was used to include data for Kendall-tau correlation.
-Additionally, the Kendall-tau correlation of the minimum median and number of present values was calculated.
+For each dataset, the samples were split by experimental factor or treatment of interest (see previous Methods for each dataset).
+For each feature, the rank of the feature was calculated for each sample where the feature was present, followed by the features median rank, as well as the number of samples the feature was missing from.
+Grouping the features by the number of missing values, we calculate the median of median ranks, as well as the minimum of median ranks for the visualization and correlation of the relationship of rank with missing values.
+
+### Binomial Test for Left Censorship
+
+For each dataset, the samples were first split by treatment.
+In each sample, the median abundance of features present in the sample are calculated.
+For any feature that is missing in any sample, the values in the present samples are compared to the median values in each sample.
+If the value is **less than** the median value in the sample, that is counted as a **success** in a binomial test, otherwise it is counted as a failuer.
+The number of successes and failures are aggregated across the treatment splits for calculation in a binomial test, with the null hypothesis as a ratio of 0.5.
 
 ### Correlation Methods
 
