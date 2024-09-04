@@ -63,7 +63,7 @@ load(here::here("docs/supp_stuff.rda"))
 tar_load(c(references,
            supp_materials,
            dataset_summary,
-           lod_graph_yeast,
+           rank_graphs_yeast,
            realistic_comparison_plot,
            censored_value_plots,
            egfrgenotype_single,
@@ -439,9 +439,10 @@ However, one thing that seemed to be missing in the analysis was normalizing eac
 We feel that this is critical, given that even with measurements acquired by Metabolon (the company that performed the measurements in Do et al.), the standards do not fully correct for sample-to-sample variation.
 Unfortunately, the KORA4 metabolomics dataset from Do et al. is not publicly available, so we could not attempt to redo their analysis of missing values with the same dataset.
 
-For each experimental group of samples in each of the datasets we investigated (three RNA-seq, one metabolomics, one lipidomics), we calculated the median abundance and number of measurement values present across samples (i.e. N-Present) for each feature (gene or metabolite, see Methods).
-As shown in `r figure_count$label_text("lod")`A for the yeast RNA-seq dataset (also see `r supp_figure_count$label_text(c("lod_adenocarcinoma", "lod_egfrgenotype", "lod_egfrgenotypetumorculture", "lod_typeandtumorculture", "lod_nsclc", "lod_ratstamina"))` in Supplemental Materials for the other datasets), there is a monotonic relationship between the median abundance and the number of measurement values present.
-Moreover, as N-Present increases, there is clearly a minimum median value below which the values do not cross as illustrated in `r figure_count$label_text("lod")`B (see also `r supp_figure_count$label_text(c("lod_adenocarcinoma", "lod_egfrgenotype", "lod_egfrgenotypetumorculture", "lod_typeandtumorculture", "lod_nsclc", "lod_ratstamina"))` in Supplemental Materials for the other datasets).
+An alternative to incorporating normalization, however, is to examine the median ranks of features in samples where they are present, and the number of samples they are missing from.
+For each experimental group of samples in each of the datasets we investigated (three RNA-seq, one metabolomics, one lipidomics), we calculated the median rank and number of measurement values missing across samples (i.e. N-Missing) for each feature (gene or metabolite, see Methods).
+As shown in `r figure_count$label_text("lod")`A for the yeast RNA-seq dataset (also see `r supp_figure_count$label_text(c("lod_adenocarcinoma", "lod_egfrgenotype", "lod_egfrgenotypetumorculture", "lod_typeandtumorculture", "lod_nsclc", "lod_ratstamina"))` in Supplemental Materials for the other datasets), there is a monotonicly decreasing relationship between the median rank and the number missing values for that feature.
+Moreover, as N-Missing decreases, there is clearly a minimum median rank below which the values do not cross as illustrated in `r figure_count$label_text("lod")`B (see also `r supp_figure_count$label_text(c("lod_adenocarcinoma", "lod_egfrgenotype", "lod_egfrgenotypetumorculture", "lod_typeandtumorculture", "lod_nsclc", "lod_ratstamina"))` in Supplemental Materials for the other datasets).
 Given this relationship of the minimum median value observed and N-Present, we believe that the **majority** of missing values in many -omics datasets are due to being below the LOD.
 
 This makes the ICI-Kt appropriate for use in many -omics datasets by incorporating missing values due to being below the LOD as useful information in the correlation calculation.
@@ -453,13 +454,11 @@ The LOD figures for alternative groupings of the EGFR genotype samples also demo
 #| label: lod
 #| fig-width: 10
 #| fig-height: 8
-wrap_plots(lod_graph_yeast, ncol = 1) + plot_annotation(tag_levels = "A")
+wrap_plots(rank_graphs_yeast, ncol = 1) + plot_annotation(tag_levels = "A")
 ```
 
 `r figure_count$label_text("lod")`.
-Yeast dataset count medians by number of samples feature was present in.
-**A**: Log10 of medians for present values compared to the number of samples the feature was present in.
-**B**: Log10 of minimum median for each value of number of samples the feature was present in.
+Yeast dataset of median ranks in non-missing samples by number of samples feature was missing from, using either the median (**A**) or minimum of median ranks (**B**).
 
 ### Comparison To Other Correlation Measures
 

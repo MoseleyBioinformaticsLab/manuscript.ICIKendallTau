@@ -153,14 +153,16 @@ loading_real_data = tar_plan(
 )
 
 # limit of detection examples --------
+
+
 limit_of_detection_map = tar_map(dataset_variables,
-                                 names = id,
-                                 tar_target(group_medians,
-                                            group_study(sym, id)),
-                                 tar_target(correlate_medians,
-                                            correlate_medians_n_present(group_medians)),
-                                 tar_target(lod_graph,
-                                            graph_median_min(correlate_medians)))
+                                    names = id,
+                                    tar_target(rank_ordered,
+                                               rank_order_datasets(sym, id)),
+                                    tar_target(correlate_ranks,
+                                      calculate_median_min_correlation(rank_ordered)),
+                                    tar_target(rank_graphs,
+                                               graph_median_min(correlate_ranks)))
   
 # running a single core to measure performance aspects ----------
 performance_plan = tar_plan(

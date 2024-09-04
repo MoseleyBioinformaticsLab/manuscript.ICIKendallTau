@@ -41,12 +41,12 @@ outlier_colors = c("FALSE" = "darkgrey", "TRUE" = g_colors[1])
 ```{r}
 #| label: load
 tar_load(c(references,
-           lod_graph_adenocarcinoma,
-           lod_graph_egfrgenotype,
-           lod_graph_egfrgenotypetumorculture,
-           lod_graph_typeandtumorculture,
-           lod_graph_nsclc,
-           lod_graph_ratstamina,
+           rank_graphs_adenocarcinoma,
+           rank_graphs_egfrgenotype,
+           rank_graphs_egfrgenotypetumorculture,
+           rank_graphs_typeandtumorculture,
+           rank_graphs_nsclc,
+           rank_graphs_ratstamina,
            positive_kt,
            positive_pearson,
            negative_kt,
@@ -123,74 +123,63 @@ supp_table_count$increment(c("yeast_outliers",
 #| label: lod_adenocarcinoma 
 #| fig.width: 10
 #| fig.height: 8
-wrap_plots(lod_graph_adenocarcinoma, ncol = 1) + plot_annotation(tag_levels = "A")
+wrap_plots(rank_graphs_adenocarcinoma, ncol = 1) + plot_annotation(tag_levels = "A")
 ```
 
 `r supp_figure_count$label_text("lod_adenocarcinoma")`.
-Adenocarcinoma dataset count medians by number of samples feature was present in.
-**A**: Log10 of medians for present values compared to the number of samples the feature was present in.
-**B**: Log10 of minimum median for each value of number of samples the feature was present in.
+Adenocarcinoma dataset of median ranks in non-missing samples by number of samples feature was missing from, using either the median (**A**) or minimum of median ranks (**B**).
+
 
 ```{r}
 #| label: lod_egfrgenotype
 #| fig.width: 10
 #| fig.height: 8 
-wrap_plots(lod_graph_egfrgenotype, ncol = 1) + plot_annotation(tag_levels = "A")
+wrap_plots(rank_graphs_egfrgenotype, ncol = 1) + plot_annotation(tag_levels = "A")
 ```
 
 `r supp_figure_count$label_text("lod_egfrgenotype")`.
-EGFR genotype dataset count medians by number of samples feature was present in.
-**A**: Log10 of medians for present values compared to the number of samples the feature was present in.
-**B**: Log10 of minimum median for each value of number of samples the feature was present in.
+EGFR genotype dataset of median ranks in non-missing samples by number of samples feature was missing from, using either the median (**A**) or minimum of median ranks (**B**).
 
 ```{r}
 #| label: lod_egfrgenotypetumorculture
 #| fig.width: 10
 #| fig.height: 8 
-wrap_plots(lod_graph_egfrgenotypetumorculture, ncol = 1) + plot_annotation(tag_levels = "A")
+wrap_plots(rank_graphs_egfrgenotypetumorculture, ncol = 1) + plot_annotation(tag_levels = "A")
 ```
 
 `r supp_figure_count$label_text("lod_egfrgenotypetumorculture")`.
-EGFR genotype and tumor culture dataset count medians by number of samples feature was present in.
-**A**: Log10 of medians for present values compared to the number of samples the feature was present in.
-**B**: Log10 of minimum median for each value of number of samples the feature was present in.
+EGFR genotype and tumor culture dataset dataset of median ranks in non-missing samples by number of samples feature was missing from, using either the median (**A**) or minimum of median ranks (**B**).
 
 ```{r}
 #| label: lod_typeandtumorculture
 #| fig.width: 10
 #| fig.height: 12
-wrap_plots(lod_graph_typeandtumorculture, ncol = 1) + plot_annotation(tag_levels = "A")
+wrap_plots(rank_graphs_typeandtumorculture, ncol = 1) + plot_annotation(tag_levels = "A")
 ```
 
 `r supp_figure_count$label_text("lod_typeandtumorculture")`.
-EGFR genotype and tumor culture dataset count medians by number of samples feature was present in.
-**A**: Log10 of medians for present values compared to the number of samples the feature was present in.
-**B**: Log10 of minimum median for each value of number of samples the feature was present in.
+EGFR genotype and tumor culture dataset of median ranks in non-missing samples by number of samples feature was missing from, using either the median (**A**) or minimum of median ranks (**B**).
 
 ```{r}
 #| label: lod_nsclc
 #| fig.width: 10
 #| fig.height: 8
-wrap_plots(lod_graph_nsclc, ncol = 1) + plot_annotation(tag_levels = "A")
+wrap_plots(rank_graphs_nsclc, ncol = 1) + plot_annotation(tag_levels = "A")
 ```
 
 `r supp_figure_count$label_text("lod_nsclc")`.
-Non-small-cell-lung-cancer (NSCLC) lipidomics dataset count medians by number of samples feature was present in.
-**A**: Log10 of medians for present values compared to the number of samples the feature was present in.
-**B**: Log10 of minimum median for each value of number of samples the feature was present in.
+Non-small-cell-lung-cancer (NSCLC) lipidomics dataset of median ranks in non-missing samples by number of samples feature was missing from, using either the median (**A**) or minimum of median ranks (**B**).
 
 
 ```{r}
 #| label: lod_ratstamina
 #| fig.width: 10
-#| fig.height: 8
-wrap_plots(lod_graph_ratstamina, ncol = 1) + plot_annotation(tag_levels = "A")
+#| fig.height: 12
+wrap_plots(rank_graphs_ratstamina, ncol = 1) + plot_annotation(tag_levels = "A")
 ```
 
 `r supp_figure_count$label_text("lod_ratstamina")`.
-Rat stamina dataset count medians by number of samples feature was present in.
-**A**: Log10 of medians for present values compared to the number of samples the feature was present in.
-**B**: Log10 of minimum median for each value of number of samples the feature was present in.
+Rat stamina dataset of median ranks in non-missing samples by number of samples feature was missing from, using either the median (**A**) or minimum of median ranks (**B**).
 
 ## Simulated Data
 
