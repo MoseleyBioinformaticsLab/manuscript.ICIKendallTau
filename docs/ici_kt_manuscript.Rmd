@@ -63,6 +63,7 @@ load(here::here("docs/supp_stuff.rda"))
 tar_load(c(references,
            supp_materials,
            dataset_summary,
+           lc_summary_all,
            rank_graphs_yeast,
            realistic_comparison_plot,
            censored_value_plots,
@@ -421,13 +422,16 @@ For the comparisons of time taken using different numbers of samples to evaluate
 
 In `r table_count$label_text("datasets")`, we provide a summary of the number of features (measurements), samples, treatments or conditions, and the number of biological replicates per condition for each of the experimental datasets.
 
-`r table_count$label_text("datasets")`. Number of features, samples, treatments, and biological replicates in each condition for each dataset.
+`r table_count$label_text("datasets")`. Number of features, samples, treatments, biological replicates, percent missing values, the fraction of missingness estimated to be missing due to left-censoring in each condition for each dataset, and the p-value from a binomial test of left-censorship.
 ```{r}
-dataset_summary |>
+dataset_summary2 = dplyr::left_join(dataset_summary, lc_summary_all, by = "Dataset")
+dataset_summary2 |>
+  check_zeros(9) |>
   flextable() |>
+  format_exponent_flextable(6, 9) |>
   font(fontname = "Calibri", part = "all") |>
-  fontsize(size = 11, part = "header") |>
-  fontsize(size = 10, part = "body") |>
+  fontsize(size = 10, part = "header") |>
+  fontsize(size = 9, part = "body") |>
   set_table_properties(layout = "autofit")
 ```
 

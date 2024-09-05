@@ -163,6 +163,19 @@ limit_of_detection_map = tar_map(dataset_variables,
                                       calculate_median_min_correlation(rank_ordered)),
                                     tar_target(rank_graphs,
                                                graph_median_min(correlate_ranks)))
+
+# left-censorship calculation ------
+left_censorship_map = tar_map(dataset_variables,
+                              names = id,
+                              tar_target(lc_test,
+                                         test_left_censorship_datasets(sym, id)),
+                              tar_target(lc_summary,
+                                         create_lc_summary(lc_test)))
+
+
+left_censorship_combine = tar_combine(lc_summary_all,
+                                      left_censorship_map[[2]],
+                                      command = bind_rows(!!!.x))
   
 # running a single core to measure performance aspects ----------
 performance_plan = tar_plan(
@@ -288,6 +301,8 @@ feature_qratio_summary_plan = tar_plan(
 )
 
 
+
+
 ## dataset summaries -----
 dataset_summary_map = tar_map(dataset_variables,
                                names = id,
@@ -321,6 +336,8 @@ documents_plan = tar_plan(
 list(small_realistic_examples,
      loading_real_data,
      limit_of_detection_map,
+     left_censorship_map,
+     left_censorship_combine,
      sample_outlier_plan,
      feature_correlation_map,
      feature_qratio_combine_map,
