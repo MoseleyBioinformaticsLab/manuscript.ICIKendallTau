@@ -90,6 +90,7 @@ figure_count$increment(c("problem",
                          "yeast_outliers"))
 
 table_count$increment(c("datasets",
+                        "n-missing",
                         "yeast_outliers",
                         "partitioning"))
 
@@ -424,14 +425,11 @@ In `r table_count$label_text("datasets")`, we provide a summary of the number of
 
 `r table_count$label_text("datasets")`. Number of features, samples, treatments, biological replicates, percent missing values, the fraction of missingness estimated to be missing due to left-censoring in each condition for each dataset, and the p-value from a binomial test of left-censorship.
 ```{r}
-dataset_summary2 = dplyr::left_join(dataset_summary, lc_summary_all, by = "Dataset")
-dataset_summary2 |>
-  check_zeros(9) |>
+dataset_summary |>
   flextable() |>
-  format_exponent_flextable(6, 9) |>
   font(fontname = "Calibri", part = "all") |>
-  fontsize(size = 10, part = "header") |>
-  fontsize(size = 9, part = "body") |>
+  fontsize(size = 11, part = "header") |>
+  fontsize(size = 10, part = "body") |>
   set_table_properties(layout = "autofit")
 ```
 
@@ -463,6 +461,50 @@ wrap_plots(rank_graphs_yeast, ncol = 1) + plot_annotation(tag_levels = "A")
 
 `r figure_count$label_text("lod")`.
 Yeast dataset of median ranks in non-missing samples by number of samples feature was missing from, using either the median (**A**) or minimum of median ranks (**B**).
+
+Additional support for the hypothesis that missing values are **primarily** due to being below the limit of detection is provided by the binomial test for left censorship (see Methods), with the results shown in `r table_count$label_text("n-missing")`.
+This test involves counting whether the non-missing values (for those features that are missing in at least one sample) are below the median of the samples where they are non-missing.
+For many of the datasets, the proportion of non-missing values below the median are in the range of 0.9 or higher, and only the two mass-spectrometry datasets (ratstamina and nsclc) show lower estimates.
+Even in those two specific cases, the proportions are 0.69 and 0.60, respectively.
+
+`r table_count$label_text("n-missing")`. Total number of elements, number of elements with a missing value, % missing values, number of values tested as being below the median in a sample, number of values found to be below the median of a sample, fraction of values found to be below the median of sample, confidence interval, and p-value of the left-censored binomial test.
+```{r}
+rmf_scientific = function(in_table, j, n_sig = 2)
+{
+  actual_value = in_table$body$dataset[, j]
+  split_value = strsplit(scales::scientific(actual_value, digits = n_sig), "e")
+  new_values = purrr::map(split_value, \(in_value){
+    in_value[1] = paste0(in_value[1], "×10")
+    in_value[2] = gsub("\\+0", "", in_value[2])
+    in_value
+  })
+  out_table = in_table
+  for (i in seq_len(nrow(in_table$body$dataset))) {
+    out_table = compose(out_table, i = i, j = j, part = "body",
+                        value = as_paragraph(new_values[[i]][1], as_sup(new_values[[i]][2])))
+  }
+  out_table
+}
+lc_summary_all |>
+  dplyr::mutate(Dataset = dplyr::case_when(
+    Dataset %in% "adenocarcinoma" ~ "adeno\ncarcinoma",
+    Dataset %in% "egfrgenotypetumorculture" ~ "egfrgenotype\ntumorculture",
+    Dataset %in% "typeandtumorculture" ~ "typeandtumor\nculture",
+    TRUE ~ Dataset
+  )) |>
+  flextable() |>
+  font(fontname = "Calibri", part = "all") |>
+  fontsize(size = 11, part = "header") |>
+  fontsize(size = 10, part = "body") |>
+  colformat_double(j = 4, digits = 0, suffix = "%") |>
+  colformat_double(j = 7, digits = 2) |>
+  rmf_scientific(j = 2, n_sig = 3) |>
+  rmf_scientific(j = 3, n_sig = 3) |>
+  rmf_scientific(j = 5, n_sig = 3) |>
+  rmf_scientific(j = 6, n_sig = 3) |>
+  set_table_properties(layout = "autofit")
+```
+
 
 ### Comparison To Other Correlation Measures
 

@@ -4,6 +4,9 @@ test_left_censorship_datasets = function(counts_info, id)
   # counts_info = tar_read(adenocarcinoma_counts_info)
   # id = "adenocarcinoma"
   # counts_info = tar_read(egfrgenotypetumorculture_counts_info)
+  # 
+  # counts_info = tar_read(ratstamina_counts_info)
+  # id = "ratstamina"
   counts_df = tibble::as_tibble(counts_info$counts)
   if (is.null(rownames(counts_info$counts))) {
     counts_df$feature = seq_len(nrow(counts_df))
@@ -104,37 +107,37 @@ test_left_censorship = function(data_matrix,
 
   # split the dataset by group
   split_counts = purrr::imap(split_indices, \(in_split, split_id){
-  # in_split = split_indices[[1]]
-
-  # grab the group we want to work with
-  split_missing = data_matrix_missing[, in_split, drop = FALSE]
-
-  # count the number of missing samples for each feature,
-  # and keep those that have at least one
-  n_miss = rowSums(is.na(split_missing))
-
-  if (sum(n_miss) == 0) {
-  out_res = data.frame(trials = 0, success = 0, class = split_id)
-  return(out_res)
-  }
-
-  keep_miss = split_missing[n_miss > 0, , drop = FALSE]
-
-  # get sample medians
-  sample_medians = calculate_matrix_medians(split_missing, use = "col", na.rm = TRUE)
-
-  # turn the medians into a matrix to make life easier
-  median_matrix = matrix(sample_medians, nrow = nrow(keep_miss),
-  ncol = ncol(keep_miss), byrow = TRUE)
-  # do the comparison
-  keep_miss_updown = keep_miss < median_matrix
-
-  # count how many trials we ran, and how many successes we have
-  all_trials = (nrow(keep_miss_updown) * ncol(keep_miss_updown)) - sum(is.na(keep_miss_updown))
-  all_success = sum(keep_miss_updown, na.rm = TRUE)
-
-  out_res = data.frame(trials = all_trials, success = all_success, class = split_id)
-  return(out_res)
+    # in_split = split_indices[[1]]
+  
+    # grab the group we want to work with
+    split_missing = data_matrix_missing[, in_split, drop = FALSE]
+  
+    # count the number of missing samples for each feature,
+    # and keep those that have at least one
+    n_miss = rowSums(is.na(split_missing))
+  
+    if (sum(n_miss) == 0) {
+      out_res = data.frame(trials = 0, success = 0, class = split_id)
+      return(out_res)
+    }
+  
+    keep_miss = split_missing[n_miss > 0, , drop = FALSE]
+  
+    # get sample medians
+    sample_medians = calculate_matrix_medians(split_missing, use = "col", na.rm = TRUE)
+  
+    # turn the medians into a matrix to make life easier
+    median_matrix = matrix(sample_medians, nrow = nrow(keep_miss),
+    ncol = ncol(keep_miss), byrow = TRUE)
+    # do the comparison
+    keep_miss_updown = keep_miss < median_matrix
+  
+    # count how many trials we ran, and how many successes we have
+    all_trials = (nrow(keep_miss_updown) * ncol(keep_miss_updown)) - sum(is.na(keep_miss_updown))
+    all_success = sum(keep_miss_updown, na.rm = TRUE)
+  
+    out_res = data.frame(trials = all_trials, success = all_success, class = split_id)
+    return(out_res)
   }) |>
   purrr::list_rbind()
 
