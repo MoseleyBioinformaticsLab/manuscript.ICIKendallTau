@@ -56,6 +56,7 @@ small_realistic_examples = tar_plan(
   positive_kendall = compare_positive_pearson(x, y, where_na, method = "kendall"),
   negative_kendall = compare_negative_pearson(x, y2, where_na, method = "kendall"),
   
+  
   # bigger, more realistic example ---------
   realistic_sample_1 = create_sample(n = 1000),
   realistic_sample_2 = create_sample(n = 1000),
@@ -109,7 +110,11 @@ small_realistic_examples = tar_plan(
                                             logtransform_censored_cor),
   censored_compare_plots = compare_censored_data(left_censored_cor,
                                                  random_censored_cor,
-                                                 logtransform_censored_cor)
+                                                 logtransform_censored_cor),
+  
+  # variable lod data creation --------
+  var_lod_samples = create_variable_lod_samples(n_feature = 1000, n_sample = 100)
+  
 )
 
 
