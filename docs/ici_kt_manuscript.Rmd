@@ -377,8 +377,9 @@ Pearson, with a $log(x)$ transform, and then setting infinite values to `NA` val
 
 ### Outlier Detection
 
-For outlier detection, median sample-sample correlations within the sample class (genotype, condition, etc) is calculated, a $log(cor_{median})$ calculated to transform it into a score, and then outliers determined using *grDevices::boxplot.stats*, which by default are at 1.5X the whiskers in a box-and-whisker plot.
-As we are interested in only those correlations at the *low* end of correlation (becoming the high end after a log-transform), we restrict to only those entries at the *high* end of the score distribution (using *visualizationQualityControl::determine_outliers* [@flightVisualizationQualityControlDevelopmentVisualization2021]).
+For outlier detection, median sample-sample correlations within the sample class (genotype, condition, etc) is calculated, and $log(1 - cor_{median})$ calculated to transform it into a score, and then outliers determined using *grDevices::boxplot.stats*, which by default are at 1.5X the whiskers in a box-and-whisker plot.
+As we are interested in only those correlations at the *low* end of correlation (becoming the high end after the subtraction and log-transform), we restrict to only those entries at the *high* end of the score distribution (using *visualizationQualityControl::determine_outliers* [@flightVisualizationQualityControlDevelopmentVisualization2021]).
+This is equivalent to using the correlation component of the score described by Gierliński et al [-@gierlinski_statisticalmodels_2015] and setting the other component weights to zero.
 
 Sample-sample correlations are calculated with different sets of features.
 For each feature, we calculate the number and fraction of samples in a sample class that feature had non-zero or non-missing values in, making it possible to filter to a subset of features that are present in a minimum required number of samples.
@@ -536,7 +537,7 @@ A subset of `r format(realistic_comparison_plot$n_subset, big.mark = ",", big.in
 The ICI-Kt correlation demonstrates a slight increase from the starting 0.86 correlation value with growing left-centered missingness caused by a slight reinforcement of the correlation, while with **growing random missingness**, the ICI-Kt correlation drops precipitously due to the large increase in discordant pairs caused by the random missing values.
 The normal Kendall tau correlation with pairwise complete has a small decrease in the correlation value with growing left-centered missingness caused by a loss of supporting pairs, while this correlation has a near constant average value with growing random missingness.
 The normal Kendall tau correlation replacing missing with 0 has identical behavior to the ICI-Kt correlation.
-In contrast to ICI-Kt, the Pearson correlation calculated using only pairwise complete entries is **constant** over growing left-centered and random missingness.
+In contrast to ICI-Kt, the Pearson correlation calculated using only pairwise complete entries is **practically constant** (i.e., range of 0.004 or less) over growing left-centered and random missingness.
 When replacing missing values with zero, Pearson correlation demonstrates a small decrease in the correlation value with growing left-centered missingness due to the zero values causing some deviation from linearity. 
 Pearson correlation drops precipitously with growing random missingness with a magnitude similar to the ICI-Kt and normal Kendall tau replacing missing with 0.
 Overall, the ICI-Kt and the normal Kendall-tau replacing missing with zero have the desirable characteristics of maintaining the correlation with growing left-centered missing **while sharply dropping the correlation** with growing random missingness.
