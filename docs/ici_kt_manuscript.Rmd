@@ -113,7 +113,7 @@ The ICI-Kt correlation calculation is available in an R package and Python modul
 
 ## Introduction
 
-Correlation as a measure of the relatedness or similarity of two or more sets of data has a long history, with the mathematical technique being used (and abused) in various scientific fields since it's introduction [@pearson_notes_1920; @rodgers_13_1988].
+Correlation as a measure of the relatedness or similarity of two or more sets of data has a long history, with the mathematical technique being used (and abused) in various scientific fields since its introduction [@pearson_notes_1920; @rodgers_13_1988].
 More recently, correlation calculations have become a cornerstone statistical method in the analysis and integration of varied omics' datasets, especially the big five omics: genomics, transcriptomics, proteomics, metabolomics, and epigenomics [@gu_complexheatmap_2016].
 Correlation between biomolecular features (nucleotide variants, RNA transcripts, proteins, metabolites, DNA methylation, etc.) may be used to evaluate the relationship strength between pairs of the features as well as to detect and derive correlative structures between groups of features [@fukushima_integratedomics_2009].
 Moreover, feature-feature correlations can be used to evaluate a dataset based on expected biochemical correlations, for example higher feature-feature correlations within lipid categories versus between lipid categories [@mitchellUntargetedLipidomicsNonSmall2021].
@@ -300,10 +300,10 @@ Samples were grouped by their genotype, growth environment, or their combination
 
 ### Yeast RNA-Seq Data Set
 
-These data were generated and reported as part of two publications evaluating replicate data and differential gene expression using wild-type (*WT*) and *Snf2* deletion mutant [@gierlinski_statisticalmodels_2015; @schurchHowManyBiological2016].
+These data were generated and reported as part of two publications evaluating replicate data and differential gene expression using wild-type (WT) and *Snf2* deletion mutant [@gierlinski_statisticalmodels_2015; @schurchHowManyBiological2016].
 Summarized gene level counts were obtained from a GitHub project maintained by the Barton group [@coleProfilingDifferentialGene2021].
 It should be noted that the data are also available from two figshare repositories [@bartonSNF2KnockoutYeast2015; @bartonWildtypeYeastGene2015].
-Counts were normalized using *DESeq2* [@loveModeratedEstimationFold2014] with the sample genotype of *WT* or *Snf2* deletion as the experimental factor.
+Counts were normalized using *DESeq2* [@loveModeratedEstimationFold2014] with the sample genotype of WT or *Snf2* deletion as the experimental factor.
 Samples were grouped by their genotype for the calculation of median abundance across samples.
 
 The original outliers reported by Gierliński et al. [-@gierlinski_statisticalmodels_2015] are based on a combination of median correlations, feature outliers, and RNA-seq coverage.
@@ -330,7 +330,7 @@ Peak intensities in each sample were normalized by the median abundance of all q
 For details on the samples, their processing, and generation of assignments, see Mitchell et al [-@mitchellUntargetedLipidomicsNonSmall2021].
 Samples were grouped by the instrument (two different instruments were used to collect the data) and whether they were taken from normal (nearby non-tumor) or tumor tissue for the calculation of median abundance across samples.
 The previously assigned peaks were matched to the un-assigned peaks by finding peaks within a 0.5 ppm cutoff.
-For lipid category and class voting, we only considered peaks matched that had a single assigned and a single un-assigned peak match together.
+For lipid category and class voting, we only considered peaks matched that had a single assigned or a single un-assigned peak match together, i.e. satisfying a bisection criterion.
 
 ### Rat Stamina and Feeding Metabolomics Data Set (Rat)
 
@@ -344,7 +344,7 @@ Samples were grouped by the combination of feeding status (ad lib or calorie res
 
 ### Feature Annotations
 
-Pathway annotations for gene transcripts in the RNA-Seq datasets were obtained from Reactome pathways in the *reactome.db* Bioconductor package as well as organism specific annotation packages [@joshi-topeReactomeKnowledgebaseBiological2005; @ligtenbergReactomeDbSet2023].
+Pathway annotations for gene transcripts in the RNA-Seq datasets were obtained from Reactome pathways in the *reactome.db* Bioconductor package as well as organism-specific annotation packages [@joshi-topeReactomeKnowledgebaseBiological2005; @ligtenbergReactomeDbSet2023].
 Metabolite annotations for the rat stamina metabolites are based on Kyoto Encyclopedia of Genes and Genomes (KEGG) pathways that map from the provided KEGG compound IDs to various KEGG pathways [@kanehisaKEGGKyotoEncyclopedia2000].
 Compound-pathway annotations were fetched using the *kegg-pull* Python package [@huckvaleKegg_pullSoftwarePackage2023].
 Lipid features from the NSCLC lipidomics with assignments are classified into one or more lipid categories using our lipid classifier tool [@mitchellDerivingLipidClassification2020].
@@ -377,12 +377,12 @@ Pearson, with a $log(x)$ transform, and then setting infinite values to `NA` val
 
 ### Outlier Detection
 
-For outlier detection, median sample-sample correlations within the sample class (genotype, condition, etc) is calculated, and $log(1 - cor_{median})$ calculated to transform it into a score, and then outliers determined using *grDevices::boxplot.stats*, which by default are at 1.5X the whiskers in a box-and-whisker plot.
+For outlier detection, median sample-sample correlations within the sample treatment (genotype, condition, etc) is calculated, and $log(1 - cor_{median})$ calculated to transform it into a score, and then outliers determined using *grDevices::boxplot.stats*, which by default are at 1.5X the whiskers in a box-and-whisker plot.
 As we are interested in only those correlations at the *low* end of correlation (becoming the high end after the subtraction and log-transform), we restrict to only those entries at the *high* end of the score distribution (using *visualizationQualityControl::determine_outliers* [@flightVisualizationQualityControlDevelopmentVisualization2021]).
 This is equivalent to using the correlation component of the score described by Gierliński et al [-@gierlinski_statisticalmodels_2015] and setting the other component weights to zero.
 
 Sample-sample correlations are calculated with different sets of features.
-For each feature, we calculate the number and fraction of samples in a sample class that feature had non-zero or non-missing values in, making it possible to filter to a subset of features that are present in a minimum required number of samples.
+For each feature, we calculate the number and fraction of samples in a sample treatment that feature had non-zero or non-missing values in, making it possible to filter to a subset of features that are present in a minimum required number of samples.
 
 For each cutoff of non-missing values, we also calculate the median and median-absolute-deviation (MAD) of the sample median correlations, and then the differences of median and MAD between two classes of samples:
 SNF2 and WT for yeast; normal and tumor for adenocarcinoma; wt and null for "egfrgenotype"; tumor and normal for one instrument for NSCLC; Ad lib high and low for "ratstamina".
@@ -618,7 +618,7 @@ multi_core = time_multi |>
 
 `r figure_count$label_text("performance")`. (A) Comparison of the *Rcpp* *mergesort* *ici_kt*, and base R's *cor* function using the "pearson" and "kendall" methods as the number of features are increased from 100 to 5000.
 Inset is the expanded view showing the full range of computation time in seconds.
-(B) Log of time taken to calculate all pairwise comparisons for different numbers of samples in multicore processing.
+(B) Log of time taken to calculate all pairwise comparisons using ICI-Kt for different numbers of samples in multicore processing.
 
 
 
@@ -667,11 +667,12 @@ yeast_single_plot +
 `r figure_count$label_text("yeast_outliers")`.
 Median correlations for each of the yeast RNA-Seq sample to all other samples in the same group, using either ICI-Kt, ICI-Kt * completeness or Pearson Log(x + 1) correlation.
 Points are colored red if they were an outlier using that correlation method.
-For a sample that is considered an outlier in any of the method, lines are drawn connecting them between methods.
+For a sample that is considered an outlier in any of the methods, lines are drawn connecting them between methods.
 
 
 `r table_count$label_text("yeast_outliers")`.
 Yeast dataset median correlation values and outlier determination for each outlier from each of the correlation methods.
+Bolded entries indicate the sample was an outlier for that method.
 
 ```{r yeast_outlier_table}
 yeast_table = compare_outlier_tables_bold(yeast_single, compare_yeast_main, sort_var = "pearson_log1p")
@@ -706,6 +707,7 @@ The biochemical rationale for this analysis is that stronger positive partial co
 For each of the datasets examined, ICI-Kt or ICI-Kt completeness gave the most positive summed partitioning values.
 
 `r table_count$label_text("partitioning")`. Partitioning ratios for feature-feature correlation networks generated using each method for each dataset.
+Bolded entries indicate the highest partitioning ratio for the dataset.
 ```{r}
 qratio_display_table = cleanup_qratio_table(feature_qratio_summary)
 qratio_display_table = qratio_display_table |> font(fontname = "Calibri", part = "all") |>
@@ -721,7 +723,7 @@ Left-censored distributions in analytical measurements of biological samples are
 As far as we are aware, previous efforts in this area are concerned with either 1: attempting to come up with better imputation methods prior to calculating correlation values; or 2: finding ways to still estimate the correlation in the face of missing values, generally by finding maximum likelihood estimates.
 In the case of (1), there are many imputation methods, and new methods are still being developed, although they tend to be new combinations of old methods to handle the various types of missing values.
 For (2), the maximum likelihood methods generally apply to Pearson and similar types of correlation, as they benefit from the use of regression in the presence of missing data.
-Alvo and Cabilio's work from 1995 [@alvoRankCorrelationMethods1995] is one of the only works we are aware of that attempts to create a general framework for rank based statistics in the presence of missing data.
+Alvo and Cabilio's work from 1995 [@alvoRankCorrelationMethods1995] is one of the only works we are aware of that attempts to create a general framework for rank-based statistics in the presence of missing data.
 But, in our understanding their framework applies to data that is missing at random versus non-random missing-values, as is the case for analytes that are below the detection limit.
 Additionally, there does not appear to be a software implementation of Alvo and Cabilio's method available.
 In the case of using sample-sample correlation to detect outliers, imputation does not solve any of the issues related to discovering outliers, as it should be applied **after** outlier samples are removed, otherwise the imputed values may not be useful.
