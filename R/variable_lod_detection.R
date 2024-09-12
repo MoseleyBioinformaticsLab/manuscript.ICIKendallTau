@@ -78,6 +78,52 @@ calculate_variable_correlations = function(var_lod_samples)
        variable_cutoff = variablecutoff_correlations)
     
 }
+
+var_lod_differences = function(var_lod_correlations)
+{
+  # tar_load(var_lod_correlations)
+  reference_cor = var_lod_correlations$no_cutoff
+  
+  do_diffs = c("single_cutoff", "variable_cutoff")
+  diff_cor = purrr::map(do_diffs, \(diff_id){
+    # diff_id = do_diffs[1]
+    purrr::map(names(reference_cor), \(cor_id){
+      # cor_id = "icikt_na"
+      diff_df = var_lod_each_cor(reference_cor[[cor_id]], var_lod_correlations[[diff_id]][[cor_id]])
+      
+      diff_df = diff_df |>
+        dplyr::mutate(cor_method = cor_id,
+                      lod_method = diff_id)
+      diff_df
+    }) |>
+      purrr::list_rbind()
+  }) |>
+    purrr::list_rbind()
+  diff_cor
+}
+
+var_lod_each_cor = function(ref_cor, in_cor)
+{
+  # ref_cor = reference_cor[["icikt_na"]]
+  # in_cor = var_lod_correlations[["single_cutoff"]][["icikt_na"]]
+  ref_long = cor_matrix_2_long_df(ref_cor) |>
+    dplyr::rowwise() |>
+    dplyr::mutate(comparison = paste0(sort(c(s1, s2)), collapse = ".")) |>
+    dplyr::ungroup() |>
+    dplyr::filter(!(s1 == s2), !duplicated(comparison))
+  in_long = cor_matrix_2_long_df(in_cor) |>
+    dplyr::rowwise() |>
+    dplyr::mutate(comparison = paste0(sort(c(s1, s2)), collapse = ".")) |>
+    dplyr::ungroup() |>
+    dplyr::filter(!(s1 == s2), !duplicated(comparison))
+  
+  compare_cor = dplyr::left_join(ref_long[, c("cor", "comparison")], in_long[, c("cor", "comparison")], suffix = c(".ref", ".lod"), by = "comparison")
+  compare_cor = compare_cor |>
+    dplyr::mutate(ref_lod = cor.ref - cor.lod)
+  compare_cor
+  
+}
+
 triple_check_scalemax_works = function(var_lod_samples)
 {
   use_sample = var_lod_samples$single_cutoff
