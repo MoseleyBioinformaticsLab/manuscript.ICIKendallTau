@@ -77,3 +77,16 @@ calculate_variable_correlations = function(var_lod_samples)
        variable_cutoff = variablecutoff_correlations)
     
 }
+triple_check_scalemax_works = function(var_lod_samples)
+{
+  use_sample = var_lod_samples$single_cutoff
+  
+  ici_noscale = ici_kendalltau(t(use_sample), global_na = NA, scale_max = FALSE, diag_good = FALSE)
+  
+  testthat::expect_equal(ici_noscale$cor, ici_noscale$raw)
+  
+  ici_scale = ici_kendalltau(t(use_sample), global_na = NA, scale_max = TRUE, diag_good = FALSE)
+  sum_lt = sum(ici_scale$cor <= ici_scale$raw)
+  testthat::expect_equal(sum_lt, nrow(ici_scale$cor) * ncol(ici_scale$cor))
+  NULL
+}
