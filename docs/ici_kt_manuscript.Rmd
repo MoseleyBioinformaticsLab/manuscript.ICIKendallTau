@@ -98,6 +98,8 @@ table_count$increment(c("datasets",
 
 ## Abstract
 
+### Background:
+
 Almost all correlation measures currently available are unable to directly handle missing values.
 Typically, missing values are either ignored completely by removing them or are imputed and used in the calculation of the correlation coefficient.
 In both cases, the correlation value will be impacted based on a perspective that missing data represents no useful information.
@@ -106,7 +108,11 @@ In omics data sets that are derived from analytical measurements, the primary re
 These missing data are not missing at random, but represent some information by virtue of their "missingness".
 Therefore, we propose the information-content-informed Kendall-tau (ICI-Kt) correlation coefficient that allows missing values to carry explicit information in the determination of concordant and discordant pairs.
 With both simulated and real data sets from RNA-seq, metabolomics, and lipidomics experiments, we demonstrate that the ICI-Kt allows for the inclusion of missing data values as interpretable information, enabling both improved determination of outlier samples and improved feature-feature network construction, without explicitly using imputation.
+### Results:
+
 Moreover, our implementation of ICI-Kt uses a mergesort-like algorithm that provides O(nlog(n)) computational performance, a significant improvement over the Kendall-tau correlation available in base R. 
+
+### Conclusions:
 
 The ICI-Kt correlation calculation is available in an R package and Python module on GitHub at https://github.com/moseleyBioinformaticsLab/ICIKendallTau and https://github.com/moseleyBioinformaticsLab/icikt, respectively.
 
@@ -742,6 +748,34 @@ Many factors affect this, especially correlation linearity and the modality of m
 We would humbly suggest that for most omics datasets, the application of several correlation-related metrics simultaneously would be the best approach for outlier detection in quality control and quality assessment steps.
 Where one metric lacks outlier detection sensitivity, another metric will prove sensitive.
 Therefore, ICI-Kt and composite metrics derived from it should be considered as useful additions to the omics data analysis toolkit.
+
+## Declarations:
+
+### Ethics Approval and Consent to Participate
+
+Not applicable.
+
+### Consent For Publication
+
+Not applicable.
+
+### Competing Interests
+
+The authors declare that they have no competing interests.
+
+### Availability Of Data And Materials
+
+GitHub repository for the R package: https://github.com/moseleyBioinformaticsLab/ICIKendallTau
+
+GitHub repository for the Python package: https://github.com/moseleyBioinformaticsLab/icikt
+
+Python Package Index: https://pypi.org/project/icikt/
+
+Zenodo Item: https://zenodo.org/doi/10.5281/zenodo.6309187 
+
+## Funding
+
+This work was supported in part by grants NSF 2020026 (PI Moseley), NSF ACI1626364 (Griffioen, Moseley), P30 CA177558 (PI Evers) via the Markey Cancer Center Biostatistics and Bioinformatics Shared Resource Facility (MCC BB-SRF), P20 GM121327 (PD St. Clair), and P42 ES007380 (PI Pennell) via the Data Management and Analysis Core (DMAC).
 
 ## Author Contributions
 
