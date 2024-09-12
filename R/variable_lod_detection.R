@@ -15,6 +15,7 @@ create_variable_lod_samples = function(n_feature, n_sample,
   rep_base[rep_data < base_value_matrix] = NA
   
   variable_cutoffs = rep(variables * base_value, each = n_sample / length(variables))
+  names(variable_cutoffs) = colnames(rep_data)
   
   variable_value_matrix = matrix(variable_cutoffs, nrow = nrow(rep_data), ncol = ncol(rep_data), byrow = TRUE)
   
