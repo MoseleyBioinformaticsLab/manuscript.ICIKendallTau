@@ -104,12 +104,13 @@ Almost all correlation measures currently available are unable to directly handl
 Typically, missing values are either ignored completely by removing them or are imputed and used in the calculation of the correlation coefficient.
 In both cases, the correlation value will be impacted based on a perspective that missing data represents no useful information.
 However, missing values occur in real data sets for a variety of reasons. 
-In omics data sets that are derived from analytical measurements, the primary reason for missing values is that a specific measurable phenomenon falls below the detection limits of the analytical instrumentation.
-These missing data are not missing at random, but represent some information by virtue of their "missingness".
-Therefore, we propose the information-content-informed Kendall-tau (ICI-Kt) correlation coefficient that allows missing values to carry explicit information in the determination of concordant and discordant pairs.
-With both simulated and real data sets from RNA-seq, metabolomics, and lipidomics experiments, we demonstrate that the ICI-Kt allows for the inclusion of missing data values as interpretable information, enabling both improved determination of outlier samples and improved feature-feature network construction, without explicitly using imputation.
+In omics data sets that are derived from analytical measurements, a major reason for missing values is that a specific measurable phenomenon falls below the detection limits of the analytical instrumentation (left-censorsed values).
+These missing data are not missing at random, but represent some information by virtue of their "missingness" at one end of the data distribution.
+
 ### Results:
 
+Therefore, to better handle missingness due to left-censorship, we propose the information-content-informed Kendall-tau (ICI-Kt) correlation coefficient that allows left-censored missing values to carry explicit information in the determination of concordant and discordant pairs.
+With both simulated and real data sets from RNA-seq, metabolomics, and lipidomics experiments, we demonstrate that the ICI-Kt allows for the inclusion of left-censored missing data values as interpretable information, enabling both improved determination of outlier samples and improved feature-feature network construction, without explicitly using imputation.
 Moreover, our implementation of ICI-Kt uses a mergesort-like algorithm that provides O(nlog(n)) computational performance, a significant improvement over the Kendall-tau correlation available in base R. 
 
 ### Conclusions:
