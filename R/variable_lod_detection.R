@@ -1,33 +1,29 @@
 create_variable_lod_samples = function(n_feature, n_sample,
-                                       base_value = 2.1,
-                                       variables = c(0.25, 0.5, 1, 1.5))
+                                       lod_values)
 {
   # n_feature = 1000
   # n_sample = 100
-  # variables = c(0.25, 0.5, 1, 1.5)
+  # lod_values = tibble::tibble(lod = 2.1, level = "basic")
   base_sample = rlnorm(n_feature, meanlog = 1, sdlog = 0.5)
   rep_data = add_uniform_noise(n_sample, base_sample, 0.2)
   colnames(rep_data) = paste0("S", seq_len(ncol(rep_data)))
   
-  base_value_matrix = matrix(base_value, nrow = nrow(rep_data), ncol = ncol(rep_data), byrow = TRUE)
+  n_each_lod = ceiling(n_sample / nrow(lod_values))
   
-  rep_base = rep_data
-  rep_base[rep_data < base_value_matrix] = NA
+  lod_vector = rep(lod_values$lod, each = n_each_lod)
+  lod_vector = lod_vector[seq_len(n_sample)]
   
-  variable_cutoffs = rep(variables * base_value, each = n_sample / length(variables))
-  names(variable_cutoffs) = colnames(rep_data)
+  lod_sample_tbl = tibble::tibble(lod = lod_vector, sample = colnames(rep_data))
+  lod_sample_tbl = dplyr::left_join(lod_sample_tbl, lod_values, by = "lod")
   
-  variable_value_matrix = matrix(variable_cutoffs, nrow = nrow(rep_data), ncol = ncol(rep_data), byrow = TRUE)
+  lod_matrix = matrix(lod_vector, nrow = nrow(rep_data), ncol = ncol(rep_data), byrow = TRUE)
   
-  rep_variable = rep_data
-  rep_variable[rep_data < variable_value_matrix] = NA
+  rep_lod = rep_data
+  rep_lod[rep_lod < lod_matrix] = NA
   
-  return(list(base_cutoff = exp(base_value),
-              variables = variables,
-              cutoffs = exp(variable_cutoffs),
-              no_cutoff = exp(rep_data),
-              single_cutoff = exp(rep_base),
-              variable_cutoff = exp(rep_variable)))
+  return(list(sample_data = rep_data,
+              sample_lod = rep_lod,
+              lod = lod_sample_tbl))
 }
 
 variable_lod_cor_everyway = function(sample_counts){
@@ -41,23 +37,16 @@ variable_lod_cor_everyway = function(sample_counts){
   sample_counts_min[is.na(sample_counts)] = impute_value
   
   ici_cor = ici_kendalltau(t(sample_counts), global_na = NA, scale_max = FALSE)$cor
-  ici_min = ici_kendalltau(t(sample_counts_min), global_na = NA, scale_max = FALSE)$cor
-  kt = kt_fast(sample_counts, use = "pairwise.complete.obs", return_matrix = TRUE)$tau
+  kt_na = kt_fast(sample_counts, use = "pairwise.complete.obs", return_matrix = TRUE)$tau
   kt_min = kt_fast(sample_counts_min, use = "pairwise.complete.obs", return_matrix = TRUE)$tau
-  # this one should match the Gierlinski paper values for median correlations
-  pearson_base_na = cor(sample_counts, method = "pearson", use = "pairwise.complete.obs")
-  pearson_base_min = cor(sample_counts_min, method = "pearson", use = "pairwise.complete.obs")
-  pearson_log1p = cor(log1p(sample_counts), method = "pearson", use = "pairwise.complete.obs")
-  pearson_log1p_min = cor(log1p(sample_counts_min), method = "pearson", use = "pairwise.complete.obs")
+  pearson_na = cor(sample_counts, method = "pearson", use = "pairwise.complete.obs")
+  pearson_min = cor(sample_counts_min, method = "pearson", use = "pairwise.complete.obs")
   
-  cor_vals = list(icikt_na = ici_cor,
-                  icikt_min = ici_min,
-                  kt_na = kt,
+  cor_vals = list(icikt = ici_cor,
+                  kt_na = kt_na,
                   kt_min = kt_min,
-                  pearson_base_na = pearson_base_na,
-                  pearson_base_min = pearson_base_min,
-                  pearson_log1p = pearson_log1p,
-                  pearson_log1p_min = pearson_log1p_min
+                  pearson_na = pearson_na,
+                  pearson_min = pearson_min
   )
   cor_vals
 }
