@@ -114,7 +114,8 @@ small_realistic_examples = tar_plan(
   
   # variable lod data creation --------
   var_lod_samples = create_variable_lod_samples(n_feature = 1000, n_sample = 100),
-  var_lod_correlations = calculate_variable_correlations(var_lod_samples)
+  var_lod_correlations = calculate_variable_correlations(var_lod_samples),
+  var_lod_correlation_diffs = calculate_var_lod_correlation_diffs(var_lod_correlations)
   
 )
 

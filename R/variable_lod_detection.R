@@ -79,7 +79,7 @@ calculate_variable_correlations = function(var_lod_samples)
     
 }
 
-var_lod_differences = function(var_lod_correlations)
+calculate_var_lod_correlation_diffs = function(var_lod_correlations)
 {
   # tar_load(var_lod_correlations)
   reference_cor = var_lod_correlations$no_cutoff
@@ -99,7 +99,26 @@ var_lod_differences = function(var_lod_correlations)
       purrr::list_rbind()
   }) |>
     purrr::list_rbind()
-  diff_cor
+  
+  diff_cor_lod = add_lod_info(diff_cor, var_lod_correlations$samples$cutoffs)
+  
+  diff_cor_lod
+}
+
+add_lod_info = function(diff_cor, cutoffs)
+{
+  # cutoffs = var_lod_correlations$samples$cutoffs
+  
+  cutoff_df = tibble::tibble(s1 = names(cutoffs), s2 = names(cutoffs), cutoff = cutoffs)
+  uniq_cutoffs = tibble::tibble(cutoff = unique(cutoffs), level = c("low", "med", "high", "vhigh")) 
+  cutoff_df = dplyr::left_join(cutoff_df, uniq_cutoffs, by = "cutoff")
+  
+  diff_cor_lod = dplyr::left_join(diff_cor, cutoff_df |> dplyr::transmute(s1 = s1, s1_cutoff = cutoff, s1_level = level), by = "s1")
+  diff_cor_lod = dplyr::left_join(diff_cor_lod, cutoff_df |> dplyr::transmute(s2 = s2, s2_cutoff = cutoff, s2_level = level), by = "s2")
+  
+  diff_cor_lod = diff_cor_lod |>
+    dplyr::mutate(compare_levels = glue::glue("{s1_level}-{s2_level}"))
+  diff_cor_lod
 }
 
 var_lod_each_cor = function(ref_cor, in_cor)
@@ -117,9 +136,9 @@ var_lod_each_cor = function(ref_cor, in_cor)
     dplyr::ungroup() |>
     dplyr::filter(!(s1 == s2), !duplicated(comparison))
   
-  compare_cor = dplyr::left_join(ref_long[, c("cor", "comparison")], in_long[, c("cor", "comparison")], suffix = c(".ref", ".lod"), by = "comparison")
+  compare_cor = dplyr::left_join(ref_long[, c("cor", "s1", "s2", "comparison")], in_long[, c("cor", "comparison")], suffix = c("_ref", "_lod"), by = "comparison")
   compare_cor = compare_cor |>
-    dplyr::mutate(ref_lod = cor.ref - cor.lod)
+    dplyr::mutate(ref_v_lod = cor_ref - cor_lod)
   compare_cor
   
 }
