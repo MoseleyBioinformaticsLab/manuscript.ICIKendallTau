@@ -1,13 +1,23 @@
-create_variable_lod_samples = function(n_feature, n_sample,
-                                       lod_values)
+create_large_replicate_samples = function(n_feature, n_sample)
 {
-  # n_feature = 1000
-  # n_sample = 100
-  # lod_values = tibble::tibble(lod = 2.1, level = "basic")
   base_sample = rlnorm(n_feature, meanlog = 1, sdlog = 0.5)
   rep_data = add_uniform_noise(n_sample, base_sample, 0.2)
   colnames(rep_data) = paste0("S", seq_len(ncol(rep_data)))
+  rep_data
+}
+
+create_variable_lod_samples = function(rep_data,
+                                       lod_values, id)
+{
+  if (inherits(lod_values, "numeric")) {
+    lod_values = tibble::tibble(lod = lod_values, level = id)
+  } else if (!inherits(lod_values, "data.frame")) {
+    stop("Please pass a vector or a data.frame")
+  }
   
+  n_lod = nrow(lod_values)
+  
+  n_sample = ncol(rep_data)
   n_each_lod = ceiling(n_sample / nrow(lod_values))
   
   lod_vector = rep(lod_values$lod, each = n_each_lod)
@@ -21,9 +31,14 @@ create_variable_lod_samples = function(n_feature, n_sample,
   rep_lod = rep_data
   rep_lod[rep_lod < lod_matrix] = NA
   
+  rep_na = tibble::tibble(sample = colnames(rep_data), perc_na = apply(rep_lod, 2, \(x){sum(is.na(x)) / length(x)}))
+  lod_sample_tbl = dplyr::left_join(lod_sample_tbl, rep_na, by = "sample")
+  
+  
   return(list(sample_data = rep_data,
               sample_lod = rep_lod,
-              lod = lod_sample_tbl))
+              lod = lod_sample_tbl,
+              n_lod = n_lod))
 }
 
 variable_lod_cor_everyway = function(sample_counts){
@@ -55,55 +70,47 @@ variable_lod_cor_everyway = function(sample_counts){
 
 calculate_variable_correlations = function(var_lod_samples)
 {
-  # tar_load(var_lod_samples)
+  # var_lod_samples = tar_read(vl_samples_med)
   
-  nocutoff_correlations = variable_lod_cor_everyway(var_lod_samples$no_cutoff)
-  singlecutoff_correlations = variable_lod_cor_everyway(var_lod_samples$single_cutoff)
-  variablecutoff_correlations = variable_lod_cor_everyway(var_lod_samples$variable_cutoff)
+  ref_correlations = variable_lod_cor_everyway(var_lod_samples$sample_data)
+  lod_correlations = variable_lod_cor_everyway(var_lod_samples$sample_lod)
   
   list(samples = var_lod_samples,
-       no_cutoff = nocutoff_correlations,
-       single_cutoff = singlecutoff_correlations,
-       variable_cutoff = variablecutoff_correlations)
+       lod = var_lod_samples$lod,
+       n_lod = var_lod_samples$n_lod,
+       reference_cor = ref_correlations,
+       lod_cor = lod_correlations)
     
 }
 
 calculate_var_lod_correlation_diffs = function(var_lod_correlations)
 {
-  # tar_load(var_lod_correlations)
-  reference_cor = var_lod_correlations$no_cutoff
+  # var_lod_correlations = tar_read(vl_cor_med)
+  reference_cor = var_lod_correlations$reference
+  lod_cor = var_lod_correlations$lod_cor
   
-  do_diffs = c("single_cutoff", "variable_cutoff")
-  diff_cor = purrr::map(do_diffs, \(diff_id){
-    # diff_id = do_diffs[1]
-    purrr::map(names(reference_cor), \(cor_id){
-      # cor_id = "icikt_na"
-      diff_df = var_lod_each_cor(reference_cor[[cor_id]], var_lod_correlations[[diff_id]][[cor_id]])
+  diff_cor = purrr::map(names(reference_cor), \(cor_id){
+    diff_df = var_lod_each_cor(reference_cor[[cor_id]], lod_cor[[cor_id]])
       
       diff_df = diff_df |>
-        dplyr::mutate(cor_method = cor_id,
-                      lod_method = diff_id)
+        dplyr::mutate(cor_method = cor_id)
       diff_df
-    }) |>
-      purrr::list_rbind()
   }) |>
     purrr::list_rbind()
   
-  diff_cor_lod = add_lod_info(diff_cor, var_lod_correlations$samples$cutoffs)
+  diff_cor_lod = add_lod_info(diff_cor, var_lod_correlations$lod)
+  diff_cor_lod$n_lod = var_lod_correlations$n_lod
   
   diff_cor_lod
 }
 
-add_lod_info = function(diff_cor, cutoffs)
+add_lod_info = function(diff_cor, lod_df)
 {
-  # cutoffs = var_lod_correlations$samples$cutoffs
+  # lod_df = var_lod_correlations$lod
   
-  cutoff_df = tibble::tibble(s1 = names(cutoffs), s2 = names(cutoffs), cutoff = cutoffs)
-  uniq_cutoffs = tibble::tibble(cutoff = unique(cutoffs), level = c("low", "med", "high", "vhigh")) 
-  cutoff_df = dplyr::left_join(cutoff_df, uniq_cutoffs, by = "cutoff")
   
-  diff_cor_lod = dplyr::left_join(diff_cor, cutoff_df |> dplyr::transmute(s1 = s1, s1_cutoff = cutoff, s1_level = level), by = "s1")
-  diff_cor_lod = dplyr::left_join(diff_cor_lod, cutoff_df |> dplyr::transmute(s2 = s2, s2_cutoff = cutoff, s2_level = level), by = "s2")
+  diff_cor_lod = dplyr::left_join(diff_cor, lod_df |> dplyr::transmute(s1 = sample, s1_lod = lod, s1_level = level, s1_perc_na = perc_na), by = "s1")
+  diff_cor_lod = dplyr::left_join(diff_cor_lod, lod_df |> dplyr::transmute(s2 = sample, s2_lod = lod, s2_level = level, s2_perc_na = perc_na), by = "s2")
   
   diff_cor_lod = diff_cor_lod |>
     dplyr::mutate(compare_levels = glue::glue("{s1_level}-{s2_level}"))
