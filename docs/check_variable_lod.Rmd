@@ -1,0 +1,145 @@
+---
+title: "Variable Limits of Detection"
+author: "Report Author"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+targets::tar_source("./packages.R")
+tar_source("R")
+
+
+knitr::opts_chunk$set(echo = FALSE, 
+                      warning = FALSE, 
+                      message = FALSE, 
+                      fig.width = 8, 
+                      fig.height = 6, 
+                      dpi = 600,
+                      dev = "ragg_png")
+```
+
+```{r}
+#| label: load-dependencies
+tar_load(c(vl_single_mixed
+))
+```
+
+## Check Different Levels in Different Methods
+
+```{r}
+#| label: different-levels-n
+split_levels = split(vl_single_mixed, vl_single_mixed$compare_levels)
+
+split_levels_num = purrr::map_int(split_levels, \(in_level){
+  length(unique(in_level$n_lod))
+})
+
+split_levels = split_levels[split_levels_num > 1]
+```
+
+```{r}
+#| label: split-levels-each
+#| fig-keep: asis
+#| fig-width: 8
+#| fig-height: 10
+purrr::walk(split_levels, \(in_level){
+  # in_level = split_levels[[1]]
+  split_n = split(in_level, in_level$n_lod)
+  
+  n_graphs = purrr::map(split_n, \(in_n){
+    # in_n = split_n[[1]]
+    n_miss = in_n |>
+      dplyr::filter(cor_method %in% "icikt") |>
+      dplyr::group_by(compare_levels) |>
+      dplyr::summarise(s1_na = median(s1_perc_na),
+                       s2_na = median(s2_perc_na),
+                       na_level = glue::glue("{s1_na}-{s2_na}"))
+    in_n |>
+      ggplot(aes(x = abs(ref_v_lod))) +
+      geom_histogram(bins = 100) +
+      facet_wrap(~ cor_method, ncol = 1, scales = "free_y") +
+      labs(subtitle = glue::glue("{in_n$type[1]}-{in_n$compare_levels[1]}-{in_n$n_lod[1]} -- {n_miss$na_level}")) +
+      theme(plot.subtitle = element_text(size = 8))
+  })
+  print(wrap_plots(n_graphs, nrow = 1))
+})
+```
+
+
+## Single LODs of Different Amounts
+
+```{r}
+#| label: single-lod
+#| fig-width: 10
+#| fig-height: 8
+single_data = vl_single_mixed |>
+  dplyr::filter(type %in% "single")
+
+single_split = split(single_data, single_data$compare_levels)
+
+single_plots = purrr::map(single_split, \(in_split){
+  # in_split = single_split[[1]]
+  in_split |>
+    ggplot(aes(x = abs(ref_v_lod))) +
+    geom_histogram(bins = 100) +
+    facet_wrap(~ cor_method, ncol = 1, scales = "free_y") +
+    labs(subtitle = in_split$compare_levels[1])
+})
+
+wrap_plots(single_plots, nrow = 1)
+```
+
+## Mixed LODs with different amounts
+
+```{r}
+#| label: mixed-single-lod
+#| fig-width: 16
+#| fig-height: 8
+mixed_data = vl_single_mixed |>
+  dplyr::filter(type %in% "mixed")
+
+
+single_mixed = mixed_data |>
+  dplyr::filter(s1_level == s2_level)
+
+mixed_mixed = mixed_data |>
+  dplyr::filter(s1_level != s2_level)
+
+single_mixed_split = split(single_mixed, single_mixed[, c("compare_levels", "n_lod")])
+null_splits = purrr::map_lgl(single_mixed_split, \(x){nrow(x) == 0})
+single_mixed_split = single_mixed_split[!null_splits]
+
+single_mixed_plots = purrr::map(single_mixed_split, \(in_split){
+  # in_split = single_split[[1]]
+  in_split |>
+    ggplot(aes(x = abs(ref_v_lod))) +
+    geom_histogram(bins = 100) +
+    facet_wrap(~ cor_method, ncol = 1, scales = "free_y") +
+    labs(subtitle = glue::glue("{in_split$compare_levels[1]} - {in_split$n_lod[1]}"))
+})
+
+wrap_plots(single_mixed_plots, nrow = 1)
+```
+
+## Mixed
+
+```{r}
+#| label: mixed-mixed-lod
+#| fig-width: 16
+#| fig-height: 8
+mixed_mixed_split = split(mixed_mixed, mixed_mixed[, c("compare_levels", "n_lod")])
+null_splits = purrr::map_lgl(mixed_mixed_split, \(x){nrow(x) == 0})
+mixed_mixed_split = mixed_mixed_split[!null_splits]
+
+mixed_mixed_plots = purrr::map(mixed_mixed_split, \(in_split){
+  # in_split = single_split[[1]]
+  in_split |>
+    ggplot(aes(x = abs(ref_v_lod))) +
+    geom_histogram(bins = 100) +
+    facet_wrap(~ cor_method, ncol = 1, scales = "free_y") +
+    labs(subtitle = glue::glue("{in_split$compare_levels[1]} - {in_split$n_lod[1]}"))
+})
+
+wrap_plots(mixed_mixed_plots, nrow = 1)
+```
