@@ -121,15 +121,11 @@ var_lod_each_cor = function(ref_cor, in_cor)
 {
   # ref_cor = reference_cor[["icikt_na"]]
   # in_cor = var_lod_correlations[["single_cutoff"]][["icikt_na"]]
-  ref_long = cor_matrix_2_long_df(ref_cor) |>
-    dplyr::rowwise() |>
-    dplyr::mutate(comparison = paste0(sort(c(s1, s2)), collapse = ".")) |>
-    dplyr::ungroup() |>
+  ref_long = lod_cor_matrix_2_df(ref_cor) |>
+    dplyr::mutate(comparison = glue::glue("{s1}.{s2}")) |>
     dplyr::filter(!(s1 == s2), !duplicated(comparison))
-  in_long = cor_matrix_2_long_df(in_cor) |>
-    dplyr::rowwise() |>
-    dplyr::mutate(comparison = paste0(sort(c(s1, s2)), collapse = ".")) |>
-    dplyr::ungroup() |>
+  in_long = lod_cor_matrix_2_df(in_cor) |>
+    dplyr::mutate(comparison = glue::glue("{s1}.{s2}")) |>
     dplyr::filter(!(s1 == s2), !duplicated(comparison))
   
   compare_cor = dplyr::left_join(ref_long[, c("cor", "s1", "s2", "comparison")], in_long[, c("cor", "comparison")], suffix = c("_ref", "_lod"), by = "comparison")
@@ -151,4 +147,18 @@ triple_check_scalemax_works = function(var_lod_samples)
   sum_lt = sum(ici_scale$cor <= ici_scale$raw)
   testthat::expect_equal(sum_lt, nrow(ici_scale$cor) * ncol(ici_scale$cor))
   NULL
+}
+
+lod_cor_matrix_2_df = function(in_matrix)
+{
+  comparisons = combn(colnames(in_matrix), 2)
+  
+  cor_vals = vector(mode = "double", length = ncol(comparisons))
+  
+  for (icol in seq_len(ncol(comparisons))) {
+    cor_vals[icol] = in_matrix[comparisons[1, icol], comparisons[2, icol]]
+  }
+  
+  cor_df = data.frame(s1 = comparisons[1, ], s2 = comparisons[2, ], cor = cor_vals)
+  cor_df
 }
