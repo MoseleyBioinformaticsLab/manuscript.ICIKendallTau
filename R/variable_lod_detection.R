@@ -2,11 +2,15 @@ create_large_replicate_samples = function(n_feature, n_sample)
 {
   base_sample = rlnorm(n_feature, meanlog = 1, sdlog = 0.5)
   rep_data = add_uniform_noise(n_sample, base_sample, 0.2)
-  colnames(rep_data) = paste0("S", seq_len(ncol(rep_data)))
-  rep_data
+  colnames(rep_data) = paste0("S", stringr::str_pad(seq_len(ncol(rep_data)), width = 3, pad = "0"))
+  
+  base_lod = quantile(rep_data, 0.3)
+  names(base_lod) = NULL
+  list(data = rep_data,
+       lod = base_lod)
 }
 
-create_variable_lod_samples = function(rep_data,
+create_variable_lod_samples = function(rep_info,
                                        lod_values, id)
 {
   if (inherits(lod_values, "numeric")) {
@@ -14,17 +18,19 @@ create_variable_lod_samples = function(rep_data,
   } else if (!inherits(lod_values, "data.frame")) {
     stop("Please pass a vector or a data.frame")
   }
-  
+  rep_data = rep_info$data
+  base_lod = rep_info$lod
   n_lod = nrow(lod_values)
   
   n_sample = ncol(rep_data)
   n_each_lod = ceiling(n_sample / nrow(lod_values))
   
-  lod_vector = rep(lod_values$lod, each = n_each_lod)
+  lod_vector = rep(lod_values$lod * base_lod, each = n_each_lod)
   lod_vector = lod_vector[seq_len(n_sample)]
-  
+  lod_alt = lod_values
+  lod_alt$lod = lod_values$lod * base_lod
   lod_sample_tbl = tibble::tibble(lod = lod_vector, sample = colnames(rep_data))
-  lod_sample_tbl = dplyr::left_join(lod_sample_tbl, lod_values, by = "lod")
+  lod_sample_tbl = dplyr::left_join(lod_sample_tbl, lod_alt, by = "lod")
   
   lod_matrix = matrix(lod_vector, nrow = nrow(rep_data), ncol = ncol(rep_data), byrow = TRUE)
   
@@ -71,7 +77,7 @@ variable_lod_cor_everyway = function(sample_counts){
 calculate_variable_correlations = function(var_lod_samples)
 {
   # var_lod_samples = tar_read(vl_samples_med)
-  
+  impute_value = min(var_lod_samples$sample_lod, na.rm = TRUE) / 2
   ref_correlations = variable_lod_cor_everyway(var_lod_samples$sample_data)
   lod_correlations = variable_lod_cor_everyway(var_lod_samples$sample_lod)
   
@@ -79,7 +85,8 @@ calculate_variable_correlations = function(var_lod_samples)
        lod = var_lod_samples$lod,
        n_lod = var_lod_samples$n_lod,
        reference_cor = ref_correlations,
-       lod_cor = lod_correlations)
+       lod_cor = lod_correlations,
+       impute_value = impute_value)
     
 }
 
@@ -100,6 +107,7 @@ calculate_var_lod_correlation_diffs = function(var_lod_correlations)
   
   diff_cor_lod = add_lod_info(diff_cor, var_lod_correlations$lod)
   diff_cor_lod$n_lod = var_lod_correlations$n_lod
+  diff_cor_lod$impute_value = var_lod_correlations$impute_value
   
   diff_cor_lod
 }
@@ -161,4 +169,9 @@ lod_cor_matrix_2_df = function(in_matrix)
   
   cor_df = data.frame(s1 = comparisons[1, ], s2 = comparisons[2, ], cor = cor_vals)
   cor_df
+}
+
+lod_sample_matrix_2_df = function(rep_info)
+{
+  
 }

@@ -21,8 +21,40 @@ knitr::opts_chunk$set(echo = FALSE,
 
 ```{r}
 #| label: load-dependencies
-tar_load(c(vl_single_mixed
+tar_load(c(vl_single_mixed,
+           var_lod_samples_100,
+           var_lod_samples_400,
+           vl_samples_high,
+           vl_samples_lowhigh,
+           vl_samples_all
 ))
+```
+
+```{r}
+#| label: figure-100-400
+tbl_100 = tibble::tibble(value = c(var_lod_samples_100$data), n_sample = "100")
+tbl_400 = tibble::tibble(value = c(var_lod_samples_400$data), n_sample = "400")
+tbl_data = dplyr::bind_rows(tbl_100, tbl_400)
+
+tbl_data |>
+  ggplot(aes(x = value, color = n_sample)) + 
+  geom_density() +
+  labs(subtitle = "Data value density plot for 100 and 400 samples.")
+```
+
+```{r}
+#| label: figure-missing-data
+sample_medians_100 = tibble::tibble(median = apply(var_lod_samples_100$data, 2, median), sample = colnames(var_lod_samples_100$data), perc_30 = apply(var_lod_samples_100$data, 2, quantile, 0.3), n_sample = "100")
+sample_medians_400 = tibble::tibble(median = apply(var_lod_samples_400$data, 2, median), perc_30 = apply(var_lod_samples_400$data, 2, quantile, 0.3), sample = colnames(var_lod_samples_400$data), n_sample = "400")
+sample_medians_all = dplyr::bind_rows(sample_medians_100, sample_medians_400)
+
+sample_medians_all |>
+  ggplot(aes(x = n_sample, y = median)) +
+  geom_sina()
+
+sample_medians_all |>
+  ggplot(aes(x = n_sample, y = perc_30)) +
+  geom_sina()
 ```
 
 ## Check Different Levels in Different Methods

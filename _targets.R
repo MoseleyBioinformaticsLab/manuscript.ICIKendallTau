@@ -31,10 +31,10 @@ correlation_methods = c("ici",
                                     "kt")
 
 lod_levels = tibble::tribble(~lod, ~level,
-                             0.53, "low",
-                             1.1, "med",
-                             2.1, "basic",
-                             3.15, "high")
+                             1/4, "low",
+                             1/2, "med",
+                             1, "basic",
+                             1.5, "high")
 
 dataset_feature_correlation = tidyr::expand_grid(character_dataset = dataset_variables$sym,
                                                  character_correlation = correlation_methods) |>
