@@ -21,26 +21,46 @@ knitr::opts_chunk$set(echo = FALSE,
 
 ```{r}
 #| label: load-dependencies
-tar_load(c(vl_single_mixed,
-           var_lod_samples_100,
-           var_lod_samples_400,
-           vl_samples_high,
-           vl_samples_lowhigh,
-           vl_samples_all
+tar_load(c(vl_diff_summary_all
 ))
 ```
 
 ```{r}
-#| label: figure-100-400
-tbl_100 = tibble::tibble(value = c(var_lod_samples_100$data), n_sample = "100")
-tbl_400 = tibble::tibble(value = c(var_lod_samples_400$data), n_sample = "400")
-tbl_data = dplyr::bind_rows(tbl_100, tbl_400)
-
-tbl_data |>
-  ggplot(aes(x = value, color = n_sample)) + 
-  geom_density() +
-  labs(subtitle = "Data value density plot for 100 and 400 samples.")
+#| label: fig-lod-singles
+#| fig-width: 12
+#| fig-height: 8
+vl_diff_summary_all |>
+  dplyr::ungroup() |>
+  dplyr::filter(n_lod == 1) |>
+  ggplot(aes(x = ref_v_lod_median, y = cor_method)) +
+  geom_point() +
+  facet_wrap(~ lod_id, nrow = 1, scales = "free") +
+  theme(axis.text.x = element_text(angle = 90))
 ```
+Single entries.
+
+```{r}
+#| label: fig-lod-multiple-single-comparisons
+single_comps = c("0.25::0.25", "0.5::0.5", "0.75::0.75", "1::1", "1.25::1.25", "1.5::1.5")
+vl_diff_summary_all |>
+  dplyr::ungroup() |> 
+```
+
+
+```{r}
+#| label: figure-sample-values
+all_samples = dplyr::bind_rows(vl_mix_sample_df |>
+                                 dplyr::mutate(mix_samples = "mix"),
+                               vl_single_sample_df |>
+                                 dplyr::mutate(mix_samples = "single"))
+all_samples |>
+  ggplot(aes(x = value, color = lod_id)) +
+  geom_density() +
+  facet_grid(mix_samples ~ which)
+```
+So, as we expect, the full data has essentially the same data densities when we start.
+When we start removing data due to being below the LOD, then of course the data densities change.
+What is really interesting, is where it changes the most is for `basic` (30% LOD) and `high` (60% LOD).
 
 ```{r}
 #| label: figure-missing-data

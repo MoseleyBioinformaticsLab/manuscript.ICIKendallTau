@@ -1,6 +1,29 @@
+create_lod_run_df = function(lod_combinations, lod_levels)
+{
+  run_df = purrr::map(lod_combinations, \(in_comb){
+    # in_comb = lod_combinations[[3]]
+    purrr::map(seq_len(ncol(in_comb)), \(in_col){
+      use_comb = in_comb[, in_col]
+      tibble::tibble(multipliers = list(lod_levels$lod[use_comb]),
+                     id = paste0(lod_levels$level[use_comb], collapse = "_"))
+    }) |>
+      dplyr::bind_rows()
+  }) |>
+    dplyr::bind_rows()
+  run_df
+}
+
+# an alternative method to limit of detection would be to use a varying dynamic
+# range, where we vary from 3 - 2 orders of magnitude, and base it on the highest
+# observed value. May be able to use a uniform random distribution.
+# 
+# Also consider the differences not just as an absolute difference, but as a relative
+# difference, where we take the difference / true correlation.
+
 create_large_replicate_samples = function(n_feature, n_sample)
 {
   base_sample = rlnorm(n_feature, meanlog = 1, sdlog = 0.5)
+  # should we increase meanlog = 3, sdlog = 1.5, then noise = 0.2
   rep_data = add_uniform_noise(n_sample, base_sample, 0.2)
   colnames(rep_data) = paste0("S", stringr::str_pad(seq_len(ncol(rep_data)), width = 3, pad = "0"))
   
@@ -13,38 +36,37 @@ create_large_replicate_samples = function(n_feature, n_sample)
 create_variable_lod_samples = function(rep_info,
                                        lod_values, id)
 {
-  if (inherits(lod_values, "numeric")) {
-    lod_values = tibble::tibble(lod = lod_values, level = id)
-  } else if (!inherits(lod_values, "data.frame")) {
-    stop("Please pass a vector or a data.frame")
-  }
+  #lod_values = lod_values[[1]]
   rep_data = rep_info$data
   base_lod = rep_info$lod
-  n_lod = nrow(lod_values)
+  n_lod = length(lod_values)
+  n_each_lod = 100
+  n_sample = n_lod * n_each_lod
   
-  n_sample = ncol(rep_data)
-  n_each_lod = ceiling(n_sample / nrow(lod_values))
-  
-  lod_vector = rep(lod_values$lod * base_lod, each = n_each_lod)
+  lod_vector = rep(lod_values * base_lod, each = n_each_lod)
   lod_vector = lod_vector[seq_len(n_sample)]
-  lod_alt = lod_values
-  lod_alt$lod = lod_values$lod * base_lod
-  lod_sample_tbl = tibble::tibble(lod = lod_vector, sample = colnames(rep_data))
-  lod_sample_tbl = dplyr::left_join(lod_sample_tbl, lod_alt, by = "lod")
+  lod_df = tibble::tibble(multipliers = lod_values, lod = lod_values * base_lod)
   
-  lod_matrix = matrix(lod_vector, nrow = nrow(rep_data), ncol = ncol(rep_data), byrow = TRUE)
+  sampleid_sample = sample(colnames(rep_data), n_sample, replace = FALSE)
   
-  rep_lod = rep_data
-  rep_lod[rep_lod < lod_matrix] = NA
+  use_data = rep_data[, sampleid_sample]
+  lod_sample_tbl = tibble::tibble(lod = lod_vector, sample = colnames(use_data))
+  lod_sample_tbl = dplyr::left_join(lod_sample_tbl, lod_df, by = "lod")
   
-  rep_na = tibble::tibble(sample = colnames(rep_data), perc_na = apply(rep_lod, 2, \(x){sum(is.na(x)) / length(x)}))
-  lod_sample_tbl = dplyr::left_join(lod_sample_tbl, rep_na, by = "sample")
+  lod_matrix = matrix(lod_vector, nrow = nrow(use_data), ncol = ncol(use_data), byrow = TRUE)
+  
+  use_lod = use_data
+  use_lod[use_data < lod_matrix] = NA
+  
+  use_na = tibble::tibble(sample = colnames(use_data), perc_na = apply(use_lod, 2, \(x){sum(is.na(x)) / length(x)}))
+  lod_sample_tbl = dplyr::left_join(lod_sample_tbl, use_na, by = "sample")
   
   
-  return(list(sample_data = rep_data,
-              sample_lod = rep_lod,
+  return(list(sample_data = use_data,
+              sample_lod = use_lod,
               lod = lod_sample_tbl,
-              n_lod = n_lod))
+              n_lod = n_lod,
+              lod_id = id))
 }
 
 variable_lod_cor_everyway = function(sample_counts){
@@ -93,6 +115,7 @@ calculate_variable_correlations = function(var_lod_samples)
 calculate_var_lod_correlation_diffs = function(var_lod_correlations)
 {
   # var_lod_correlations = tar_read(vl_cor_med)
+  # var_lod_correlations = tar_read(vl_cor_0.5_1_1.25_1.5)
   reference_cor = var_lod_correlations$reference
   lod_cor = var_lod_correlations$lod_cor
   
@@ -108,6 +131,7 @@ calculate_var_lod_correlation_diffs = function(var_lod_correlations)
   diff_cor_lod = add_lod_info(diff_cor, var_lod_correlations$lod)
   diff_cor_lod$n_lod = var_lod_correlations$n_lod
   diff_cor_lod$impute_value = var_lod_correlations$impute_value
+  diff_cor_lod$lod_id = var_lod_correlations$samples$lod_id
   
   diff_cor_lod
 }
@@ -117,11 +141,11 @@ add_lod_info = function(diff_cor, lod_df)
   # lod_df = var_lod_correlations$lod
   
   
-  diff_cor_lod = dplyr::left_join(diff_cor, lod_df |> dplyr::transmute(s1 = sample, s1_lod = lod, s1_level = level, s1_perc_na = perc_na), by = "s1")
-  diff_cor_lod = dplyr::left_join(diff_cor_lod, lod_df |> dplyr::transmute(s2 = sample, s2_lod = lod, s2_level = level, s2_perc_na = perc_na), by = "s2")
+  diff_cor_lod = dplyr::left_join(diff_cor, lod_df |> dplyr::transmute(s1 = sample, s1_lod = lod, s1_multiplier = multipliers, s1_perc_na = perc_na), by = "s1")
+  diff_cor_lod = dplyr::left_join(diff_cor_lod, lod_df |> dplyr::transmute(s2 = sample, s2_lod = lod, s2_multiplier = multipliers, s2_perc_na = perc_na), by = "s2")
   
   diff_cor_lod = diff_cor_lod |>
-    dplyr::mutate(compare_levels = glue::glue("{s1_level}-{s2_level}"))
+    dplyr::mutate(compare_levels = glue::glue("{s1_multiplier}::{s2_multiplier}"))
   diff_cor_lod
 }
 
@@ -171,7 +195,60 @@ lod_cor_matrix_2_df = function(in_matrix)
   cor_df
 }
 
-lod_sample_matrix_2_df = function(rep_info)
+lod_cor_sample_matrix_2_df = function(lod_cor)
 {
+  # lod_cor = tar_read(vl_cor_all)
+  sample_matrix = lod_cor$samples$sample_data
+  sample_df = sample_matrix_2_df(sample_matrix)
+  sample_df$lod_id = lod_cor$samples$sample_id
+  sample_df = dplyr::left_join(sample_df, lod_cor$lod, by = "sample")
+  sample_df$imputed_value = lod_cor$impute_value
+  sample_df$which = "full"
   
+  lod_matrix = lod_cor$samples$sample_lod
+  lod_df = sample_matrix_2_df(lod_matrix)
+  lod_df$lod_id = lod_cor$samples$sample_id
+  lod_df = dplyr::left_join(lod_df, lod_cor$lod, by = "sample")
+  lod_df$imputed_value = lod_cor$impute_value
+  lod_df$which = "lod"
+  
+  dplyr::bind_rows(sample_df, lod_df)
+}
+
+sample_matrix_2_df = function(sample_matrix)
+{
+  n_tot = nrow(sample_matrix) * ncol(sample_matrix)
+  total_value = vector("numeric", n_tot)
+  if (is.null(rownames(sample_matrix))) {
+    row_names = paste0("f", seq_len(nrow(sample_matrix)))
+  } else {
+    row_names = rownames(sample_matrix)
+  }
+  
+  row_id = vector("character", n_tot)
+  col_id = vector("character", n_tot)
+  i_entry = 1
+  for (icol in colnames(sample_matrix)) {
+    for (irow in seq_len(nrow(sample_matrix))) {
+      row_id[i_entry] = row_names[irow]
+      col_id[i_entry] = icol
+      total_value[i_entry] = sample_matrix[irow, icol]
+      i_entry = i_entry + 1
+    }
+  }
+  tibble::tibble(feature = row_id, sample = col_id, value = total_value)
+  
+}
+
+calculate_cor_diff_summaries = function(vl_cor_diff)
+{
+  # vl_cor_diff = tar_read(vl_cor_diff_0.5_1.5)
+  vl_summary = vl_cor_diff |>
+    dplyr::group_by(cor_method, compare_levels) |>
+    dplyr::summarise(ref_v_lod_median = median(abs(ref_v_lod)),
+                     s1_percna_median = median(s1_perc_na),
+                     s2_percna_median = median(s2_perc_na),
+                     n_lod = n_lod[1],
+                     lod_id = lod_id[1])
+  vl_summary
 }

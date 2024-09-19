@@ -30,11 +30,18 @@ correlation_methods = c("ici",
                                     "pearson_log",
                                     "kt")
 
-lod_levels = tibble::tribble(~lod, ~level,
-                             1/4, "low",
-                             1/2, "med",
-                             1, "basic",
-                             1.5, "high")
+## lod mapping ---------
+lod_levels = tibble::tibble(lod = c(0.25, 0.5, 0.75, 1, 1.25, 1.5)) |>
+  dplyr::mutate(level = as.character(lod))
+
+lod_combinations = list(n1 = combn(seq_len(nrow(lod_levels)), 1),
+                        n2 = combn(seq_len(nrow(lod_levels)), 2),
+                        n3 = combn(seq_len(nrow(lod_levels)), 3),
+                        n4 = combn(seq_len(nrow(lod_levels)), 4),
+                        n5 = combn(seq_len(nrow(lod_levels)), 5),
+                        n6 = combn(seq_len(nrow(lod_levels)), 6))
+
+lod_inputs = create_lod_run_df(lod_combinations, lod_levels)
 
 dataset_feature_correlation = tidyr::expand_grid(character_dataset = dataset_variables$sym,
                                                  character_correlation = correlation_methods) |>
@@ -122,48 +129,27 @@ small_realistic_examples = tar_plan(
 vl_plan = tar_plan(
   
   # variable lod data creation --------
-  var_lod_samples_100 = create_large_replicate_samples(n_feature = 1000, n_sample = 100),
-  var_lod_samples_400 = create_large_replicate_samples(n_feature = 1000, n_sample = 400),
+  var_lod_samples = create_large_replicate_samples(n_feature = 1000, n_sample = 600),
   
-  vl_samples_lowmed = create_variable_lod_samples(var_lod_samples_100,
-                                                  lod_levels[1:2, ]),
-  vl_cor_lowmed = calculate_variable_correlations(vl_samples_lowmed),
-  vl_samples_lowhigh = create_variable_lod_samples(var_lod_samples_100,
-                                                   lod_levels[c(1, 4), ]),
-  vl_cor_lowhigh = calculate_variable_correlations(vl_samples_lowhigh),
-  vl_samples_all = create_variable_lod_samples(var_lod_samples_400,
-                                               lod_levels),
-  vl_cor_all = calculate_variable_correlations(vl_samples_all),
-  vl_cor_diff_lowmed = calculate_var_lod_correlation_diffs(vl_cor_lowmed),
-  vl_cor_diff_lowhigh = calculate_var_lod_correlation_diffs(vl_cor_lowhigh),
-  vl_cor_diff_all = calculate_var_lod_correlation_diffs(vl_cor_all)
+  
   
 )
 
-vl_mix_combine_map = tar_combine(vl_mix,
-                                 vl_plan[c(9, 10, 11)],
-                                 command = bind_rows(!!!.x) |>
-                                   dplyr::mutate(type = "mixed"))
+vl_lod_map = tar_map(lod_inputs,
+                     names = id,
+                     tar_target(vl_samples,
+                                create_variable_lod_samples(var_lod_samples,
+                                                            multipliers, id)),
+                     tar_target(vl_cor,
+                                calculate_variable_correlations(vl_samples)),
+                     tar_target(vl_cor_diff,
+                                calculate_var_lod_correlation_diffs(vl_cor)),
+                     tar_target(vl_diff_summary,
+                                calculate_cor_diff_summaries(vl_cor_diff)))
 
-variable_lod_map = tar_map(lod_levels,
-                           names = level,
-                           tar_target(vl_samples,
-                                      create_variable_lod_samples(var_lod_samples_100,
-                                                                  lod, level)),
-                           tar_target(vl_cor,
-                                      calculate_variable_correlations(vl_samples)),
-                           tar_target(vl_cor_diff,
-                                      calculate_var_lod_correlation_diffs(vl_cor)))
-
-variable_lod_combine_map = tar_combine(vl_singles,
-                                       variable_lod_map[[3]],
-                                       command = bind_rows(!!!.x) |>
-                                         dplyr::mutate(type = "single"))
-
-variable_combine_all_map = tar_combine(vl_single_mixed,
-                               list(vl_mix_combine_map,
-                                    variable_lod_combine_map),
-                               command = bind_rows(!!!.x))
+vl_diff_lod_summary_combine_map = tar_combine(vl_diff_summary_all,
+                                 vl_lod_map[[4]],
+                                 command = bind_rows(!!!.x))
 
 
 # loading real data ---------
@@ -386,11 +372,9 @@ documents_plan = tar_plan(
 
 # put all together -----
 list(small_realistic_examples,
-     variable_lod_map,
      vl_plan,
-     vl_mix_combine_map,
-     variable_lod_combine_map,
-     variable_combine_all_map,
+     vl_lod_map,
+     vl_diff_lod_summary_combine_map,
      loading_real_data,
      limit_of_detection_map,
      left_censorship_map,
