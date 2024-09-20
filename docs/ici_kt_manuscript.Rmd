@@ -417,6 +417,18 @@ None of the annotation sources we use have single labels for any features, and t
 However, we expect that **better** partitioning of the network will be reflected by **more positive** partitioning ratios.
 
 
+### Changes In Correlation Due to Changes in Dynamic Range and Imputation
+
+We created a dataset of with 1000 features and 100 samples, starting with a sample from a random log-normal distribution with a mean-log value of 1, and standard deviation of 0.5.
+Uniform noise was added via random normal distribution with a standard deviation of 0.2 to create 100 samples from the base distribution, values were transformed to normal space and then $log_{10}$ applied to have a representation of orders of magnitude and dynamic range.
+For any maximum level of censoring to be applied, a uniform distribution sample is generated on the range of $0 - max$ with 100 values.
+Data censoring was applied by taking the minimum observed value for a sample, and adding the censoring value from the uniform distribution.
+Any values in the sample below the censoring value are set to missing (`NA`).
+
+Correlations were calculated between samples when no missing values are present (*reference*), and then again after censoring (*lod*).
+Two different correlation methods were used, ICI-Kt, and Pearson correlation after imputing all missing values with $\frac{1}{2}$ the lowest observed value in the dataset after censoring.
+
+
 ### Computing Environment
 
 Most calculations were run on a virtual machine running Ubuntu 18.04.6 LTS, with 80 virtual cores, and 1 TB of RAM.
