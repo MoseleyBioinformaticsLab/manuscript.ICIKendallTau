@@ -30,18 +30,10 @@ correlation_methods = c("ici",
                                     "pearson_log",
                                     "kt")
 
-## lod mapping ---------
-lod_levels = tibble::tibble(lod = c(0.25, 0.5, 0.75, 1, 1.25, 1.5)) |>
-  dplyr::mutate(level = as.character(lod))
+## lod mapping as orders of magnitude ---------
+lod_ranges = tibble::tibble(max = c(0.5, 1, 1.5),
+                            id = c("low", "med", "high"))
 
-lod_combinations = list(n1 = combn(seq_len(nrow(lod_levels)), 1),
-                        n2 = combn(seq_len(nrow(lod_levels)), 2),
-                        n3 = combn(seq_len(nrow(lod_levels)), 3),
-                        n4 = combn(seq_len(nrow(lod_levels)), 4),
-                        n5 = combn(seq_len(nrow(lod_levels)), 5),
-                        n6 = combn(seq_len(nrow(lod_levels)), 6))
-
-lod_inputs = create_lod_run_df(lod_combinations, lod_levels)
 
 dataset_feature_correlation = tidyr::expand_grid(character_dataset = dataset_variables$sym,
                                                  character_correlation = correlation_methods) |>
@@ -129,26 +121,28 @@ small_realistic_examples = tar_plan(
 vl_plan = tar_plan(
   
   # variable lod data creation --------
-  var_lod_samples = create_large_replicate_samples(n_feature = 1000, n_sample = 600),
+  check_lod_levels = seq(0.1, 3, by = 0.1),
+  var_lod_samples = create_large_replicate_samples(n_feature = 1000, n_sample = 100),
   
-  
+  ## verify how the changes in missing some order of magnitude introduces missing values
+  vl_na_perc = check_lod_na_perc(var_lod_samples, check_lod_levels),
   
 )
 
-vl_lod_map = tar_map(lod_inputs,
+vl_lod_map = tar_map(lod_ranges,
                      names = id,
                      tar_target(vl_samples,
                                 create_variable_lod_samples(var_lod_samples,
-                                                            multipliers, id)),
+                                                            max, id)),
                      tar_target(vl_cor,
                                 calculate_variable_correlations(vl_samples)),
                      tar_target(vl_cor_diff,
-                                calculate_var_lod_correlation_diffs(vl_cor)),
-                     tar_target(vl_diff_summary,
-                                calculate_cor_diff_summaries(vl_cor_diff)))
-
-vl_diff_lod_summary_combine_map = tar_combine(vl_diff_summary_all,
-                                 vl_lod_map[[4]],
+                                calculate_var_lod_correlation_diffs(vl_cor)))
+                     # tar_target(vl_diff_summary,
+                     #            calculate_cor_diff_summaries(vl_cor_diff)))
+# 
+vl_cor_diff_combine_map = tar_combine(vl_cor_diff_all,
+                                 vl_lod_map[[3]],
                                  command = bind_rows(!!!.x))
 
 
@@ -367,6 +361,8 @@ documents_plan = tar_plan(
               "docs/supplemental_materials.Rmd"),
   tar_render(manuscript,
            "docs/ici_kt_manuscript.Rmd"),
+  tar_render(lod_stuff,
+             "docs/check_variable_lod.Rmd")
 
 )
 
@@ -374,7 +370,7 @@ documents_plan = tar_plan(
 list(small_realistic_examples,
      vl_plan,
      vl_lod_map,
-     vl_diff_lod_summary_combine_map,
+     vl_cor_diff_combine_map,
      loading_real_data,
      limit_of_detection_map,
      left_censorship_map,

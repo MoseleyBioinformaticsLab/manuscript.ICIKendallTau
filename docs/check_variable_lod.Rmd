@@ -21,177 +21,153 @@ knitr::opts_chunk$set(echo = FALSE,
 
 ```{r}
 #| label: load-dependencies
-tar_load(c(vl_diff_summary_all
+tar_load(c(vl_cor_diff_all,
+           vl_na_perc
 ))
 ```
 
+## Check Dynamic Ranges in Real Data
+
 ```{r}
-#| label: fig-lod-singles
+#| label: load-real-data
+tar_load(c(nsclc_counts_info,
+           ratstamina_counts_info,
+           yeast_counts_info,
+           adenocarcinoma_counts_info))
+```
+
+```{r}
+#| label: check-ranges
+counts_list = list(nsclc = nsclc_counts_info$counts,
+                   rat = ratstamina_counts_info$counts,
+                   yeast = yeast_counts_info$counts,
+                   adeno = adenocarcinoma_counts_info$counts)
+actual_dr = purrr::map(counts_list, \(in_counts){
+  seq_sample = seq_len(ncol(in_counts))
+  all_dr = purrr::map_dbl(seq_sample, \(in_sample){
+    tmp_counts = in_counts[, in_sample]
+    log_counts = log10(tmp_counts[tmp_counts > 0])
+    tmp_range = range(log_counts)
+    tmp_range[2] - tmp_range[1]
+  })
+  all_dr
+})
+
+purrr::map_dbl(actual_dr, median)
+```
+
+## Data Generation
+
+* Base sample, log-normal distribution, `meanlog = 1.5`, `meansd = 0.5`;
+* Uniform noise added, at `sd = 0.2`;
+* exponentiate, and take $log10$ (so now everything is on an order of magnitude scale, I think);
+* Have three levels of trimming we use:
+  * low (0 - 0.5);
+  * medium (0 - 1);
+  * high (0 - 1.5)
+* The reason for these ranges, is because of this graph:
+  * For values of 0 - 3, increment in 0.1;
+  * Take minimum value for a sample and add the increment value (`oom` on the graph);
+  * Use as a cutoff;
+  * Count how many values in the sample are below the minimum + `oom`.
+  * If we go above **2**, we are cutting out an awful lot of values.
+* For each level, generate a uniform distribution of `oom` to add to the minimum in each sample on the range for that **level** (see above);
+* Values in each sample below the values defined are set to `NA`;
+* Calculate correlations of the original data with no missing, and then with missing;
+* Compare them.
+
+
+```{r}
+#| label: fig-check-lod-na
+vl_na_perc |>
+  ggplot(aes(x = oom, y = sample_na, group = oom)) +
+  geom_sina() +
+  geom_vline(xintercept = c(0.5, 1, 1.5), color = "red")
+```
+
+Number of values that get set to `NA` using different order of magnitude cutoffs in 100 samples.
+Red lines indicate three levels chosen for the below experiment of 0.5, 1, and 1.5, respectively.
+
+## Reference vs LOD Correlation Differences
+
+```{r}
+#| label: fig-lod-diffs
 #| fig-width: 12
 #| fig-height: 8
-vl_diff_summary_all |>
-  dplyr::ungroup() |>
-  dplyr::filter(n_lod == 1) |>
-  ggplot(aes(x = ref_v_lod_median, y = cor_method)) +
-  geom_point() +
-  facet_wrap(~ lod_id, nrow = 1, scales = "free") +
-  theme(axis.text.x = element_text(angle = 90))
-```
-Single entries.
-
-```{r}
-#| label: fig-lod-multiple-single-comparisons
-single_comps = c("0.25::0.25", "0.5::0.5", "0.75::0.75", "1::1", "1.25::1.25", "1.5::1.5")
-vl_diff_summary_all |>
-  dplyr::ungroup() |> 
+vl_cor_diff_all |>
+  dplyr::mutate(oom_id = factor(oom_id, levels = c("low", "med", "high"))) |>
+  dplyr::filter(cor_method %in% c("icikt", "pearson_min")) |>
+  ggplot(aes(x = ref_v_lod, y = cor_method)) +
+  geom_sina(size = 1) +
+  facet_wrap(~ oom_id, ncol = 1) +
+  labs(x = "Reference vs LOD Correlation Differences", y = "Method")
 ```
 
+Sina plots of reference correlation - limit of detection correlation for ICI-Kt and Pearson after dataset wide imputation using a value of 1/2 the minimum, with different maximum order of magnitude cutoffs of 0.5 (low), 1 (med), and 1.5 (high).
 
 ```{r}
-#| label: figure-sample-values
-all_samples = dplyr::bind_rows(vl_mix_sample_df |>
-                                 dplyr::mutate(mix_samples = "mix"),
-                               vl_single_sample_df |>
-                                 dplyr::mutate(mix_samples = "single"))
-all_samples |>
-  ggplot(aes(x = value, color = lod_id)) +
-  geom_density() +
-  facet_grid(mix_samples ~ which)
-```
-So, as we expect, the full data has essentially the same data densities when we start.
-When we start removing data due to being below the LOD, then of course the data densities change.
-What is really interesting, is where it changes the most is for `basic` (30% LOD) and `high` (60% LOD).
-
-```{r}
-#| label: figure-missing-data
-sample_medians_100 = tibble::tibble(median = apply(var_lod_samples_100$data, 2, median), sample = colnames(var_lod_samples_100$data), perc_30 = apply(var_lod_samples_100$data, 2, quantile, 0.3), n_sample = "100")
-sample_medians_400 = tibble::tibble(median = apply(var_lod_samples_400$data, 2, median), perc_30 = apply(var_lod_samples_400$data, 2, quantile, 0.3), sample = colnames(var_lod_samples_400$data), n_sample = "400")
-sample_medians_all = dplyr::bind_rows(sample_medians_100, sample_medians_400)
-
-sample_medians_all |>
-  ggplot(aes(x = n_sample, y = median)) +
-  geom_sina()
-
-sample_medians_all |>
-  ggplot(aes(x = n_sample, y = perc_30)) +
-  geom_sina()
-```
-
-## Check Different Levels in Different Methods
-
-```{r}
-#| label: different-levels-n
-split_levels = split(vl_single_mixed, vl_single_mixed$compare_levels)
-
-split_levels_num = purrr::map_int(split_levels, \(in_level){
-  length(unique(in_level$n_lod))
-})
-
-split_levels = split_levels[split_levels_num > 1]
-```
-
-```{r}
-#| label: split-levels-each
-#| fig-keep: asis
-#| fig-width: 8
-#| fig-height: 10
-purrr::walk(split_levels, \(in_level){
-  # in_level = split_levels[[1]]
-  split_n = split(in_level, in_level$n_lod)
-  
-  n_graphs = purrr::map(split_n, \(in_n){
-    # in_n = split_n[[1]]
-    n_miss = in_n |>
-      dplyr::filter(cor_method %in% "icikt") |>
-      dplyr::group_by(compare_levels) |>
-      dplyr::summarise(s1_na = median(s1_perc_na),
-                       s2_na = median(s2_perc_na),
-                       na_level = glue::glue("{s1_na}-{s2_na}"))
-    in_n |>
-      ggplot(aes(x = abs(ref_v_lod))) +
-      geom_histogram(bins = 100) +
-      facet_wrap(~ cor_method, ncol = 1, scales = "free_y") +
-      labs(subtitle = glue::glue("{in_n$type[1]}-{in_n$compare_levels[1]}-{in_n$n_lod[1]} -- {n_miss$na_level}")) +
-      theme(plot.subtitle = element_text(size = 8))
-  })
-  print(wrap_plots(n_graphs, nrow = 1))
-})
-```
-
-
-## Single LODs of Different Amounts
-
-```{r}
-#| label: single-lod
-#| fig-width: 10
+#| label: fig-lod-diffs2
+#| fig-width: 12
 #| fig-height: 8
-single_data = vl_single_mixed |>
-  dplyr::filter(type %in% "single")
-
-single_split = split(single_data, single_data$compare_levels)
-
-single_plots = purrr::map(single_split, \(in_split){
-  # in_split = single_split[[1]]
-  in_split |>
-    ggplot(aes(x = abs(ref_v_lod))) +
-    geom_histogram(bins = 100) +
-    facet_wrap(~ cor_method, ncol = 1, scales = "free_y") +
-    labs(subtitle = in_split$compare_levels[1])
-})
-
-wrap_plots(single_plots, nrow = 1)
+vl_cor_diff_all |>
+  dplyr::mutate(oom_id = factor(oom_id, levels = c("low", "med", "high"))) |>
+  dplyr::filter(cor_method %in% c("icikt", "pearson_min")) |>
+  ggplot(aes(x = ref_v_lod_relative, y = cor_method)) +
+  geom_sina(size = 1) +
+  facet_wrap(~ oom_id, ncol = 1) +
+  labs(x = "Relative Reference vs LOD Correlation Differences", y = "Method")
 ```
 
-## Mixed LODs with different amounts
+Sina plots of relative reference correlation - limit of detection correlation for ICI-Kt and Pearson after dataset wide imputation using a value of 1/2 the minimum, with different maximum order of magnitude cutoffs of 0.5 (low), 1 (med), and 1.5 (high).
+
+## Can We Find Patterns In Here?
+
+What happens if we plot the differences of ICI-Kt and Pearson-Min to each other, and color the points by the maximum number of `NA` values in the two samples being correlated?
 
 ```{r}
-#| label: mixed-single-lod
-#| fig-width: 16
-#| fig-height: 8
-mixed_data = vl_single_mixed |>
-  dplyr::filter(type %in% "mixed")
+#| label: pattern-values
+icikt_min = vl_cor_diff_all |>
+  dplyr::filter(cor_method %in% c("icikt", "pearson_min")) |>
+  dplyr::mutate(oom_id = factor(oom_id, levels = c("low", "med", "high")))
 
+icikt_min_wider = icikt_min |>
+  dplyr::select(oom_id, comparison, ref_v_lod, s1_n_na, s2_n_na, cor_method) |>
+  tidyr::pivot_wider(names_from = cor_method, values_from = ref_v_lod) |>
+  dplyr::mutate(max_na = dplyr::case_when(
+    s1_n_na >= s2_n_na ~ s1_n_na,
+    s1_n_na <= s2_n_na ~ s2_n_na
+  ))
 
-single_mixed = mixed_data |>
-  dplyr::filter(s1_level == s2_level)
-
-mixed_mixed = mixed_data |>
-  dplyr::filter(s1_level != s2_level)
-
-single_mixed_split = split(single_mixed, single_mixed[, c("compare_levels", "n_lod")])
-null_splits = purrr::map_lgl(single_mixed_split, \(x){nrow(x) == 0})
-single_mixed_split = single_mixed_split[!null_splits]
-
-single_mixed_plots = purrr::map(single_mixed_split, \(in_split){
-  # in_split = single_split[[1]]
-  in_split |>
-    ggplot(aes(x = abs(ref_v_lod))) +
-    geom_histogram(bins = 100) +
-    facet_wrap(~ cor_method, ncol = 1, scales = "free_y") +
-    labs(subtitle = glue::glue("{in_split$compare_levels[1]} - {in_split$n_lod[1]}"))
-})
-
-wrap_plots(single_mixed_plots, nrow = 1)
+icikt_min_wider |>
+  ggplot(aes(x = icikt, y = pearson_min, color = max_na)) +
+  geom_point(alpha = 0.25) +
+  scale_color_viridis_b() +
+  geom_abline(slope = 1, color = "red") +
+  geom_abline(slope = -1, color = "red") +
+  facet_wrap(~ oom_id, ncol = 1, scales = "free")
 ```
 
-## Mixed
+ICI-Kt vs Pearson-Min reference correlation - lod correlation, colored by the maximum number of `NA` values observed in the two samples being correlated, by level of order of magnitude limits of detection.
+
 
 ```{r}
-#| label: mixed-mixed-lod
-#| fig-width: 16
-#| fig-height: 8
-mixed_mixed_split = split(mixed_mixed, mixed_mixed[, c("compare_levels", "n_lod")])
-null_splits = purrr::map_lgl(mixed_mixed_split, \(x){nrow(x) == 0})
-mixed_mixed_split = mixed_mixed_split[!null_splits]
-
-mixed_mixed_plots = purrr::map(mixed_mixed_split, \(in_split){
-  # in_split = single_split[[1]]
-  in_split |>
-    ggplot(aes(x = abs(ref_v_lod))) +
-    geom_histogram(bins = 100) +
-    facet_wrap(~ cor_method, ncol = 1, scales = "free_y") +
-    labs(subtitle = glue::glue("{in_split$compare_levels[1]} - {in_split$n_lod[1]}"))
-})
-
-wrap_plots(mixed_mixed_plots, nrow = 1)
+#| label: abs-diff
+icikt_min_wider |>
+  ggplot(aes(x = abs(icikt), y = abs(pearson_min), color = max_na)) +
+  geom_point(alpha = 0.25) +
+  scale_color_viridis_b() +
+  geom_abline(slope = 1, color = "red") +
+  facet_wrap(~ oom_id, ncol = 1, scales = "free")
 ```
+ICI-Kt vs Pearson-Min abs(reference correlation - lod correlation), colored by the maximum number of `NA` values observed in the two samples being correlated, by level of order of magnitude limits of detection.
+
+```{r}
+#| label: abs-diff-hist
+icikt_min_wider |>
+  ggplot(aes(x = abs(icikt) - abs(pearson_min))) +
+  geom_histogram(bins = 100) +
+  geom_vline(xintercept = 0, color = "red") +
+  facet_wrap(~ oom_id, ncol = 1, scales = "free_y")
+```
+
+abs(ICI-Kt) - abs(Pearson-Min) (reference correlation - lod correlation) histogram by level of order of magnitude limits of detection.

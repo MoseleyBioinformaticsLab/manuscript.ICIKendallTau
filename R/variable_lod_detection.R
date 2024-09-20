@@ -27,46 +27,58 @@ create_large_replicate_samples = function(n_feature, n_sample)
   rep_data = add_uniform_noise(n_sample, base_sample, 0.2)
   colnames(rep_data) = paste0("S", stringr::str_pad(seq_len(ncol(rep_data)), width = 3, pad = "0"))
   
-  base_lod = quantile(rep_data, 0.3)
-  names(base_lod) = NULL
-  list(data = rep_data,
-       lod = base_lod)
+  log_data = log10(exp(rep_data))
+  
+  log_data
 }
 
-create_variable_lod_samples = function(rep_info,
-                                       lod_values, id)
+
+check_lod_na_perc = function(var_lod_samples, check_lod_levels)
 {
-  #lod_values = lod_values[[1]]
-  rep_data = rep_info$data
-  base_lod = rep_info$lod
-  n_lod = length(lod_values)
-  n_each_lod = 100
-  n_sample = n_lod * n_each_lod
+  # tar_load(var_lod_samples)
+  out_na = purrr::map(colnames(var_lod_samples), \(in_sample){
+    sample_oom = min(var_lod_samples[, in_sample]) + check_lod_levels
+    sample_na = purrr::map_dbl(sample_oom, \(in_oom)(sum(var_lod_samples[, in_sample] < in_oom)))
+    tibble::tibble(sample_id = in_sample, oom = check_lod_levels, sample_oom = sample_oom, sample_na = sample_na)
+  }) |>
+    purrr::list_rbind()
   
-  lod_vector = rep(lod_values * base_lod, each = n_each_lod)
-  lod_vector = lod_vector[seq_len(n_sample)]
-  lod_df = tibble::tibble(multipliers = lod_values, lod = lod_values * base_lod)
+  out_na
   
-  sampleid_sample = sample(colnames(rep_data), n_sample, replace = FALSE)
+}
+
+
+create_variable_lod_samples = function(rep_data,
+                                       oom_max, id)
+{
+  # rep_data = tar_read(var_lod_samples)
+  # oom_max = 1
+  # id = "low"
   
-  use_data = rep_data[, sampleid_sample]
-  lod_sample_tbl = tibble::tibble(lod = lod_vector, sample = colnames(use_data))
-  lod_sample_tbl = dplyr::left_join(lod_sample_tbl, lod_df, by = "lod")
+  oom_vector = runif(ncol(rep_data), 0, oom_max)
   
-  lod_matrix = matrix(lod_vector, nrow = nrow(use_data), ncol = ncol(use_data), byrow = TRUE)
+  rep_mins = apply(rep_data, 2, min)
+  lod_cutoffs = rep_mins + oom_vector
   
-  use_lod = use_data
-  use_lod[use_data < lod_matrix] = NA
+  lod_matrix = matrix(lod_cutoffs, nrow = nrow(rep_data), ncol = ncol(rep_data), byrow = TRUE)
   
-  use_na = tibble::tibble(sample = colnames(use_data), perc_na = apply(use_lod, 2, \(x){sum(is.na(x)) / length(x)}))
-  lod_sample_tbl = dplyr::left_join(lod_sample_tbl, use_na, by = "sample")
+  rep_lod = rep_data
+  rep_lod[rep_data < lod_matrix] = NA
   
+  n_na = apply(rep_lod, 2, \(x){sum(is.na(x))})
   
-  return(list(sample_data = use_data,
-              sample_lod = use_lod,
-              lod = lod_sample_tbl,
-              n_lod = n_lod,
-              lod_id = id))
+  oom_info = tibble::tibble(sample_id = colnames(rep_data),
+                            min_value = rep_mins,
+                            oom = oom_vector,
+                            lod_cutoff = lod_cutoffs,
+                            n_na = n_na,
+                            oom_max = oom_max,
+                            oom_id = id)
+  
+  return(list(sample_data = rep_data,
+              sample_lod = rep_lod,
+              oom = oom_info,
+              oom_id = id))
 }
 
 variable_lod_cor_everyway = function(sample_counts){
@@ -98,14 +110,13 @@ variable_lod_cor_everyway = function(sample_counts){
 
 calculate_variable_correlations = function(var_lod_samples)
 {
-  # var_lod_samples = tar_read(vl_samples_med)
+  # var_lod_samples = tar_read(vl_samples_low)
   impute_value = min(var_lod_samples$sample_lod, na.rm = TRUE) / 2
   ref_correlations = variable_lod_cor_everyway(var_lod_samples$sample_data)
   lod_correlations = variable_lod_cor_everyway(var_lod_samples$sample_lod)
   
   list(samples = var_lod_samples,
-       lod = var_lod_samples$lod,
-       n_lod = var_lod_samples$n_lod,
+       oom = var_lod_samples$oom,
        reference_cor = ref_correlations,
        lod_cor = lod_correlations,
        impute_value = impute_value)
@@ -116,7 +127,7 @@ calculate_var_lod_correlation_diffs = function(var_lod_correlations)
 {
   # var_lod_correlations = tar_read(vl_cor_med)
   # var_lod_correlations = tar_read(vl_cor_0.5_1_1.25_1.5)
-  reference_cor = var_lod_correlations$reference
+  reference_cor = var_lod_correlations$reference_cor
   lod_cor = var_lod_correlations$lod_cor
   
   diff_cor = purrr::map(names(reference_cor), \(cor_id){
@@ -128,24 +139,22 @@ calculate_var_lod_correlation_diffs = function(var_lod_correlations)
   }) |>
     purrr::list_rbind()
   
-  diff_cor_lod = add_lod_info(diff_cor, var_lod_correlations$lod)
-  diff_cor_lod$n_lod = var_lod_correlations$n_lod
+  diff_cor_lod = add_lod_info(diff_cor, var_lod_correlations$oom)
   diff_cor_lod$impute_value = var_lod_correlations$impute_value
-  diff_cor_lod$lod_id = var_lod_correlations$samples$lod_id
+  diff_cor_lod$oom_id = var_lod_correlations$oom$oom_id[1]
   
   diff_cor_lod
 }
 
 add_lod_info = function(diff_cor, lod_df)
 {
-  # lod_df = var_lod_correlations$lod
+  # lod_df = var_lod_correlations$oom
   
   
-  diff_cor_lod = dplyr::left_join(diff_cor, lod_df |> dplyr::transmute(s1 = sample, s1_lod = lod, s1_multiplier = multipliers, s1_perc_na = perc_na), by = "s1")
-  diff_cor_lod = dplyr::left_join(diff_cor_lod, lod_df |> dplyr::transmute(s2 = sample, s2_lod = lod, s2_multiplier = multipliers, s2_perc_na = perc_na), by = "s2")
+  diff_cor_lod = dplyr::left_join(diff_cor, lod_df |> dplyr::transmute(s1 = sample_id, s1_lod = lod_cutoff, s1_oom = oom, s1_min_value = min_value, s1_n_na = n_na), by = "s1")
+  diff_cor_lod = dplyr::left_join(diff_cor_lod, lod_df |> dplyr::transmute(s2 = sample_id, s2_lod = lod_cutoff, s2_oom = oom, s2_min_value = min_value, s2_n_na = n_na), by = "s2")
   
-  diff_cor_lod = diff_cor_lod |>
-    dplyr::mutate(compare_levels = glue::glue("{s1_multiplier}::{s2_multiplier}"))
+  
   diff_cor_lod
 }
 
@@ -162,7 +171,8 @@ var_lod_each_cor = function(ref_cor, in_cor)
   
   compare_cor = dplyr::left_join(ref_long[, c("cor", "s1", "s2", "comparison")], in_long[, c("cor", "comparison")], suffix = c("_ref", "_lod"), by = "comparison")
   compare_cor = compare_cor |>
-    dplyr::mutate(ref_v_lod = cor_ref - cor_lod)
+    dplyr::mutate(ref_v_lod = cor_ref - cor_lod,
+                  ref_v_lod_relative = (cor_ref - cor_lod) / cor_ref)
   compare_cor
   
 }
