@@ -121,8 +121,14 @@ small_realistic_examples = tar_plan(
 vl_plan = tar_plan(
   
   # variable lod data creation --------
+  lod_ranges_tar = lod_ranges,
   check_lod_levels = seq(0.1, 3, by = 0.1),
-  var_lod_samples = create_large_replicate_samples(n_feature = 1000, n_sample = 100),
+  lod_vars = list(n_feature = 1000,
+                  n_sample = 100,
+                  meanlog = 1,
+                  sdlog = 0.5,
+                  sd = 0.2),
+  var_lod_samples = create_large_replicate_samples(lod_vars),
   
   ## verify how the changes in missing some order of magnitude introduces missing values
   vl_na_perc = check_lod_na_perc(var_lod_samples, check_lod_levels),

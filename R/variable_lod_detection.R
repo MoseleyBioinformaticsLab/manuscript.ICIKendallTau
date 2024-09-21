@@ -20,11 +20,12 @@ create_lod_run_df = function(lod_combinations, lod_levels)
 # Also consider the differences not just as an absolute difference, but as a relative
 # difference, where we take the difference / true correlation.
 
-create_large_replicate_samples = function(n_feature, n_sample)
+create_large_replicate_samples = function(lod_vars)
 {
-  base_sample = rlnorm(n_feature, meanlog = 1, sdlog = 0.5)
+  # tar_load(lod_vars)
+  base_sample = rlnorm(lod_vars$n_feature, meanlog = lod_vars$meanlog, sdlog = lod_vars$sdlog)
   # should we increase meanlog = 3, sdlog = 1.5, then noise = 0.2
-  rep_data = add_uniform_noise(n_sample, base_sample, 0.2)
+  rep_data = add_uniform_noise(lod_vars$n_sample, base_sample, lod_vars$sd)
   colnames(rep_data) = paste0("S", stringr::str_pad(seq_len(ncol(rep_data)), width = 3, pad = "0"))
   
   log_data = log10(exp(rep_data))

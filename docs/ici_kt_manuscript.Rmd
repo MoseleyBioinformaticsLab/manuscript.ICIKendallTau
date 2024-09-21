@@ -75,7 +75,8 @@ tar_load(c(references,
            logtransform_censored_cor,
            single_core_perf,
            time_multi,
-           feature_qratio_summary
+           feature_qratio_summary,
+           lod_vars
 ))
 
 ```
@@ -368,7 +369,7 @@ Grouping the features by the number of missing values, we calculate the median o
 For each dataset, the samples were first split by treatment.
 In each sample, the median abundance of features present in the sample are calculated.
 For any feature that is missing in any sample, the values in the present samples are compared to the median values in each sample.
-If the value is **less than** the median value in the sample, that is counted as a **success** in a binomial test, otherwise it is counted as a failuer.
+If the value is **less than** the median value in the sample, that is counted as a **success** in a binomial test, otherwise it is counted as a failure.
 The number of successes and failures are aggregated across the treatment splits for calculation in a binomial test, with the null hypothesis as a ratio of 0.5.
 
 ### Correlation Methods
@@ -419,9 +420,9 @@ However, we expect that **better** partitioning of the network will be reflected
 
 ### Changes In Correlation Due to Changes in Dynamic Range and Imputation
 
-We created a dataset of with 1000 features and 100 samples, starting with a sample from a random log-normal distribution with a mean-log value of 1, and standard deviation of 0.5.
-Uniform noise was added via random normal distribution with a standard deviation of 0.2 to create 100 samples from the base distribution, values were transformed to normal space and then $log_{10}$ applied to have a representation of orders of magnitude and dynamic range.
-For any maximum level of censoring to be applied, a uniform distribution sample is generated on the range of $0 - max$ with 100 values.
+We created a dataset of with `r lod_vars$n_feature` features and `r lod_vars$n_sample` samples, starting with a sample from a random log-normal distribution with a mean-log value of `r lod_vars$meanlog`, and standard deviation of `r lod_vars$sdlog`.
+Uniform noise was added via random normal distribution with a standard deviation of `r lod_vars$sd` to create `r lod_vars$n_sample` samples from the base distribution, values were transformed to normal space and then $log_{10}$ applied to have a representation of orders of magnitude and dynamic range.
+For any maximum level of censoring to be applied, a uniform distribution sample is generated on the range of $0 - max$ with `r lod_vars$n_sample` values.
 Data censoring was applied by taking the minimum observed value for a sample, and adding the censoring value from the uniform distribution.
 Any values in the sample below the censoring value are set to missing (`NA`).
 
@@ -582,6 +583,10 @@ For the random case, each sample of random positions was repeated 100 times.
 A common way missing data is handled in correlation calculations is to ignore them completely and use the pairwise complete cases to calculate the Pearson correlation coefficient.
 As shown in `r figure_count$label_text("leftcensored")`C, this results in a complete misestimation of the changed correlative structure introduced by missing at random (MAR) entries.
 ICI-Kt, in contrast, incorporates the missingness in a sensical way, and the resulting correlation values fall as MAR entries are introduced.
+
+### Differences in Dynamic Range and Correlation
+
+Possible different levels of censoring based on dynamic range were checked by first determining how many missing values would be introduced in each sample as the censoring was increased in increments of 0.1.
 
 ### Performance
 
