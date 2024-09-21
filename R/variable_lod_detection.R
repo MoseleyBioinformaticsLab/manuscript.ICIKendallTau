@@ -263,3 +263,82 @@ calculate_cor_diff_summaries = function(vl_cor_diff)
                      lod_id = lod_id[1])
   vl_summary
 }
+
+
+create_na_perc_graph = function(vl_na_perc, 
+                                lod_ranges_tar)
+{
+  # tar_load(c(vl_na_perc,
+  #             lod_ranges_tar))
+  vl_na_perc |>
+    ggplot(aes(x = oom, y = sample_na, group = oom)) +
+    geom_sina() +
+    geom_vline(xintercept = c(lod_ranges_tar$max), color = "red") +
+    labs(x = "Change in Dynamic Range", y = "# Missing Values")
+}
+
+create_lod_diff_graph = function(vl_cor_diff_all)
+{
+  # tar_load(vl_cor_diff_all)
+  icikt_min = vl_cor_diff_all |>
+    dplyr::filter(cor_method %in% c("icikt", "pearson_min")) |>
+    dplyr::mutate(oom_id = factor(oom_id, levels = c("low", "med", "high")))
+  
+  icikt_min_wider = icikt_min |>
+    dplyr::select(oom_id, comparison, ref_v_lod, s1_n_na, s2_n_na, cor_method) |>
+    tidyr::pivot_wider(names_from = cor_method, values_from = ref_v_lod) |>
+    dplyr::mutate(max_na = dplyr::case_when(
+      s1_n_na >= s2_n_na ~ s1_n_na,
+      s1_n_na <= s2_n_na ~ s2_n_na
+    ))
+  
+  # split into each level, and do it via patchwork so each one can have it's own
+  # coordinates.
+  split_level = split(icikt_min_wider, icikt_min_wider$oom_id)
+  full_na_counts = seq(1, max(icikt_min_wider$max_na), 1)
+  na_count_range = range(full_na_counts)
+  na_count_scale = scales::rescale(full_na_counts)
+  against_graphs = purrr::map(split_level, \(in_level){
+    if (in_level$oom_id[1] %in% "high") {
+      show_legend = TRUE
+      out_graph = in_level |>
+        ggplot(aes(x = icikt, y = pearson_min, color = max_na)) +
+        geom_abline(slope = 1, color = "red") +
+        geom_abline(slope = -1, color = "red") +
+        geom_point(alpha = 0.25, show.legend = show_legend) +
+        scale_color_viridis_c(values = na_count_scale, limits = na_count_range) +
+        scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
+        labs(x = "ICI-Kt (ref - trimmed)", y = "Pearson Imputed (ref - trimmed)", color = "# NA", subtitle = stringr::str_to_title(in_level$oom_id[1])) +
+        theme(legend.position = c(0.8, 0.2))
+    } else {
+      show_legend = FALSE
+      out_graph = in_level |>
+        ggplot(aes(x = icikt, y = pearson_min, color = max_na)) +
+        geom_abline(slope = 1, color = "red") +
+        geom_abline(slope = -1, color = "red") +
+        geom_point(alpha = 0.25, show.legend = show_legend) +
+        scale_color_viridis_c(values = na_count_scale, limits = na_count_range) +
+        scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
+        labs(x = "ICI-Kt (ref - trimmed)", y = "Pearson Imputed (ref - trimmed)", subtitle = stringr::str_to_title(in_level$oom_id[1]))
+    }
+    out_graph
+  })
+  
+  hist_graphs = purrr::map(split_level, \(in_level){
+    in_level |>
+      ggplot(aes(x = abs(icikt) - abs(pearson_min))) +
+      geom_histogram(bins = 100) +
+      geom_vline(xintercept = 0, color = "red") +
+      labs(x = "abs(ICI-Kt) - abs(Pearson Min)", subtitle = stringr::str_to_title(in_level$oom_id[1])) +
+      scale_y_continuous(expand = expansion(mult = c(0, .1)))
+  })
+  
+  diff_hist = c(against_graphs, hist_graphs)
+  diff_hist
+}
+
+create_lod_hist_graph = function(vl_cor_diff_all)
+{
+  # tar_load(vl_cor_diff_all)
+  NULL
+}

@@ -68,7 +68,8 @@ tar_load(c(references,
            nsclc_outliers,
            nsclc_single,
            ratstamina_outliers,
-           ratstamina_single))
+           ratstamina_single,
+           vl_na_perc_graph))
 ```
 
 ```{r}
@@ -83,6 +84,7 @@ supp_figure_count$increment(c("lod_adenocarcinoma",
                             "ici_distribution",
                             "kt_distribution",
                             "leftcensored",
+                            "na-perc-lod",
                             "complexity",
                             "yeast_outliers",
                             "egfrgenotype_outliers",
@@ -245,6 +247,15 @@ Effect of introducing missing values from a cutoff (A & B) or randomly (C) on di
 A) Missing values introduced by setting an increasing cutoff. 
 B) Missing values introduced by setting an increasing cutoff, and then log-transforming the values before calculating correlation. 
 C) Missing values introduced at random. For the random case, each sample of random positions was repeated 100 times.
+
+## Changes In Correlation Due to Changes in Dynamic Range and Imputation
+
+```{r na-perc-lod, dn_id = supp_figure_count}
+vl_na_perc_graph
+```
+
+`r supp_figure_count$label_text("na-perc-lod")`.
+Number of missing values in each of the 100 samples as a function of changing the dynamic range of the values in the sample by increasing the lower limit of detection.
 
 ## Performance
 

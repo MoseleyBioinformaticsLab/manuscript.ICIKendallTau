@@ -133,6 +133,10 @@ vl_plan = tar_plan(
   ## verify how the changes in missing some order of magnitude introduces missing values
   vl_na_perc = check_lod_na_perc(var_lod_samples, check_lod_levels),
   
+  vl_na_perc_graph = create_na_perc_graph(vl_na_perc, lod_ranges_tar),
+  vl_diff_graph = create_lod_diff_graph(vl_cor_diff_all),
+  vl_hist_graph = create_lod_hist_graph(vl_cor_diff_all)
+  
 )
 
 vl_lod_map = tar_map(lod_ranges,

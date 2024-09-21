@@ -76,7 +76,8 @@ tar_load(c(references,
            single_core_perf,
            time_multi,
            feature_qratio_summary,
-           lod_vars
+           lod_vars,
+           vl_diff_graph
 ))
 
 ```
@@ -87,6 +88,7 @@ figure_count$increment(c("problem",
                          "lod",
                          "missing2cor",
                          "leftcensored",
+                         "trimmed-imputed-correlation",
                          "performance",
                          "yeast_outliers"))
 
@@ -426,9 +428,9 @@ For any maximum level of censoring to be applied, a uniform distribution sample 
 Data censoring was applied by taking the minimum observed value for a sample, and adding the censoring value from the uniform distribution.
 Any values in the sample below the censoring value are set to missing (`NA`).
 
-Correlations were calculated between samples when no missing values are present (*reference*), and then again after censoring (*lod*).
+Correlations were calculated between samples when no missing values are present (*reference*), and then again after censoring (*trimmed*).
 Two different correlation methods were used, ICI-Kt, and Pearson correlation after imputing all missing values with $\frac{1}{2}$ the lowest observed value in the dataset after censoring.
-
+Differences between the reference and trimmed correlations (with global imputation for Pearson) are calculated, as well as the difference in the absolute value of differences of ICI-Kt and Pearson.
 
 ### Computing Environment
 
@@ -586,7 +588,22 @@ ICI-Kt, in contrast, incorporates the missingness in a sensical way, and the res
 
 ### Differences in Dynamic Range and Correlation
 
-Possible different levels of censoring based on dynamic range were checked by first determining how many missing values would be introduced in each sample as the censoring was increased in increments of 0.1.
+Another way that missing values appear is due to changes in dynamic range between samples, as some samples have features with higher values, and the fixed dynamic range of the instrumentation results in features with lower values to be "missing" in those samples.
+We created a set of `r lod_vars$n_sample` fake samples with uniform noise on the log-scale, with relatively constant dynamic ranges, and introduced changes to the overall dynamic range by random values from a uniform distribution across the samples, at varying levels (see Methods).
+Possible different levels of censoring based on dynamic range were checked by first determining how many missing values would be introduced in each sample as the dynamic range was increased in increments of 0.1 (see `r supp_figure_count$label_text("na-perc-lod")`).
+Based on the number of values being censored, limits of 0.5, 1, and 1.5 were selected.
+
+For each level of possible missingness introduced by changes to the dynamic range, correlation across all samples were calculated using all values (reference), as well as after missingness was added (trimmed), and using Pearson correlation with global imputation (Pearson Imputed), or ICI-Kt.
+`r figure_count$label_text("trimmed-imputed-correlation")` demonstrates that it is only as the number of of missing values in one of the samples approaches 50% or more (500 of 1000 features) does the Pearson correlation with global imputation give correlation values closer to the known correlation with no missing values.
+
+```{r trimmed-imputed-correlation, fig.height = 9, fig.width = 12, dn_id = figure_count}
+wrap_plots(vl_diff_graph, nrow = 2, ncol = 3)
+```
+
+`r figure_count$label_text("trimmed-imputed-correlation")`. Top: Difference of reference - trimmed ICI-Kt correlation *vs* Pearson imputed using $\frac{1}{2}$ the minimum value in the dataset.
+Low, med, and high indicate the level of changes in dynamic range, using 0.5, 1, and 1.5, respectively.
+Red lines indicate slope of -1 and 1. Color indicates the maximum number of missing values between the two samples being correlated.
+Bottom: Differences in the absolute value of reference - trimmed differences between ICI-Kt and Pearson imputed correlations.
 
 ### Performance
 
