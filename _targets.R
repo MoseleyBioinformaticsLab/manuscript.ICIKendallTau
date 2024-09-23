@@ -135,7 +135,7 @@ vl_plan = tar_plan(
   
   vl_na_perc_graph = create_na_perc_graph(vl_na_perc, lod_ranges_tar),
   vl_diff_graph = create_lod_diff_graph(vl_cor_diff_all),
-  vl_hist_graph = create_lod_hist_graph(vl_cor_diff_all)
+  vl_icikt_kt_graph = create_icikt_ktimpute_graph(vl_cor_diff_all)
   
 )
 

@@ -69,7 +69,8 @@ tar_load(c(references,
            nsclc_single,
            ratstamina_outliers,
            ratstamina_single,
-           vl_na_perc_graph))
+           vl_na_perc_graph,
+           vl_icikt_kt_graph))
 ```
 
 ```{r}
@@ -84,6 +85,7 @@ supp_figure_count$increment(c("lod_adenocarcinoma",
                             "ici_distribution",
                             "kt_distribution",
                             "leftcensored",
+                            "icikt-ktimputed",
                             "na-perc-lod",
                             "complexity",
                             "yeast_outliers",
@@ -249,6 +251,13 @@ B) Missing values introduced by setting an increasing cutoff, and then log-trans
 C) Missing values introduced at random. For the random case, each sample of random positions was repeated 100 times.
 
 ## Changes In Correlation Due to Changes in Dynamic Range and Imputation
+
+```{r icikt-ktimputed, dn_id = supp_figure_count}
+vl_icikt_kt_graph
+```
+
+`r supp_figure_count$label_text("icikt-ktimputed")`.
+Correlations between 100 samples with varying amounts of missingness as a function of changing the dynamic range of the values by increasing the lower limit of detection, using ICI-Kt, or Kendall-tau after imputing missing values with ½ the lowest value in the dataset.
 
 ```{r na-perc-lod, dn_id = supp_figure_count}
 vl_na_perc_graph

@@ -337,6 +337,23 @@ create_lod_diff_graph = function(vl_cor_diff_all)
   diff_hist
 }
 
+create_icikt_ktimpute_graph = function(vl_cor_diff_all)
+{
+  # tar_load(vl_cor_diff_all)
+  icikt_min = vl_cor_diff_all |>
+    dplyr::filter(cor_method %in% c("icikt", "kt_min"), oom_id %in% "high")
+  
+  icikt_min_wider = icikt_min |>
+    dplyr::select(oom_id, comparison, cor_lod, cor_method) |>
+    tidyr::pivot_wider(names_from = cor_method, values_from = cor_lod)
+  
+  icikt_min_wider |>
+    ggplot(aes(x = icikt, y = kt_min)) +
+    geom_abline(slope = 1, color = "red") +
+    geom_point() +
+    labs(x = "ICI-Kt", y = "Kt Imputed")
+}
+
 create_lod_hist_graph = function(vl_cor_diff_all)
 {
   # tar_load(vl_cor_diff_all)
