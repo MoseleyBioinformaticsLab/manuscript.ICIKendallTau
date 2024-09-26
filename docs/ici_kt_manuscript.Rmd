@@ -786,9 +786,9 @@ This holds true for low, medium, and high variability in dynamic range across sa
 In the case of using sample-sample correlation to detect outliers, imputation does not solve any of the issues related to discovering outliers, as it should be applied **after** outlier samples are removed, otherwise the imputed values may not be useful.
 When used to create feature-feature networks based on partial correlations derived from the feature-feature correlations, ICI-Kt based methods also showed the best partitioning of features based on their known pathway annotations.
 As far as we know, information-content-informed Kendall-tau (ICI-Kt) is the first correlation method that explicitly attempts to utilize non-random missing values that occur due to being below the detection limit.
-ICI-Kt **explicitly** treats left-censored missing values as correlative information while preserving the full deleterious effects of non-random missing values on the correlation metric.
+ICI-Kt **explicitly** treats left-censored missing values as correlative information while preserving the full deleterious effects of random missing values (i.e. missing at random or MAR) on the correlation metric.
 Moreover, ICI-Kt can be combined with measurement completeness to create a composite metric that is quite sensitive to overall data quality on a sample-specific level.
-Also, this ICI-Kt * completeness metric may have applications in cluster detection of single-cell omics data sets.
+Also, this ICI-Kt $\times$ completeness metric may have applications in cluster detection of single-cell omics data sets.
 
 The implementations of the ICI-Kt in the presented R and Python packages provide a rich set of options for customizing the correlation calculation for a variety of use-cases and interpretations.
 These packages handle missing values in log-transformed data in a safe manner and have O(nlogn) performance, making them computationally practical for real-world omics data sets.
