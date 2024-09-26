@@ -142,7 +142,7 @@ Also, imputation of missing measurements in omics samples is an active area of r
 Imputation methods rely on very similar analytical detection limits between analytical samples. 
 When this condition does not hold, imputation methods have reduced performance and lower interpretive value. 
 For analytical techniques requiring complex sample handling and detection, the variability in the analytical detection level can be quite high.
-However, when it comes to calculating correlation, there are very few methods that explicitly account for missing data that we know of.
+However, when it comes to calculating correlation, there are very few methods that explicitly account for left-censored missing data that we know of.
 In many cases, missing values are either ignored or imputed to zero (or another value) and then included in the correlation calculation.
 The two most common approaches for ignoring (i.e. dropping) values is to only use those measurements that are common across all samples (complete) or that are common between two samples being compared (pairwise complete).
 Both dropping or imputing missing values are likely to cause the calculated sample-sample correlation values to deviate from the real sample-sample correlation values, especially with respect to specific data interpretation perspectives.
@@ -187,6 +187,7 @@ All of the code used for this manuscript is available on zenodo [@flightManuscri
 In the simplest form, the Kendall-tau correlation can be defined as:
 
 $$\tau = \frac{ | pairs_{concordant}  | - | pairs_{discordant}  |}{\left | pairs_{concordant} \right | + \left | pairs_{discordant} \right |}$$
+This is the difference between the umber of concordant and discordant pairs over their sum, where $| pairs_{concordant} |$ is the cardinality of the set of concordant pairs and $| pairs_{discordant} |$ is the cardinality of the set of discordant pairs. 
 In this case, a pair are any two x-y points, $x_i, y_i$ and $x_j, y_j$, with $i \neq j$, composed from two joint random variables X and Y, where $x_i$ represents the *ith value* in X and $y_i$ represents the *ith value* in Y.
 In an omics context, X and Y can represent feature vectors for two experimental samples or two specific features across an ordered set of samples.
 A concordant pair has the following classical definition:
@@ -381,7 +382,7 @@ The number of successes and failures are aggregated across the treatment splits 
 
 For each dataset, we calculated correlations using a variety of methods. In each dataset, there were either zero values or `NA` values to represent missingness.
 To start, we replaced all missing values with 0, and then either set them to `NA` or left them as zero as appropriate.
-ICI-Kendall-tau with zeros replaced with `NA` (IK); and then scaled by the completeness metric (IKC).
+ICI-Kendall-tau with zeros replaced with `NA` (IK); and then scaled (multiplied) by the completeness metric (IKC).
 Kendall-tau, with zero replaced with `NA`, and then using pairwise-complete-observations (K).
 Pearson, with zeros, using pairwise-complete-observations (P).
 Pearson, with zeros replaced with `NA`, using pairwise-complete-observations (PN0).
@@ -425,15 +426,16 @@ However, we expect that **better** partitioning of the network will be reflected
 
 ### Changes In Correlation Due to Changes in Dynamic Range and Imputation
 
-We created a dataset of with `r lod_vars$n_feature` features and `r lod_vars$n_sample` samples, starting with a sample from a random log-normal distribution with a mean-log value of `r lod_vars$meanlog`, and standard deviation of `r lod_vars$sdlog`.
+We created a simulated dataset with `r lod_vars$n_feature` features and `r lod_vars$n_sample` samples, starting with a sample from a random log-normal distribution with a mean-log value of `r lod_vars$meanlog`, and standard deviation of `r lod_vars$sdlog`.
 Uniform noise was added via random normal distribution with a standard deviation of `r lod_vars$sd` to create `r lod_vars$n_sample` samples from the base distribution, values were transformed to normal space and then $log_{10}$ applied to have a representation of orders of magnitude and dynamic range.
 For any maximum level of censoring to be applied, a uniform distribution sample is generated on the range of $0 - max$ with `r lod_vars$n_sample` values.
 Data censoring was applied by taking the minimum observed value for a sample, and adding the censoring value from the uniform distribution.
 Any values in the sample below the censoring value are set to missing (`NA`).
 
 Correlations were calculated between samples when no missing values are present (*reference*), and then again after censoring (*trimmed*).
-Three different correlation methods were used, ICI-Kt, Kendall-tau and Pearson correlation after imputing all missing values with $\frac{1}{2}$ the lowest observed value in the dataset after censoring.
-Differences between the reference and trimmed correlations (with global imputation for Kendall-tau Pearson) are calculated, as well as the difference in the absolute value of differences of ICI-Kt and Pearson imputed.
+Two different correlation methods were used, ICI-Kt, and Pearson correlation.
+Imputation for Pearson correlation involved replacing all missing values with ½ the lowest observed value in the dataset after censoring.
+Differences between the reference and trimmed correlations were calculated, as well as the difference in the absolute value of differences of ICI-Kt and Pearson imputed.
 
 ### Computing Environment
 
@@ -583,6 +585,7 @@ wrap_plots(censored_value_plots, ncol = 1) + plot_annotation(tag_levels = "A")
 **B**: Missing values introduced by setting an increasing cutoff, and then log-transforming the values before calculating correlation.
 **C**: Missing values introduced at random.
 For the random case, each sample of random positions was repeated 100 times.
+Pay attention to the different y-axis ranges across graphs, with **A** and **B** graphs having much smaller y-axis ranges compared to **C**.
 
 
 A common way missing data is handled in correlation calculations is to ignore them completely and use the pairwise complete cases to calculate the Pearson correlation coefficient.
@@ -592,9 +595,9 @@ ICI-Kt, in contrast, incorporates the missingness in a sensical way, and the res
 ### Differences in Dynamic Range and Correlation
 
 Another way that missing values appear is due to changes in dynamic range between samples, as some samples have features with higher values, and the fixed dynamic range of the instrumentation results in features with lower values to be "missing" in those samples.
-We created a set of `r lod_vars$n_sample` fake samples with uniform noise on the log-scale, with relatively constant dynamic ranges, and introduced changes to the overall dynamic range by random values from a uniform distribution across the samples, at varying levels (see Methods).
+We created a set of `r lod_vars$n_sample` simulated samples with uniform noise on the log-scale, with relatively constant dynamic ranges, and introduced changes to the overall dynamic range using a random censor at varying levels (see Methods).
 Possible different levels of censoring based on dynamic range were checked by first determining how many missing values would be introduced in each sample as the dynamic range was increased in increments of 0.1 (see `r supp_figure_count$label_text("na-perc-lod")`).
-Based on the number of values being censored, limits of 0.5, 1, and 1.5 were selected.
+Based on the number of values being censored, limits of 0.5, 1, and 1.5 were selected, representing low, medium and high variability of the dynamic range.
 
 For each level of possible missingness introduced by changes to the dynamic range, correlation across all samples were calculated using all values (reference), as well as after missingness was added (trimmed), and using Kendall-tau or Pearson correlation with global imputation (Pearson Imputed), or ICI-Kt.
 `r figure_count$label_text("trimmed-imputed-correlation")` demonstrates that it is only as the number of of missing values in one of the samples approaches 50% or more (500 of 1000 features) does the Pearson correlation with global imputation give correlation values closer to the known correlation with no missing values in any appreciable amount (points below the red lines in the top panels, and to the right of the red line in the histograms in the bottom panels).
@@ -606,11 +609,10 @@ wrap_plots(vl_diff_graph, nrow = 2, ncol = 3)
 ```
 
 `r figure_count$label_text("trimmed-imputed-correlation")`. Top: Difference of reference - trimmed ICI-Kt correlation *vs* Pearson imputed using ½ the minimum value in the dataset.
-Low, med, and high indicate the level of changes in dynamic range, using 0.5, 1, and 1.5, respectively.
+Low, med, and high indicate the level of variability in dynamic range, using 0.5, 1, and 1.5, respectively.
 Red lines indicate slope of -1 and 1. Color indicates the maximum number of missing values between the two samples being correlated.
 Bottom: Differences in the absolute value of reference - trimmed differences between ICI-Kt and Pearson imputed correlations.
 
-Kendall-tau using the imputed values resulted in identical correlations as ICI-Kt (see `r supp_figure_count$label_text("icikt-ktimputed")`), as was also observed when comparing the effects of left-censoring vs randomly missing data.
 
 ### Performance
 
@@ -675,8 +677,8 @@ Inset is the expanded view showing the full range of computation time in seconds
 #### Detecting Outlier Samples
 
 
-We analyzed datasets from RNA-Seq (3), lipidomics (1), and small molecule metabolomics (1) for possible outliers using a variety of  different correlation and correlation-related metrics (see Correlation Methods): (1) ICI-Kt; (2) ICI-Kt scaled by *completeness* (see Methods); (3) Kendall-tau; (4) Pearson correlation; (5) Pearson correlation with no zeros; (6) Pearson on $log(x + 1)$; and (7) Pearson on $log(x)$.
-We primarily concentrate on the ICI-Kt, ICI-Kt * completeness, and Pearson $log(x + 1)$ here for one dataset, but all outliers detected by each method are shown in the Supplemental materials (`r supp_figure_count$label_text(c("yeast_outliers", "egfrgenotype_outliers", "adenocarcinoma_outliers", "nsclc_outliers", "ratstamina_outliers"))`, `r supp_table_count$label_text(c("yeast_outliers", "egfrgenotype_outliers", "adenocarcinoma_outliers", "nsclc_outliers", "ratstamina_outliers"))`).
+We analyzed datasets from RNA-Seq (3), lipidomics (1), and small molecule metabolomics (1) for possible outliers using a variety of  different correlation and correlation-related metrics (see Correlation Methods): (1) ICI-Kt; (2) ICI-Kt $\times$ completeness (ie., ICI-Kt scaled by completeness; see ICK in Methods); (3) Kendall-tau; (4) Pearson correlation; (5) Pearson correlation with no zeros; (6) Pearson on $log(x + 1)$; and (7) Pearson on $log(x)$.
+We primarily concentrate on the ICI-Kt, IKC, and Pearson $log(x + 1)$ here for one dataset, but all outliers detected by each method are shown in the Supplemental materials (`r supp_figure_count$label_text(c("yeast_outliers", "egfrgenotype_outliers", "adenocarcinoma_outliers", "nsclc_outliers", "ratstamina_outliers"))`, `r supp_table_count$label_text(c("yeast_outliers", "egfrgenotype_outliers", "adenocarcinoma_outliers", "nsclc_outliers", "ratstamina_outliers"))`).
 For each dataset and correlation-related metric, the median correlation for a sample was calculated amongst the samples for each sub-group of samples corresponding to an experimental condition of interest (disease, mutant, condition, etc).
 
 ```{r set_main_comparisons}
@@ -774,6 +776,13 @@ For (2), the maximum likelihood methods generally apply to Pearson and similar t
 Alvo and Cabilio's work from 1995 [@alvoRankCorrelationMethods1995] is one of the only works we are aware of that attempts to create a general framework for rank-based statistics in the presence of missing data.
 But, in our understanding their framework applies to data that is missing at random versus non-random missing-values, as is the case for analytes that are below the detection limit.
 Additionally, there does not appear to be a software implementation of Alvo and Cabilio's method available.
+
+Global imputation methods rely on the assumption that samples have similar dynamic range of detection and thus an imputed value should be comparable between samples.
+However, the dynamic range of detection often has variability across samples.
+For complex analytical techniques often used in omics experiments, the variability in the dynamic range of detection can be quite high.
+Under these circumstances, ICI-Kt provides more robust results as compared to Pearson correlation with global imputation.
+This holds true for low, medium, and high variability in dynamic range across samples.
+
 In the case of using sample-sample correlation to detect outliers, imputation does not solve any of the issues related to discovering outliers, as it should be applied **after** outlier samples are removed, otherwise the imputed values may not be useful.
 When used to create feature-feature networks based on partial correlations derived from the feature-feature correlations, ICI-Kt based methods also showed the best partitioning of features based on their known pathway annotations.
 As far as we know, information-content-informed Kendall-tau (ICI-Kt) is the first correlation method that explicitly attempts to utilize non-random missing values that occur due to being below the detection limit.
