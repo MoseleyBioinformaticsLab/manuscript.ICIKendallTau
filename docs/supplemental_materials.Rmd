@@ -6,7 +6,7 @@ output:
   rmarkdown::word_document:
     keep_md: true
 bibliography: '`r here::here("docs/icikt_references.json")`'
-csl: plos-computational-biology.csl
+#csl: '`r here::here("docs/plos-computational-biology.csl")`'
 editor_options: 
   chunk_output_type: console
 ---
@@ -52,6 +52,7 @@ tar_load(c(references,
            negative_kt,
            all_kt,
            negative_pearson,
+           realistic_reference_plot,
            censored_compare_plots,
            complexity_figure,
            yeast_paper_outliers,
@@ -84,6 +85,7 @@ supp_figure_count$increment(c("lod_adenocarcinoma",
                             "kt_pearson",
                             "ici_distribution",
                             "kt_distribution",
+                            "realistic_reference",
                             "leftcensored",
                             "icikt-ktimputed",
                             "na-perc-lod",
@@ -233,6 +235,23 @@ kt_plot
 
 `r supp_figure_count$label_text("kt_distribution")`.
 Kendall-tau correlation as missing values are varied between two samples and replaced with 0 before calculating Kendall-tau.
+
+### Comparison to Other Correlation Measures
+
+```{r}
+#| label: realistic_reference
+#| dn_id: supp_figure_count
+#| fig-width: 12
+#| fig-height: 8
+ref_tmp_pos = realistic_reference_plot$positive + theme(axis.text = element_text(size = 10))
+ref_tmp_neg = realistic_reference_plot$negative + theme(axis.text = element_text(size = 10))
+reference_plot = ref_tmp_pos + ref_tmp_neg
+reference_plot
+```
+
+`r supp_figure_count$label_text("realistic_reference")`.
+Difference of estimated correlation with missingness introduced compared to a reference correlation of 1 for the positive or -1 for the negative case, as a function of the average number of missing entries in X and Y sample (# NA).
+
 
 ### Semi-Realistic Data Set
 

@@ -83,20 +83,22 @@ positive_df = positive_df %>%
   dplyr::mutate(perc_missing = n_na / max(n_na) * 100,
                 type = factor(type, levels = c("Kendall", "Pearson", "ICI-Kt"), ordered = TRUE)) %>%
   dplyr::filter(use_rows)
-pos_diff = ggplot(positive_df, aes(x = n_na, y = diff)) + 
+pos_diff = ggplot(positive_df, aes(x = n_na, y = diff, color = n_na)) + 
   geom_point() +
   facet_grid(type ~ ., scales = "free") +
   labs(subtitle = "Positive Correlation",
        x = "Number Missing",
-       y = "Difference from Reference") +
+       y = "Difference from Reference of 1", color = "# NA") +
+  scale_color_viridis_c() +
   scale_y_continuous(labels = label_scientific(digits = 2)) +
   theme(plot.subtitle = element_text(size = 13))
-neg_diff = ggplot(negative_df, aes(x = n_na, y = diff)) +
-  geom_point() +
+neg_diff = ggplot(negative_df, aes(x = n_na, y = diff, color = n_na)) +
+  geom_point(show.legend = FALSE) +
+  scale_color_viridis_c() +
   facet_grid(type ~ ., scales = "free") +
   labs(subtitle = "Negative Correlation",
        x = "Number Missing",
-       y = "Difference from Reference") +
+       y = "Difference from Reference of -1", color = "# NA") +
   scale_y_continuous(labels = label_scientific(digits = 2)) +
   theme(plot.subtitle = element_text(size = 13))
 
@@ -127,18 +129,19 @@ compare_realistic_to_each = function(realistic_sample_1,
   # tar_load(realistic_negative_pearson_2)
   # tar_load(realistic_negative_kendall)
   # tar_load(realistic_negative_kt_2)
-  
+
   # ref_pearson = cor(realistic_sample_1, realistic_sample_2)
   # ref_kendall = ici_kt(realistic_sample_1, realistic_sample_2, "global")[1]
-  # 
+  #
   # ref_pearson_neg = cor(realistic_sample_1, realistic_neg_sample)
   # ref_kendall_neg = ici_kt(realistic_sample_1, realistic_neg_sample, "global")[1]
-  
+
   
   n_na = purrr::map_int(realistic_na, length)
   
   rp_pearson_wide = realistic_positive_pearson |>
-    dplyr::transmute(pearson = cor, id = paste0(i_na, ".", x_na, ".", y_na))
+    dplyr::transmute(pearson = cor, id = paste0(i_na, ".", x_na, ".", y_na),
+                     x_na = x_na, y_na = y_na, n_na = (x_na + y_na) / 2)
   
   rp_kendall_wide = realistic_positive_kendall |>
     dplyr::transmute(kendall = cor, id = paste0(i_na, ".", x_na, ".", y_na))
@@ -154,10 +157,17 @@ compare_realistic_to_each = function(realistic_sample_1,
   use_rows[sample(length(use_rows), n_subset)] = TRUE
   
   compare_positive_subset = compare_positive[use_rows, ]
+  compare_positive_subset = compare_positive_subset |>
+    dplyr::rowwise() |>
+    dplyr::mutate(max_na = max(c(x_na, y_na))) |>
+    dplyr::ungroup()
   
   rp_pearson_negative_wide = realistic_negative_pearson_2 %>%
     dplyr::transmute(pearson = cor,
-                     id = paste0(i_na, ".", x_na, ".", y_na))
+                     x_na = x_na,
+                     y_na = y_na,
+                     id = paste0(i_na, ".", x_na, ".", y_na),
+                     n_na = (x_na + y_na) / 2)
   rp_kendall_negative_wide = realistic_negative_kendall |>
     dplyr::transmute(kendall = cor,
                      id = paste0(i_na, ".", x_na, ".", y_na))
@@ -169,23 +179,32 @@ compare_realistic_to_each = function(realistic_sample_1,
   compare_negative = dplyr::left_join(compare_negative, rp_icikt_negative_wide, by = "id")
   
   compare_negative_subset = compare_negative[use_rows, ]
+  compare_negative_subset = compare_negative_subset |>
+    dplyr::rowwise() |>
+    dplyr::mutate(max_na = max(c(x_na, y_na))) |>
+    dplyr::ungroup()
   
   p_ici_pos = compare_positive_subset |>
-    ggplot(aes(x = pearson, y = icikt)) + 
+    ggplot(aes(x = pearson, y = icikt, color = n_na)) +
+    scale_color_viridis_c() +
     geom_point() +
-    labs(x = "Pearson", y = "ICI-Kt", subtitle = "Positive Correlation")
+    labs(x = "Pearson", y = "ICI-Kt", subtitle = "Positive Correlation: 1", color = "# NA") +
+    theme(legend.position = c(0.2, 0.8))
   k_ici_pos = compare_positive_subset |>
-    ggplot(aes(x = kendall, y = icikt)) +
-    geom_point() +
+    ggplot(aes(x = kendall, y = icikt, color = n_na)) +
+    scale_color_viridis_c() +
+    geom_point(show.legend = FALSE) +
     labs(x = "Kendall", y = "ICI-Kt")
   
   p_ici_neg = compare_negative_subset |>
-    ggplot(aes(x = pearson, y = icikt)) +
-    geom_point() +
-    labs(x = "Pearson", y = "ICI-Kt", subtitle = "Negative Correlation")
+    ggplot(aes(x = pearson, y = icikt, color = n_na)) +
+    scale_color_viridis_c() +
+    geom_point(show.legend = FALSE) +
+    labs(x = "Pearson", y = "ICI-Kt", subtitle = "Negative Correlation: -1")
   k_ici_neg = compare_negative_subset |>
-    ggplot(aes(x = kendall, y = icikt)) +
-    geom_point() +
+    ggplot(aes(x = kendall, y = icikt, color = n_na)) +
+    geom_point(show.legend = FALSE) +
+    scale_color_viridis_c() +
     labs(x = "Kendall", y = "ICI-Kt")
   
   

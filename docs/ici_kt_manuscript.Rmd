@@ -26,7 +26,7 @@ output:
     self_contained: yes
 date: '`r Sys.time()`'
 bibliography: '`r here::here("docs/icikt_references.json")`'
-csl: plos-computational-biology.csl
+#csl: plos-computational-biology.csl
 editor_options: 
   chunk_output_type: console
 ---
@@ -186,8 +186,8 @@ All of the code used for this manuscript is available on zenodo [@flightManuscri
 
 In the simplest form, the Kendall-tau correlation can be defined as:
 
-$$\tau = \frac{ | pairs_{concordant}  | - | pairs_{discordant}  |}{\left | pairs_{concordant} \right | + \left | pairs_{discordant} \right |}$$
-This is the difference between the umber of concordant and discordant pairs over their sum, where $| pairs_{concordant} |$ is the cardinality of the set of concordant pairs and $| pairs_{discordant} |$ is the cardinality of the set of discordant pairs. 
+$$\tau_a = \frac{ n_{concordant} - n_{discordant} }{n_{concordant} + n_{discordant}}$$
+Where $n_{concordant}$ is the the number of concordant pairs and $n_{discordant}$ is the number of discordant pairs. 
 In this case, a pair are any two x-y points, $x_i, y_i$ and $x_j, y_j$, with $i \neq j$, composed from two joint random variables X and Y, where $x_i$ represents the *ith value* in X and $y_i$ represents the *ith value* in Y.
 In an omics context, X and Y can represent feature vectors for two experimental samples or two specific features across an ordered set of samples.
 A concordant pair has the following classical definition:
@@ -231,8 +231,9 @@ These additional definitions make it possible to calculate a Kendall-tau correla
 Tied values do not contribute to either of the concordant or discordant pair counts, and the original Kendall-tau formula for the tau-a statistic does not consider the presence of tied values.
 However, the related tau-b statistic does handle the presence of tied values by adding the tied $x$ and $y$ values to the denominator, and in our special case of missing data, we can add the ties that result from both of $(x_i, x_j)$ and $(y_i, y_j)$ being missing into $n_{xtie}$ and $n_{ytie}$ as well [@kendall_treatment_ties_1945; @kendall_rankcorrelationbook_1948].
 
-$$\tau = \frac{\left | pairs_{concordant} \right | - \left | pairs_{discordant} \right |}{\sqrt{(n_0 - n_{xtie})(n_0 - n_{ytie})}}$$
+$$\tau_b = \frac{n_{concordant} - n_{discordant}}{\sqrt{(n_{tot} - n_{xtie})(n_{tot} - n_{ytie})}}$$
 
+Where $n_{tot}$ is the total number of pairs, $n_{xtie}$ are the number of tied values in X, and $n_{ytie}$ are the number of paired values in Y.
 We can also consider commonly missing values in X and Y specially as well.
 In the first instance, we remove those x-y points where **both values** are missing.
 We refer to this case as the "local" ICI-Kt correlation.
@@ -254,9 +255,10 @@ $$tau_{max} = \frac{\left | pairsmax_{concordant} \right |}{
 
 Where:
 
-$$pairsmax_{concordant} = n_0 - n_{xtie} - n_{ytie} - n_{tie}$$
+$$pairsmax_{concordant} = n_{tot} - n_{xtie} - n_{ytie} + n_{tie}$$
 
-Calculating a set of $tau_{max}$ values between all experimental samples, we can take the maximum of those values, and use it to scale all of the obtained Kendall-tau values.
+Where $n_{tie}$ is the number of commonly tied values in both X and Y.
+Calculating a set of $tau_{max}$ values between all experimental samples, we can take the maximum of the values, and use it to scale **all** of the obtained Kendall-tau values equally ($\tau \times \max(pairsmax_{concordan})$.
 
 ### Completeness
 
@@ -265,7 +267,10 @@ We first measure the number of entries missing in either of the samples being co
 This defines how many features are potentially *complete* between the two samples.
 This number, over the total number of features defines the *completeness* fraction.
 
-$$comp = \frac{n_{feat} - (miss_i | miss_j)}{n_{feat}}$$
+$$comp = \frac{n_{feat} - N (miss_i \cup miss_j)}{n_{feat}}$$
+
+Where for any two samples *i* and *j*, $n_{feat}$ is the total number of features or measurements, and $miss_i \cup miss_j$ are the features missing in either sample *i* or *j*, with $N$ being the total number of missing in either *i* or *j*.
+
 
 ### Implementation Details
 
@@ -538,10 +543,10 @@ lc_summary_all |>
 
 We compared the ICI-Kt correlation to both Pearson and regular Kendall-tau-b correlations as calculated by the built-in R functions using simulated data sets with missing values (`r supp_figure_count$label_text(c("kt_pearson", "ici_distribution", "kt_distribution"))`).
 
-We created two samples with 1000 observations each drawn from a log-normal distribution, and sorted in each case.
-The *true* correlation for each of the Kendall and Pearson correlations were calculated, and then missingness was introduced in the lower range of values (see Methods).
+We created two samples with 1000 observations each drawn from a log-normal distribution, and sorted in each case to create a pair of X and Y samples with a correlation of 1 and -1 for both Pearson and Kendall-tau correlation measures.
+The *true* correlation for each of the Kendall and Pearson correlations were calculated, and then missingness was introduced in the lower range of values, up to half of the values (see Methods).
 
-In `r figure_count$label_text("missing2cor")`, we can see that as missing values are added, only the ICI-Kt correlation values change in any significant way as illustrated by the wider range of ICI-Kt values on the y-axes versus the much narrower range of Pearson and Kendall tau correlation values on the x-axes.
+In `r figure_count$label_text("missing2cor")` (and `r supp_figure_count$label_text("realistic_reference")`), we can see that as missing values are added, only the ICI-Kt correlation values change in any significant way as illustrated by the wider range of ICI-Kt values on the y-axes versus the much narrower range of Pearson and Kendall tau correlation values on the x-axes.
 As the number of missing values increase, the ICI-Kt values drop or increase by up to 0.2.
 Similarly, Pearson correlation is also affected, but the degree of change in the correlation values are much less (notice the orders of magnitude differences in the x-axis scales compared to the y-axis), on the order of only 0.005 for both cases.
 These results demonstrate that the ICI-Kt correlation has quantitative sensitivity to missing values over the normal Kendall tau correlation and linear Pearson correlation where points with missing values are ignored (pairwise complete).
