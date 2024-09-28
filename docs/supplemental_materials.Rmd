@@ -87,7 +87,6 @@ supp_figure_count$increment(c("lod_adenocarcinoma",
                             "kt_distribution",
                             "realistic_reference",
                             "leftcensored",
-                            "icikt-ktimputed",
                             "na-perc-lod",
                             "complexity",
                             "yeast_outliers",
@@ -243,14 +242,17 @@ Kendall-tau correlation as missing values are varied between two samples and rep
 #| dn_id: supp_figure_count
 #| fig-width: 12
 #| fig-height: 8
-ref_tmp_pos = realistic_reference_plot$positive + theme(axis.text = element_text(size = 10))
-ref_tmp_neg = realistic_reference_plot$negative + theme(axis.text = element_text(size = 10))
+ref_tmp_pos = realistic_reference_plot$positive + theme(axis.text = element_text(size = 10), strip.background = element_rect(fill = "white", color = "white"),
+            panel.border = element_blank())
+ref_tmp_neg = realistic_reference_plot$negative + theme(axis.text = element_text(size = 10), strip.background = element_rect(fill = "white", color = "white"),
+            panel.border = element_blank())
 reference_plot = ref_tmp_pos + ref_tmp_neg
 reference_plot
 ```
 
 `r supp_figure_count$label_text("realistic_reference")`.
 Difference of estimated correlation with missingness introduced compared to a reference correlation of 1 for the positive or -1 for the negative case, as a function of the average number of missing entries in X and Y sample (# NA).
+Points are colored by how many points are missing on average between the two samples X and Y.
 
 
 ### Semi-Realistic Data Set
@@ -271,12 +273,6 @@ C) Missing values introduced at random. For the random case, each sample of rand
 
 ## Changes In Correlation Due to Changes in Dynamic Range and Imputation
 
-```{r icikt-ktimputed, dn_id = supp_figure_count}
-vl_icikt_kt_graph
-```
-
-`r supp_figure_count$label_text("icikt-ktimputed")`.
-Correlations between 100 samples with varying amounts of missingness as a function of changing the dynamic range of the values by increasing the lower limit of detection, using ICI-Kt, or Kendall-tau after imputing missing values with ½ the lowest value in the dataset.
 
 ```{r na-perc-lod, dn_id = supp_figure_count}
 vl_na_perc_graph
