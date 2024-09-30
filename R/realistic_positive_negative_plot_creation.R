@@ -224,6 +224,7 @@ plot_censored_data = function(left_censored_cor,
   # tar_load(random_censored_cor)
   # tar_load(logtransform_censored_cor)
   
+  
   left_censored_cor = left_censored_cor %>%
     dplyr::mutate(which2 = dplyr::case_when(
       which %in% "ici" ~ "ICI-Kt",
@@ -233,6 +234,27 @@ plot_censored_data = function(left_censored_cor,
       which %in% "pearson_0" ~ "Pearson-0"
     ))
   
+  
+  left_ref_y = left_censored_cor |>
+    dplyr::group_by(which) |>
+    dplyr::summarise(ref_y = max(cor))
+  left_ref_cor = left_censored_cor |>
+    dplyr::filter(n_na == 0) |>
+    dplyr::group_by(which) |>
+    dplyr::summarise(ref_cor = cor[1]) |>
+    dplyr::mutate(ref_str = format(ref_cor, digits = 3),
+                  ref_x = dplyr::case_match(
+                    which,
+                    "ici" ~ 25,
+                    "kendall" ~ 100,
+                    "kendall_0" ~ 25,
+                    "pearson" ~ 100,
+                    "pearson_0" ~ 100
+                  ))
+  left_ref_cor = dplyr::left_join(left_ref_cor, left_ref_y, by = "which")
+  left_ref_cor = dplyr::left_join(left_ref_cor, left_censored_cor |>
+                                    dplyr::select(which, which2) |>
+                                    dplyr::distinct(), by = "which")
   
   random_censored_cor = random_censored_cor %>%
     dplyr::mutate(censoring = "random") %>%
@@ -245,8 +267,14 @@ plot_censored_data = function(left_censored_cor,
       which %in% "pearson_0" ~ "Pearson-0"
     ))
   
+  random_ref_cor = left_ref_cor |>
+    dplyr::arrange(which) |>
+    dplyr::mutate(ref_x = c(150, 25, 150, 25, 150),
+                  ref_y = c(0.8, 0.872, 0.8, 0.9865, 0.9))
+  
+  
   logtransform_censored_cor = logtransform_censored_cor %>%
-    dplyr::mutate(censoring = "random") %>%
+    dplyr::mutate(censoring = "log") %>%
     dplyr::filter(n_na > 0) %>%
     dplyr::mutate(which2 = dplyr::case_when(
       which %in% "ici" ~ "ICI-Kt",
@@ -256,9 +284,31 @@ plot_censored_data = function(left_censored_cor,
       which %in% "pearson_0" ~ "Pearson-0"
     ))
   
+  logtransform_ref_y = logtransform_censored_cor |>
+    dplyr::group_by(which) |>
+    dplyr::summarise(ref_y = max(cor))
+  logtransform_ref_cor = logtransform_censored_cor |>
+    dplyr::filter(n_na == 2) |>
+    dplyr::group_by(which) |>
+    dplyr::summarise(ref_cor = cor[1]) |>
+    dplyr::mutate(ref_str = format(ref_cor, digits = 3),
+                  ref_x = dplyr::case_match(
+                    which,
+                    "ici" ~ 25,
+                    "kendall" ~ 100,
+                    "kendall_0" ~ 25,
+                    "pearson" ~ 25,
+                    "pearson_0" ~ 100
+                  ))
+  logtransform_ref_cor = dplyr::left_join(logtransform_ref_cor, logtransform_ref_y, by = "which")
+  logtransform_ref_cor = dplyr::left_join(logtransform_ref_cor, logtransform_censored_cor |>
+                                    dplyr::select(which, which2) |>
+                                    dplyr::distinct(), by = "which")
+  
   
   random_plot = ggplot(random_censored_cor, aes(x = n_na, y = cor)) +
     geom_sina(aes(group = n_na)) +
+    geom_text(data = random_ref_cor, aes(x = ref_x, y = ref_y, label = ref_str), hjust = "left") +
     facet_wrap(~ which2, nrow = 1, scales = "free_y") +
     labs(x = "Number Missing", y = "Correlation") +
     cowplot::panel_border()
@@ -269,6 +319,7 @@ plot_censored_data = function(left_censored_cor,
   
   left_plot = ggplot(left_censored_cor, aes(x = n_na, y = cor)) + 
     geom_point() + 
+    geom_text(data = left_ref_cor, aes(x = ref_x, y = ref_y, label = ref_str), hjust = "left") +
     facet_wrap(~ which2, nrow = 1, scales = "free_y") +
     labs(x = "Number Missing", y = "Correlation") +
     scale_x_continuous(breaks = c(0, 100, 200)) +
@@ -276,6 +327,7 @@ plot_censored_data = function(left_censored_cor,
   
   log_plot = ggplot(logtransform_censored_cor, aes(x = n_na, y = cor)) +
     geom_point() +
+    geom_text(data = logtransform_ref_cor, aes(x = ref_x, y = ref_y, label = ref_str), hjust = "left") +
     facet_wrap(~ which2, nrow = 1, scales = "free_y") +
     labs(x = "Number Missing", y = "Correlation") +
     scale_x_continuous(breaks = c(0, 100, 200)) +

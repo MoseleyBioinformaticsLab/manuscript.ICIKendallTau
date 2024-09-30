@@ -359,7 +359,7 @@ dataset_summary_plan = tar_plan(dataset_summary = dplyr::bind_cols(
 ) |>
   dplyr::mutate(Dataset = id,
                 id = NULL) |>
-  dplyr::select(Dataset, Measurement, Features, Samples, Conditions, Replicates)
+  dplyr::select(Dataset, Measurement, Features, Samples, Treatments, Replicates)
 )
 
 # documents -----

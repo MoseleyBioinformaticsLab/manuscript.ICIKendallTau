@@ -11,16 +11,16 @@ create_dataset_summary = function(counts_info)
   
   n_feature = nrow(counts)
   n_sample = ncol(counts)
-  info_by_condition = info |>
+  info_by_treatment = info |>
     dplyr::group_by(treatment) |>
     dplyr::summarise(n_rep = dplyr::n())
-  n_condition = nrow(info_by_condition)
-  n_rep_condition = paste0(info_by_condition$n_rep, collapse = ", ")
+  n_treatment = nrow(info_by_treatment)
+  n_rep_treatment = paste0(info_by_treatment$n_rep, collapse = ", ")
   
   tibble::tibble(Features = n_feature,
                  Samples = n_sample,
-                 Conditions = n_condition,
-                 Replicates = n_rep_condition)
+                 Treatments = n_treatment,
+                 Replicates = n_rep_treatment)
 }
 
 create_lc_summary = function(lc_test_result)

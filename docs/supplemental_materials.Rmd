@@ -6,7 +6,7 @@ output:
   rmarkdown::word_document:
     keep_md: true
 bibliography: '`r here::here("docs/icikt_references.json")`'
-#csl: '`r here::here("docs/plos-computational-biology.csl")`'
+csl: '`r here::here("docs/plos-computational-biology.csl")`'
 editor_options: 
   chunk_output_type: console
 ---

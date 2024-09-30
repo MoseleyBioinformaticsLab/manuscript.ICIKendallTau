@@ -26,7 +26,7 @@ output:
     self_contained: yes
 date: '`r Sys.time()`'
 bibliography: '`r here::here("docs/icikt_references.json")`'
-#csl: plos-computational-biology.csl
+csl: plos-computational-biology.csl
 editor_options: 
   chunk_output_type: console
 ---
@@ -452,7 +452,7 @@ For the comparisons of time taken using different numbers of samples to evaluate
 
 In `r table_count$label_text("datasets")`, we provide a summary of the number of features (measurements), samples, treatments or conditions, and the number of biological replicates per condition for each of the experimental datasets.
 
-`r table_count$label_text("datasets")`. Number of features, samples, treatments, biological replicates, percent missing values, the fraction of missingness estimated to be missing due to left-censoring in each condition for each dataset, and the p-value from a binomial test of left-censorship.
+`r table_count$label_text("datasets")`. Number of features, samples, treatments, and biological replicates for each dataset.
 ```{r}
 dataset_summary |>
   flextable() |>
@@ -496,7 +496,7 @@ This test involves counting whether the non-missing values (for those features t
 For many of the datasets, the proportion of non-missing values below the median are in the range of 0.9 or higher, and only the two mass-spectrometry datasets (ratstamina and nsclc) show lower estimates.
 Even in those two specific cases, the proportions are 0.69 and 0.60, respectively.
 
-`r table_count$label_text("n-missing")`. Total number of elements, number of elements with a missing value, % missing values, number of values tested as being below the median in a sample, number of values found to be below the median of a sample, fraction of values found to be below the median of sample, confidence interval, and p-value of the left-censored binomial test.
+`r table_count$label_text("n-missing")`. For each dataset, the total number of elements, number of elements with a missing value, % missing values, number of values tested as being below the median in a sample, number of values found to be below the median of a sample, fraction of values found to be below the median of sample, confidence interval, and p-value of the left-censored binomial test.
 ```{r}
 rmf_scientific = function(in_table, j, n_sig = 2)
 {
@@ -746,7 +746,7 @@ Additionally, we compared how the outliers change if we require that a feature i
 Although, in general the correlations remain the same, or show some downward trend with increasing fractions of samples required to be non-missing, IKC shows a different trend.
 Overall, this is due to there being a higher likelihood of pairwise samples being *complete* with the requirement for a feature to be in a greater fraction of a class of samples.
 
-With the exception of the yeast dataset, the base Pearson (PB) and Pearson without zeros (PN0) were the most likely methods to show higher changes in median and median-absolute-differences (MAD) between groups of samples (see Methods).
+With the exception of the yeast dataset, the base Pearson (PB) and Pearson without zeros (PN0) were the most likely methods to show higher changes in median and median-absolute-differences (MAD) between groups of samples, as shown in Figures `r supp_figure_count$just_count("yeast_differences")`, `r supp_figure_count$just_count("egfrgenotype_differences")`, `r supp_figure_count$just_count("adenocarcinoma_differences")`, `r supp_figure_count$just_count("nsclc_differences")` and `r supp_figure_count$just_count("ratstamina_differences")` (see Methods).
 
 ### Partitioning of Feature-Feature Networks
 
@@ -788,7 +788,7 @@ This holds true for low, medium, and high variability in dynamic range across sa
 In the case of using sample-sample correlation to detect outliers, imputation does not solve any of the issues related to discovering outliers, as it should be applied **after** outlier samples are removed, otherwise the imputed values may not be useful.
 When used to create feature-feature networks based on partial correlations derived from the feature-feature correlations, ICI-Kt based methods also showed the best partitioning of features based on their known pathway annotations.
 As far as we know, information-content-informed Kendall-tau (ICI-Kt) is the first correlation method that explicitly attempts to utilize non-random missing values that occur due to being below the detection limit.
-ICI-Kt **explicitly** treats left-censored missing values as correlative information while preserving the full deleterious effects of random missing values (i.e. missing at random or MAR) on the correlation metric.
+ICI-Kt **explicitly** treats left-censored missing values as correlative information while preserving the full deleterious effects of missing at random values on the correlation metric.
 Moreover, ICI-Kt can be combined with measurement completeness to create a composite metric that is quite sensitive to overall data quality on a sample-specific level.
 Also, this ICI-Kt $\times$ completeness metric may have applications in cluster detection of single-cell omics data sets.
 
