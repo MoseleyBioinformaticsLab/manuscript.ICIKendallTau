@@ -1,10 +1,10 @@
-add_method = function(outlier_df, map_method = c("icikt" = "ICI-Kt",
-                                                 "icikt_complete" = "ICI-Kt * Completeness",
-                                                 "kt_base" = "Kendall-tau",
-                                                 "pearson_base" = "Pearson Base",
-                                                 "pearson_base_nozero" = "Pearson No Zeros",
-                                                 "pearson_log1p" = "Pearson Log(x + 1)",
-                                                 "pearson_log" = "Pearson Log(x)")){
+add_method = function(outlier_df, map_method = c("icikt" = "IK",
+                                                 "icikt_complete" = "IKC",
+                                                 "kt_base" = "Kt",
+                                                 "pearson_base" = "PB",
+                                                 "pearson_base_nozero" = "PN0",
+                                                 "pearson_log1p" = "PL1",
+                                                 "pearson_log" = "PL")){
   outlier_df$method = ""
   outlier_df = outlier_df[outlier_df$which %in% names(map_method), ]
   for (imap in names(map_method)) {
@@ -23,14 +23,13 @@ perc_to_number = function(in_table){
   ))
 }
 
-compare_outlier_tables = function(outlier_list, keep_compare, sort_var, map_method = c("icikt" = "ICI-Kt",
-                                                                                       "icikt_complete" = "ICI-Kt * Completeness",
-                                                                                       "kt_base" = "Kendall-tau",
-                                                                                       "pearson_base" = "Pearson Base",
-                                                                                       "pearson_base_nozero" = "Pearson No Zeros",
-                                                                                       "pearson_log1p" = "Pearson Log(x + 1)",
-                                                                                       "pearson_log" = "Pearson Log(x)"
-                                                                                       )){
+compare_outlier_tables = function(outlier_list, keep_compare, sort_var, map_method = c("icikt" = "IK",
+                                                                                       "icikt_complete" = "IKC",
+                                                                                       "kt_base" = "Kt",
+                                                                                       "pearson_base" = "PB",
+                                                                                       "pearson_base_nozero" = "PN0",
+                                                                                       "pearson_log1p" = "PL1",
+                                                                                       "pearson_log" = "PL")){
   
   # 
   # outlier_list = yeast_outliers_1$outliers
@@ -125,14 +124,13 @@ compare_outlier_tables = function(outlier_list, keep_compare, sort_var, map_meth
   ft_out
 }
 
-compare_outlier_tables_bold = function(outlier_list, keep_compare, sort_var, map_method = c("icikt" = "ICI-Kt",
-                                                                                       "icikt_complete" = "ICI-Kt * Completeness",
-                                                                                       "kt_base" = "Kendall-tau",
-                                                                                       "pearson_base" = "Pearson Base",
-                                                                                       "pearson_base_nozero" = "Pearson No Zeros",
-                                                                                       "pearson_log1p" = "Pearson Log(x + 1)",
-                                                                                       "pearson_log" = "Pearson Log(x)"
-)){
+compare_outlier_tables_bold = function(outlier_list, keep_compare, sort_var, map_method = c("icikt" = "IK",
+                                                                                                         "icikt_complete" = "IKC",
+                                                                                                         "kt_base" = "Kt",
+                                                                                                         "pearson_base" = "PB",
+                                                                                                         "pearson_base_nozero" = "PN0",
+                                                                                                         "pearson_log1p" = "PL1",
+                                                                                                         "pearson_log" = "PL")){
   
   # 
   # outlier_list = yeast_outliers_1$outliers

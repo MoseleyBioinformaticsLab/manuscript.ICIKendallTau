@@ -591,8 +591,8 @@ Pay attention to the different y-axis ranges across graphs, with **A** and **B**
 
 
 A common way missing data is handled in correlation calculations is to ignore them completely and use the pairwise complete cases to calculate the Pearson correlation coefficient.
-As shown in `r figure_count$label_text("leftcensored")`C, this results in a complete misestimation of the changed correlative structure introduced by missing at random (MAR) entries.
-ICI-Kt, in contrast, incorporates the missingness in a sensical way, and the resulting correlation values fall as MAR entries are introduced.
+As shown in `r figure_count$label_text("leftcensored")`C, this results in a complete misestimation of the changed correlative structure introduced by random entries.
+ICI-Kt, in contrast, incorporates the missingness in a sensical way, and the resulting correlation values fall as random entries are introduced.
 
 ### Differences in Dynamic Range and Correlation
 
@@ -679,7 +679,7 @@ Inset is the expanded view showing the full range of computation time in seconds
 #### Detecting Outlier Samples
 
 
-We analyzed datasets from RNA-Seq (3), lipidomics (1), and small molecule metabolomics (1) for possible outliers using a variety of  different correlation and correlation-related metrics (see Correlation Methods): (1) ICI-Kt; (2) ICI-Kt $\times$ completeness (ie., ICI-Kt scaled by completeness; see ICK in Methods); (3) Kendall-tau; (4) Pearson correlation; (5) Pearson correlation with no zeros; (6) Pearson on $log(x + 1)$; and (7) Pearson on $log(x)$.
+We analyzed datasets from RNA-Seq (3), lipidomics (1), and small molecule metabolomics (1) for possible outliers using a variety of  different correlation and correlation-related metrics (see Correlation Methods): (1) ICI-Kt (IK); (2) ICI-Kt $\times$ completeness (ie., ICI-Kt scaled by completeness; see ICK in Methods); (3) Kendall-tau (Kt); (4) Pearson correlation (PB); (5) Pearson correlation with no zeros (PN0); (6) Pearson on $log(x + 1)$ (PL1); and (7) Pearson on $log(x)$ (PL).
 We primarily concentrate on the ICI-Kt, IKC, and Pearson $log(x + 1)$ here for one dataset, but all outliers detected by each method are shown in the Supplemental materials (`r supp_figure_count$label_text(c("yeast_outliers", "egfrgenotype_outliers", "adenocarcinoma_outliers", "nsclc_outliers", "ratstamina_outliers"))`, `r supp_table_count$label_text(c("yeast_outliers", "egfrgenotype_outliers", "adenocarcinoma_outliers", "nsclc_outliers", "ratstamina_outliers"))`).
 For each dataset and correlation-related metric, the median correlation for a sample was calculated amongst the samples for each sub-group of samples corresponding to an experimental condition of interest (disease, mutant, condition, etc).
 
@@ -701,7 +701,7 @@ This version of Pearson correlation recreates the median sample-sample correlati
 We denote the actual samples recorded as outliers by Gierlinski and coworkers with "Manuscript".
 In `r supp_figure_count$label_text("yeast_outliers")` and `r supp_table_count$label_text("yeast_outliers")`, we can see how the determination of outliers was not made solely on the basis of correlation alone, but on a combination of factors that lead to some of the higher correlating samples (using raw counts and Pearson correlation) being considered outliers where lower correlating samples were not listed as being outliers.
 
-Regardless, using ICI-Kt or ICI-Kt * Completeness in this instance, the outliers using the simple distribution summary statistics and an outlier having to be greater than 1.5X median error, the outliers are mostly a superset of the outliers determined by Gierlinski et al., with the exception of three samples specific to their data: WT.22, WT.25, WT.28.
+Regardless, using ICI-Kt or ICI-Kt $\times$ Completeness in this instance, the outliers using the simple distribution summary statistics and an outlier having to be greater than 1.5X median error, the outliers are mostly a superset of the outliers determined by Gierlinski et al., with the exception of three samples specific to their data: WT.22, WT.25, WT.28.
 
 It should be noted that it seems that Gierlinski et al. used an eyeball cutoff for the outliers based on the combined score of correlation, outlier fraction, and read coverage chi-square fitness, with samples having a combined log-score greater than -2.8 (evaluated by RMF eyeball on a zoomed in graph and using a ruler), a value that is never stated in the manuscript, and which seems arbitrary from the data.
 In addition, given the proportional variance inherent in RNA-Seq count data, Pearson correlation on non-transformed counts should not be used, as the low abundance counts will tend to force the correlation values to be arbitrarily high in the absence of large biological heterogeneity, as observed for these samples compared to the other datasets that involve individuals as biological replicates.
@@ -717,13 +717,13 @@ yeast_single_plot +
 ```
 
 `r figure_count$label_text("yeast_outliers")`.
-Median correlations for each of the yeast RNA-Seq sample to all other samples in the same group, using either ICI-Kt, ICI-Kt * completeness or Pearson Log(x + 1) correlation.
+Median correlations for each of the yeast RNA-Seq sample to all other samples in the same group, using either ICI-Kt (IK), ICI-Kt $\times$ Completeness (IKC) or Pearson Log(x + 1) (PL1) correlation.
 Points are colored red if they were an outlier using that correlation method.
 For a sample that is considered an outlier in any of the methods, lines are drawn connecting them between methods.
 
 
 `r table_count$label_text("yeast_outliers")`.
-Yeast dataset median correlation values and outlier determination for each outlier from each of the correlation methods.
+Yeast dataset median correlation values and outlier determination for each outlier from each of ICI-Kt (IK), ICI-Kt $\times$ completeness (IKC) or Pearson Log(x + 1) (PL1) correlation methods.
 Bolded entries indicate the sample was an outlier for that method.
 
 ```{r yeast_outlier_table}
@@ -737,8 +737,8 @@ yeast_ft_out = yeast_table %>%
 yeast_ft_out
 ```
 
-In the case of the adenocarcinoma dataset (`r supp_figure_count$label_text("adenocarcinoma_outliers")` and `r supp_table_count$label_text("adenocarcinoma_outliers")`), although there are not many outliers in these relatively large groups, Kendall-tau (K) values results in the most outliers, mostly in the *tumor* samples.
-Also of note is that ICI-Kt * Completeness (IKC) is the only measure where the variance measure for both groups is similar (`r supp_table_count$label_text("adenocarcinoma_mad")`) (`r adenocarcinoma_ratios[["IKC"]]`X).
+In the case of the adenocarcinoma dataset (`r supp_figure_count$label_text("adenocarcinoma_outliers")` and `r supp_table_count$label_text("adenocarcinoma_outliers")`), although there are not many outliers in these relatively large groups, Kendall-tau (Kt) values results in the most outliers, mostly in the *tumor* samples.
+Also of note is that ICI-Kt x Completeness (IKC) is the only measure where the variance measure for both groups is similar (`r supp_table_count$label_text("adenocarcinoma_mad")`) (`r adenocarcinoma_ratios[["IKC"]]`X).
 For both ICI-Kt and the various Pearson correlation, the tumor samples variance measures are `r adenocarcinoma_ratios[["IK"]]`X and `r adenocarcinoma_ratios[["PL1"]]`X greater than normal, respectively.
 
 

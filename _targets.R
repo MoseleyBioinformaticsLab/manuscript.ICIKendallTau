@@ -376,6 +376,12 @@ documents_plan = tar_plan(
 
 )
 
+## max and nomax -------
+compare_max_nomax_plan = tar_plan(
+  max_nomax = calculate_max_nomax(yeast_counts_info),
+  max_nomax_plot = calculate_diffs(max_nomax)
+)
+
 # put all together -----
 list(small_realistic_examples,
      vl_plan,
@@ -392,5 +398,6 @@ list(small_realistic_examples,
      dataset_summary_map,
      dataset_summary_combine,
      dataset_summary_plan,
+     compare_max_nomax_plan,
      performance_plan,
      documents_plan)
