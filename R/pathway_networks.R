@@ -480,13 +480,13 @@ cleanup_qratio_table = function(feature_qratio_summary)
 {
   # tar_load(feature_qratio_summary)
   map_method = tibble::tribble(~method_id, ~Method,
-                               "ici", "ICI-Kt",
-                 "ici_completeness", "ICI-Kt * Completeness",
-                 "pearson_base", "Pearson Base",
-                 "pearson_base_nozero", "Pearson No Zeros",
-                 "pearson_log1p", "Pearson Log(x + 1)",
-                 "pearson_log", "Pearson Log(x)",
-                 "kt", "Kendall-tau")
+                               "ici", "IK",
+                 "ici_completeness", "IKC",
+                 "pearson_base", "PB",
+                 "pearson_base_nozero", "PN0",
+                 "pearson_log1p", "PL1",
+                 "pearson_log", "PL",
+                 "kt", "Kt")
   map_dataset = tibble::tribble(~data_id, ~Dataset,
                                 "barton_yeast", "Yeast RNA-Seq",
                   "brainsonrnaseq_egfrgenotype", "EGFR Genotype RNA-Seq",

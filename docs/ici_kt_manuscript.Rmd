@@ -187,7 +187,7 @@ All of the code used for this manuscript is available on zenodo [@flightManuscri
 In the simplest form, the Kendall-tau correlation can be defined as:
 
 $$\tau_a = \frac{ n_{concordant} - n_{discordant} }{n_{concordant} + n_{discordant}}$$
-Where $n_{concordant}$ is the the number of concordant pairs and $n_{discordant}$ is the number of discordant pairs. 
+where $n_{concordant}$ is the the number of concordant pairs and $n_{discordant}$ is the number of discordant pairs. 
 In this case, a pair are any two x-y points, $x_i, y_i$ and $x_j, y_j$, with $i \neq j$, composed from two joint random variables X and Y, where $x_i$ represents the *ith value* in X and $y_i$ represents the *ith value* in Y.
 In an omics context, X and Y can represent feature vectors for two experimental samples or two specific features across a set of samples.
 A concordant pair has the following classical definition:
@@ -229,11 +229,11 @@ These additional definitions make it possible to calculate a Kendall-tau correla
 ### Considering Ties
 
 Tied values do not contribute to either of the concordant or discordant pair counts, and the original Kendall-tau formula for the tau-a statistic does not consider the presence of tied values.
-However, the related tau-b statistic does handle the presence of tied values by adding the tied $x$ and $y$ values to the denominator, and in our special case of missing data, we can add the ties that result from $(x_i=\text{NA}, x_j=\text{NA})$ and $(y_i=\text{NA}, y_j=\text{NA})$ to $n_{xtie}$ and $n_{ytie}$ [@kendall_treatment_ties_1945; @kendall_rankcorrelationbook_1948].
+However, the related tau-b statistic does handle the presence of tied values by adding the tied $x$ and $y$ values to the denominator, and in our special case of missing data, we can add the ties that result from $(x_i=\text{NA}, x_j=\text{NA})$ and $(y_i=\text{NA}, y_j=\text{NA})$ to $n_{xtie}$ and $n_{ytie}$ [@kendall_treatment_ties_1945; @kendall_rankcorrelationbook_1948] used in the following equation for tau-b:
 
 $$\tau_b = \frac{n_{concordant} - n_{discordant}}{\sqrt{(n_{tot} - n_{xtie})(n_{tot} - n_{ytie})}}$$
 
-Where $n_{tot}$ is the total number of pairs, $n_{xtie}$ are the number of tied values in X, and $n_{ytie}$ are the number of paired values in Y.
+where $n_{tot}$ is the total number of pairs, $n_{xtie}$ are the number of tied values in X, and $n_{ytie}$ are the number of paired values in Y.
 We can also consider commonly missing values in X and Y specially as well.
 In the first instance, we remove those x-y points where **both values** are missing.
 We refer to this case as the "local" ICI-Kt correlation.
@@ -253,7 +253,7 @@ $$tau_{max} = \frac{n_{tot} - n_{xtie} - n_{ytie} + n_{tie}}{
 \sqrt{(n_{tot} - n_{xtie})(n_{tot} - n_{ytie})}
 }$$
 
-Where $n_{tie}$ is the number of commonly tied values in both X and Y.
+where $n_{tie}$ is the number of commonly tied values in both X and Y.
 Calculating a set of $tau_{max}$ values between all experimental samples, we can take the maximum of the values, and use it to scale **all** of the obtained Kendall-tau values equally ($\tau \times \max(tau_{max})$).
 
 ### Completeness
@@ -263,9 +263,9 @@ We first measure the number of entries missing in either of the samples being co
 This defines how many features are potentially *complete* between the two samples.
 This number, over the total number of features defines the *completeness* fraction.
 
-$$comp = \frac{n_{feat} - N (miss_i \cup miss_j)}{n_{feat}}$$
+$$completness = \frac{n_{feat} - N (miss_i \cup miss_j)}{n_{feat}}$$
 
-Where for any two samples *i* and *j*, $n_{feat}$ is the total number of features or entries, and $miss_i \cup miss_j$ are the features missing in either sample *i* or *j*, with $N$ being the total number of missing entries in either sample *i* or *j*.
+where for any two samples *i* and *j*, $n_{feat}$ is the total number of features or entries, and $miss_i \cup miss_j$ are the features missing in either sample *i* or *j*, with $N$ being the total number of missing entries in either sample *i* or *j*.
 
 
 ### Implementation Details
@@ -369,13 +369,13 @@ For each assigned peak, we used voting of the lipid categories and classes from 
 
 For each dataset, the samples were split by experimental factor or treatment of interest (see previous Methods for each dataset).
 For each feature, the rank of the feature was calculated for each sample where the feature was present, followed by the features median rank, as well as the number of samples the feature was missing from.
-Grouping the features by the number of missing values, we calculate the median of median ranks, as well as the minimum of median ranks for the visualization and correlation of the relationship of rank with missing values.
+Grouping the features by the number of missing values, we calculate the median of median ranks, as well as the minimum of median ranks, for the visualization and correlation of the relationship of rank with missing values.
 
 ### Binomial Test for Left Censorship
 
 For each dataset, the samples were first split by treatment.
 In each sample, the median abundance of features present in the sample are calculated.
-For any feature that is missing in any sample, the values in the present samples are compared to the median values in each sample.
+For any feature that is missing in any sample, the values in the present samples are compared to the median value of thier corresponding sample.
 If the value is **less than** the median value in the sample, that is counted as a **success** in a binomial test, otherwise it is counted as a failure.
 The number of successes and failures are aggregated across the treatment splits for calculation in a binomial test, with the null hypothesis as a ratio of 0.5.
 
@@ -384,15 +384,15 @@ The number of successes and failures are aggregated across the treatment splits 
 For each dataset, we calculated correlations using a variety of methods. In each dataset, there were either zero values or `NA` values to represent missingness.
 To start, we replaced all missing values with 0, and then either set them to `NA` or left them as zero as appropriate.
 ICI-Kendall-tau with zeros replaced with `NA` (IK); and then scaled (multiplied) by the completeness metric (IKC).
-Kendall-tau, with zero replaced with `NA`, and then using pairwise-complete-observations (K).
-Pearson, with zeros, using pairwise-complete-observations (P).
+Kendall-tau, with zero replaced with `NA`, and then using pairwise-complete-observations (Kt).
+Pearson, with zeros, using pairwise-complete-observations (PB).
 Pearson, with zeros replaced with `NA`, using pairwise-complete-observations (PN0).
 Pearson, with a $log(x + 1)$ transform applied, using pairwise-complete-observations (PL1).
 Pearson, with a $log(x)$ transform, and then setting infinite values to `NA` values, using pairwise-complete-observations (PL).
 
 ### Outlier Detection
 
-For outlier detection, median sample-sample correlations within the sample treatment (genotype, condition, etc) is calculated, and $log(1 - cor_{median})$ calculated to transform it into a score, and then outliers determined using *grDevices::boxplot.stats*, which by default are at 1.5X the whiskers in a box-and-whisker plot.
+For outlier detection, median sample-sample correlations within the sample treatment (genotype, condition, etc) is calculated, and $log(1 - cor_{median})$ calculated to transform it into a score. Then outliers are determined using *grDevices::boxplot.stats*, which by default are at 1.5X the whiskers in a box-and-whisker plot.
 As we are interested in only those correlations at the *low* end of correlation (becoming the high end after the subtraction and log-transform), we restrict to only those entries at the *high* end of the score distribution (using *visualizationQualityControl::determine_outliers* [@flightVisualizationQualityControlDevelopmentVisualization2021]).
 This is equivalent to using the correlation component of the score described by Gierliński et al [-@gierlinski_statisticalmodels_2015] and setting the other component weights to zero.
 
@@ -434,7 +434,7 @@ Data censoring was applied by taking the minimum observed value for a sample, an
 Any values in the sample below the censoring value are set to missing (`NA`).
 
 Correlations were calculated between samples when no missing values are present (*reference*), and then again after censoring (*trimmed*).
-Two different correlation methods were used, ICI-Kt, and Pearson correlation.
+Two different correlation methods were used: ICI-Kt; and Pearson correlation.
 Imputation for Pearson correlation involved replacing all missing values with ½ the lowest observed value in the dataset after censoring.
 Differences between the reference and trimmed correlations were calculated, as well as the difference in the absolute value of differences of ICI-Kt and Pearson imputed.
 
@@ -471,7 +471,7 @@ We feel that this is critical, given that even with measurements acquired by Met
 Unfortunately, the KORA4 metabolomics dataset from Do et al. is not publicly available, so we could not attempt to redo their analysis of missing values with the same dataset.
 
 An alternative to incorporating normalization, however, is to examine the median ranks of features in samples where they are present, and the number of samples they are missing from.
-For each experimental group of samples in each of the datasets we investigated (three RNA-seq, one metabolomics, one lipidomics), we calculated the median rank and number of measurement values missing across samples (i.e. N-Missing) for each feature (gene or metabolite, see Methods).
+For each experimental group of samples in each of the datasets (three RNA-seq, one metabolomics, one lipidomics), we calculated the median rank and number of measurement values missing across samples (i.e. N-Missing) for each feature (gene or metabolite, see Methods).
 As shown in `r figure_count$label_text("lod")`A for the yeast RNA-seq dataset (also see `r supp_figure_count$label_text(c("lod_adenocarcinoma", "lod_egfrgenotype", "lod_egfrgenotypetumorculture", "lod_typeandtumorculture", "lod_nsclc", "lod_ratstamina"))` in Supplemental Materials for the other datasets), there is a monotonicly decreasing relationship between the median rank and the number missing values for that feature.
 Moreover, as N-Missing decreases, there is clearly a minimum median rank below which the values do not cross as illustrated in `r figure_count$label_text("lod")`B (see also `r supp_figure_count$label_text(c("lod_adenocarcinoma", "lod_egfrgenotype", "lod_egfrgenotypetumorculture", "lod_typeandtumorculture", "lod_nsclc", "lod_ratstamina"))` in Supplemental Materials for the other datasets).
 Given this relationship of the minimum median value observed and N-Present, we believe that the **majority** of missing values in many -omics datasets are due to being below the LOD.
@@ -496,7 +496,7 @@ This test involves counting whether the non-missing values (for those features t
 For many of the datasets, the proportion of non-missing values below the median are in the range of 0.9 or higher, and only the two mass-spectrometry datasets (ratstamina and nsclc) show lower estimates.
 Even in those two specific cases, the proportions are 0.69 and 0.60, respectively.
 
-`r table_count$label_text("n-missing")`. For each dataset, the total number of elements, number of elements with a missing value, % missing values, number of values tested as being below the median in a sample, number of values found to be below the median of a sample, fraction of values found to be below the median of sample, confidence interval, and p-value of the left-censored binomial test.
+`r table_count$label_text("n-missing")`. For each dataset, the total number of elements, number of elements with a missing value, % missing values, number of values tested as being below the median in a sample, number of values found to be below the median of a sample, fraction of values found to be below the median of sample, confidence interval, and p-value of the left-censored binomial test. In each case, the reported p-value is below $2.2 \times 10^{-16}$, and represented as 0 in the table.
 ```{r}
 rmf_scientific = function(in_table, j, n_sig = 2)
 {
@@ -601,8 +601,8 @@ We created a set of `r lod_vars$n_sample` simulated samples with uniform noise o
 Possible different levels of censoring based on dynamic range were checked by first determining how many missing values would be introduced in each sample as the dynamic range was increased in increments of 0.1 (see `r supp_figure_count$label_text("na-perc-lod")`).
 Based on the number of values being censored, limits of 0.5, 1, and 1.5 were selected, representing low, medium and high variability of the dynamic range.
 
-For each level of possible missingness introduced by changes to the dynamic range, correlation across all samples were calculated using all values (reference), as well as after missingness was added (trimmed), and using Kendall-tau or Pearson correlation with global imputation (Pearson Imputed), or ICI-Kt.
-`r figure_count$label_text("trimmed-imputed-correlation")` demonstrates that it is only as the number of of missing values in one of the samples approaches 50% or more (500 of 1000 features) does the Pearson correlation with global imputation give correlation values closer to the known correlation with no missing values in any appreciable amount (points below the red lines in the top panels, and to the right of the red line in the histograms in the bottom panels).
+For each level of possible missingness introduced by changes to the dynamic range, correlation across all samples were calculated using all values (reference), as well as after missingness was added (trimmed), and using Pearson correlation with global imputation (Pearson Imputed), or ICI-Kt.
+`r figure_count$label_text("trimmed-imputed-correlation")` demonstrates that it is only as the number of missing values in one of the samples approaches 50% or more (500 of 1000 features) does the Pearson correlation with global imputation give correlation values closer to the known correlation with no missing values in any appreciable amount (points below the red lines in the top panels, and to the right of the red line in the histograms in the bottom panels).
 Points above the lines with slopes of -1 and 1 indicate that the difference of reference - trimmed is smaller in the ICI-Kt correlations, and below the lines indicate the difference is larger in the ICI-Kt correlations.
 This is further emphasized by the majority of the values are to the left of the line at 0 in the difference histograms.
 
