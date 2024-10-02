@@ -21,7 +21,7 @@ If you use any content, you must give attribution to this original work.
 
 ## R Packages Needed
 
-The repository used R 4.1.0, and {renv} 1.0.0
+The repository used R 4.3.0, and {renv} 1.0.0
 For all of the other packages needed, see the file `renv.lock`.
 
 To setup to be able to rerun everything here, you can clone the repo from [github](https://github.com/MoseleyBioinformaticsLab/manuscript.ICIKendallTau) or download it from [Zenodo](https://zenodo.org/doi/10.5281/zenodo.6309187), and then from within that folder:
@@ -81,12 +81,14 @@ Having this cache, you have the state of the computations when we submitted the 
 ```
 # make sure you are wherever you want the targets cache, like wherever
 # you cloned the github repo to, at the top level of the directory.
-wget https://zenodo.org/records/10570286/files/manuscript.ICIKendallTau.targets_cache.parts0.tar?download=1 --output-document=manuscript.ICIKendallTau.targets_cache.parts0.tar
-wget https://zenodo.org/records/10570286/files/manuscript.ICIKendallTau.targets_cache.parts1.tar?download=1 --output-document=manuscript.ICIKendallTau.targets_cache.parts1.tar
-wget https://zenodo.org/records/10570256/files/manuscript.ICIKendallTau.targets_cache.parts2.tar?download=1 --output-document=manuscript.ICIKendallTau.targets_cache.parts2.tar
+wget 'https://zenodo.org/records/13873347/files/manuscript.ICIKendallTau.targets_cache.parts0.tar?download=1' --output-document=manuscript.ICIKendallTau.targets_cache.parts0.tar
+wget 'https://zenodo.org/records/13873347/files/manuscript.ICIKendallTau.targets_cache.parts1.tar?download=1' --output-document=manuscript.ICIKendallTau.targets_cache.parts1.tar
+wget 'https://zenodo.org/records/13874988/files/manuscript.ICIKendallTau.targets_cache.parts2.tar?download=1' --output-document=manuscript.ICIKendallTau.targets_cache.parts2.tar
+wget 'https://zenodo.org/records/13874988/files/manuscript.ICIKendallTau.targets_cache.parts3.tar?download=1' --output-document=manuscript.ICIKendallTau.targets_cache.parts3.tar
 
 # now untar them. Note the "k", this keeps the directory from getting overwritten by subsequent un-tar
 tar -xkvf manuscript.ICIKendallTau.targets_cache.parts0.tar
 tar -xkvf manuscript.ICIKendallTau.targets_cache.parts1.tar
 tar -xkvf manuscript.ICIKendallTau.targets_cache.parts2.tar
+tar -xkvf manuscript.ICIKendallTau.targets_cache.parts3.tar
 ```

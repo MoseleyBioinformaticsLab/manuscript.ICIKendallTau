@@ -22,8 +22,6 @@ output:
     pandoc_args:
       - '--lua-filter=scholarly-metadata.lua'
       - '--lua-filter=author-info-blocks.lua'
-  rmarkdown::html_document:default:
-    self_contained: yes
 date: '`r Sys.time()`'
 bibliography: '`r here::here("docs/icikt_references.json")`'
 csl: plos-computational-biology.csl

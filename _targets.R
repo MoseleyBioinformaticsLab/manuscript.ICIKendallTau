@@ -372,7 +372,22 @@ documents_plan = tar_plan(
   tar_render(manuscript,
            "docs/ici_kt_manuscript.Rmd"),
   tar_render(lod_stuff,
-             "docs/check_variable_lod.Rmd")
+             "docs/check_variable_lod.Rmd"),
+  tar_render(supp_html,
+             "docs/supplemental_materials.Rmd",
+             output_format = "rmarkdown::html_document"),
+  tar_target(manuscript_alt,
+             replace_yaml(manuscript, "docs/ici_kt_manuscript.Rmd",
+                          "docs/html_document_opts.yaml",
+                          "docs/ici_kt_manuscript_html.Rmd"),
+             format = "file"),
+  tar_render(manuscript_html,
+             "docs/ici_kt_manuscript_html.Rmd",
+             output_file = "ici_kt_manuscript.html"),
+  tar_render(readme_index,
+             "README.md",
+             output_file = "docs/index.html"),
+  copy_fig1 = copy_figure(manuscript, "docs/the_problem.png", "docs/ici_kt_manuscript_files/figure-docx/Figure_1-the-problem.png")
 
 )
 

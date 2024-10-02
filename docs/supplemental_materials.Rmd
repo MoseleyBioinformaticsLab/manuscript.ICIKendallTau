@@ -5,6 +5,12 @@ date: '`r Sys.time()`'
 output: 
   rmarkdown::word_document:
     keep_md: true
+  rmarkdown::html_document:
+    self_contained: yes
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
 bibliography: '`r here::here("docs/icikt_references.json")`'
 csl: '`r here::here("docs/plos-computational-biology.csl")`'
 editor_options: 

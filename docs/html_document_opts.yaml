@@ -1,0 +1,14 @@
+title: 'Information-Content-Informed Kendall-tau Correlation: Utilizing Missing Values'
+author: "Robert M Flight, Praneeth S Bhatt, Hunter NB Moseley"
+output: 
+  rmarkdown::html_document:
+    self_contained: yes
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
+date: '`r Sys.time()`'
+bibliography: '`r here::here("docs/icikt_references.json")`'
+csl: plos-computational-biology.csl
+editor_options: 
+  chunk_output_type: console

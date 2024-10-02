@@ -22,9 +22,7 @@ output:
     pandoc_args:
       - '--lua-filter=scholarly-metadata.lua'
       - '--lua-filter=author-info-blocks.lua'
-  rmarkdown::html_document:default:
-    self_contained: yes
-date: '2024-09-30 17:38:15.03703'
+date: '2024-10-02 09:18:59.613449'
 bibliography: '/home/rmflight/Documents/manuscripts/in_progress/rmflight_ici-kendallt/docs/icikt_references.json'
 csl: plos-computational-biology.csl
 editor_options: 

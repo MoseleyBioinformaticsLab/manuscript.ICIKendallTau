@@ -1,10 +1,16 @@
 ---
 title: 'Supplemental Materials'
 author: 'Robert M Flight, Praneeth S Bhatt, and Hunter NB Moseley'
-date: '2024-09-30 09:19:48.236829'
+date: '2024-10-02 09:17:15.077884'
 output: 
   rmarkdown::word_document:
     keep_md: true
+  rmarkdown::html_document:
+    self_contained: yes
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: false
 bibliography: '/home/rmflight/Documents/manuscripts/in_progress/rmflight_ici-kendallt/docs/icikt_references.json'
 csl: '/home/rmflight/Documents/manuscripts/in_progress/rmflight_ici-kendallt/docs/plos-computational-biology.csl'
 editor_options: 
