@@ -33,7 +33,7 @@ git clone https://github.com/MoseleyBioinformaticsLab/manuscript.ICIKendallTau.g
 
 ```
 # download from zenodo
-wget https://zenodo.org/records/10573598/files/MoseleyBioinformaticsLab/manuscript.ICIKendallTau-draft_v4.1_2024-01-26.zip?download=1 --output-document=manuscript.ICIKendallTau.zip
+wget https://zenodo.org/records/13881956/files/MoseleyBioinformaticsLab/manuscript.ICIKendallTau-draft_v5.zip?download=1 --output-document=manuscript.ICIKendallTau.zip
 unzip manuscript.ICIKendallTau.zip
 ```
 
