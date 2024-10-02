@@ -4,23 +4,23 @@
     "Repositories": [
       {
         "Name": "BioCsoft",
-        "URL": "https://bioconductor.org/packages/3.17/bioc"
+        "URL": "https://bioconductor.org/packages/3.18/bioc"
       },
       {
         "Name": "BioCann",
-        "URL": "https://bioconductor.org/packages/3.17/data/annotation"
+        "URL": "https://bioconductor.org/packages/3.18/data/annotation"
       },
       {
         "Name": "BioCexp",
-        "URL": "https://bioconductor.org/packages/3.17/data/experiment"
+        "URL": "https://bioconductor.org/packages/3.18/data/experiment"
       },
       {
         "Name": "BioCworkflows",
-        "URL": "https://bioconductor.org/packages/3.17/workflows"
+        "URL": "https://bioconductor.org/packages/3.18/workflows"
       },
       {
         "Name": "BioCbooks",
-        "URL": "https://bioconductor.org/packages/3.17/books"
+        "URL": "https://bioconductor.org/packages/3.18/books"
       },
       {
         "Name": "CRAN",
@@ -29,7 +29,7 @@
     ]
   },
   "Bioconductor": {
-    "Version": "3.17"
+    "Version": "3.18"
   },
   "Packages": {
     "AnnotationDbi": {
@@ -167,12 +167,12 @@
     },
     "BiocVersion": {
       "Package": "BiocVersion",
-      "Version": "3.17.1",
+      "Version": "3.18.1",
       "Source": "Bioconductor",
       "Requirements": [
         "R"
       ],
-      "Hash": "f7c0d5521799b7b0d0a211143ed0bfcb"
+      "Hash": "2ecaed86684f5fae76ed5530f9d29c4a"
     },
     "Biostrings": {
       "Package": "Biostrings",
@@ -484,20 +484,17 @@
     },
     "ICIKendallTau": {
       "Package": "ICIKendallTau",
-      "Version": "0.3.20",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteUsername": "moseleybioinformaticslab",
-      "RemoteRepo": "ICIKendallTau",
-      "RemoteRef": "very_large_data",
-      "RemoteSha": "1f769ba9f9f608ca848f8af5d52e9b4fd0d00e93",
+      "Version": "0.1.14",
+      "Source": "Local",
+      "RemoteType": "local",
+      "RemoteUrl": "/home/rmflight/Documents/manuscripts/in_progress/rmflight_ici-kendallt/actual_package/ICIKendallTau",
       "Requirements": [
+        "R",
         "Rcpp",
         "purrr",
         "utils"
       ],
-      "Hash": "d53359d4bcb51da50fae029068f21f18"
+      "Hash": "171093d4834994397ba43648317d79e9"
     },
     "IRanges": {
       "Package": "IRanges",
@@ -529,9 +526,9 @@
     },
     "MASS": {
       "Package": "MASS",
-      "Version": "7.3-59",
+      "Version": "7.3-60.0.1",
       "Source": "Repository",
-      "Repository": "CRAN",
+      "Repository": "RSPM",
       "Requirements": [
         "R",
         "grDevices",
@@ -540,7 +537,7 @@
         "stats",
         "utils"
       ],
-      "Hash": "26570ae748e78cb2b0f56019dd2ba354"
+      "Hash": "b765b28387acc8ec9e9c1530713cb19c"
     },
     "Matrix": {
       "Package": "Matrix",
@@ -878,16 +875,6 @@
       ],
       "Hash": "50c838a310445e954bc13f26f26a6ecf"
     },
-    "audio": {
-      "Package": "audio",
-      "Version": "0.1-10",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R"
-      ],
-      "Hash": "d0c2f6b09c666cc84cd64813f43a54fc"
-    },
     "backports": {
       "Package": "backports",
       "Version": "1.4.1",
@@ -917,17 +904,6 @@
         "backports"
       ],
       "Hash": "0c54cf3a08cc0e550fbd64ad33166143"
-    },
-    "beepr": {
-      "Package": "beepr",
-      "Version": "1.3",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "audio",
-        "stringr"
-      ],
-      "Hash": "b3158a579ecef0e8f7626f4dadc369d0"
     },
     "biomaRt": {
       "Package": "biomaRt",
@@ -990,6 +966,16 @@
         "vctrs"
       ],
       "Hash": "40415719b5a479b87949f3aa0aee737c"
+    },
+    "brio": {
+      "Package": "brio",
+      "Version": "1.1.4",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R"
+      ],
+      "Hash": "68bd2b066e1fe780bbf62fc8bcc36de3"
     },
     "broom": {
       "Package": "broom",
@@ -1190,9 +1176,9 @@
     },
     "cluster": {
       "Package": "cluster",
-      "Version": "2.1.4",
+      "Version": "2.1.6",
       "Source": "Repository",
-      "Repository": "CRAN",
+      "Repository": "RSPM",
       "Requirements": [
         "R",
         "grDevices",
@@ -1200,7 +1186,7 @@
         "stats",
         "utils"
       ],
-      "Hash": "5edbbabab6ce0bf7900a74fd4358628e"
+      "Hash": "0aaa05204035dc43ea0004b9c76611dd"
     },
     "codetools": {
       "Package": "codetools",
@@ -1394,6 +1380,35 @@
       ],
       "Hash": "0b1a94b5376f3d2440d7abd6cf7e0a28"
     },
+    "desc": {
+      "Package": "desc",
+      "Version": "1.4.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "R6",
+        "cli",
+        "rprojroot",
+        "utils"
+      ],
+      "Hash": "6b9602c7ebbe87101a9c8edb6e8b6d21"
+    },
+    "diffobj": {
+      "Package": "diffobj",
+      "Version": "0.3.5",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "crayon",
+        "methods",
+        "stats",
+        "tools",
+        "utils"
+      ],
+      "Hash": "bcaa8b95f8d7d01a5dedfd959ce88ab8"
+    },
     "digest": {
       "Package": "digest",
       "Version": "0.6.31",
@@ -1571,20 +1586,20 @@
     },
     "flighttools": {
       "Package": "flighttools",
-      "Version": "0.1.0",
+      "Version": "0.1.14",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteUsername": "rmflight",
       "RemoteRepo": "flighttools",
       "RemoteRef": "main",
-      "RemoteSha": "d439cb9c112ea25736cde527f25117275a008aed",
+      "RemoteSha": "616127fb472cb41c543b163eba70cf49a101cd1b",
       "Requirements": [
-        "beepr",
         "cli",
         "dplyr",
         "fs",
         "glue",
+        "processx",
         "purrr",
         "rlang",
         "rmarkdown",
@@ -1593,7 +1608,7 @@
         "tibble",
         "yesno"
       ],
-      "Hash": "52bafd272816ea743f4043a75bc3db00"
+      "Hash": "2e684c34958f715b194f67e4f7ecf69f"
     },
     "fontBitstreamVera": {
       "Package": "fontBitstreamVera",
@@ -1908,7 +1923,7 @@
     },
     "graph": {
       "Package": "graph",
-      "Version": "1.78.0",
+      "Version": "1.80.0",
       "Source": "Bioconductor",
       "Requirements": [
         "BiocGenerics",
@@ -1918,7 +1933,7 @@
         "stats4",
         "utils"
       ],
-      "Hash": "1cf0ccf889cb4325011e1ad92e222ab1"
+      "Hash": "af02a936ce577656083213cdd8f5584d"
     },
     "gridExtra": {
       "Package": "gridExtra",
@@ -2238,9 +2253,9 @@
     },
     "lattice": {
       "Package": "lattice",
-      "Version": "0.21-8",
+      "Version": "0.22-5",
       "Source": "Repository",
-      "Repository": "CRAN",
+      "Repository": "RSPM",
       "Requirements": [
         "R",
         "grDevices",
@@ -2249,7 +2264,7 @@
         "stats",
         "utils"
       ],
-      "Hash": "0b8a6d63c8770f02a8b5635f3c431e6b"
+      "Hash": "7c5e89f04e72d6611c77451f6331a091"
     },
     "lifecycle": {
       "Package": "lifecycle",
@@ -2514,14 +2529,14 @@
     },
     "paint": {
       "Package": "paint",
-      "Version": "0.1.7",
+      "Version": "0.2.0",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteUsername": "milesmcbain",
       "RemoteRepo": "paint",
       "RemoteRef": "master",
-      "RemoteSha": "a7e97ddfba3a2a37d6836124e376ff27a6e0bac8",
+      "RemoteSha": "6dbbff1ef5b48839dbfbc9ccc8d6490e1bf7d32d",
       "Requirements": [
         "R",
         "RColorBrewer",
@@ -2534,7 +2549,7 @@
         "vctrs",
         "viridisLite"
       ],
-      "Hash": "a028d99cbcc97f6fc332eae098925399"
+      "Hash": "48b94d48c81e517ff8bffc2063f6ccce"
     },
     "parallelly": {
       "Package": "parallelly",
@@ -2593,6 +2608,21 @@
       ],
       "Hash": "ff0e0b97265ced0db4d13d0005334d78"
     },
+    "pkgbuild": {
+      "Package": "pkgbuild",
+      "Version": "1.4.3",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R",
+        "R6",
+        "callr",
+        "cli",
+        "desc",
+        "processx"
+      ],
+      "Hash": "c0143443203205e6a2760ce553dafc24"
+    },
     "pkgconfig": {
       "Package": "pkgconfig",
       "Version": "2.0.3",
@@ -2602,6 +2632,27 @@
         "utils"
       ],
       "Hash": "01f28d4278f15c76cddbea05899c5d6f"
+    },
+    "pkgload": {
+      "Package": "pkgload",
+      "Version": "1.3.4",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R",
+        "cli",
+        "crayon",
+        "desc",
+        "fs",
+        "glue",
+        "methods",
+        "pkgbuild",
+        "rlang",
+        "rprojroot",
+        "utils",
+        "withr"
+      ],
+      "Hash": "876c618df5ae610be84356d5d7a5d124"
     },
     "plogr": {
       "Package": "plogr",
@@ -2640,6 +2691,13 @@
         "R"
       ],
       "Hash": "66bbfa06f78108ee967220643596c91e"
+    },
+    "praise": {
+      "Package": "praise",
+      "Version": "1.0.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "a555924add98c99d2f411e37e7d25e9f"
     },
     "prettyunits": {
       "Package": "prettyunits",
@@ -2843,6 +2901,16 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "cbff1b666c6fa6d21202f07e2318d4f1"
+    },
+    "rematch2": {
+      "Package": "rematch2",
+      "Version": "2.1.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "tibble"
+      ],
+      "Hash": "76c9e04c712a05848ae7a23d2f170a40"
     },
     "rentrez": {
       "Package": "rentrez",
@@ -3255,6 +3323,35 @@
       ],
       "Hash": "547b1105f6a5d9ee56761562ceb63c7d"
     },
+    "testthat": {
+      "Package": "testthat",
+      "Version": "3.2.1",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R",
+        "R6",
+        "brio",
+        "callr",
+        "cli",
+        "desc",
+        "digest",
+        "evaluate",
+        "jsonlite",
+        "lifecycle",
+        "magrittr",
+        "methods",
+        "pkgload",
+        "praise",
+        "processx",
+        "ps",
+        "rlang",
+        "utils",
+        "waldo",
+        "withr"
+      ],
+      "Hash": "4767a686ebe986e6cb01d075b3f09729"
+    },
     "textshaping": {
       "Package": "textshaping",
       "Version": "0.3.6",
@@ -3515,6 +3612,24 @@
         "withr"
       ],
       "Hash": "8318e64ffb3a70e652494017ec455561"
+    },
+    "waldo": {
+      "Package": "waldo",
+      "Version": "0.5.2",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R",
+        "cli",
+        "diffobj",
+        "fansi",
+        "glue",
+        "methods",
+        "rematch2",
+        "rlang",
+        "tibble"
+      ],
+      "Hash": "c7d3fd6d29ab077cbac8f0e2751449e6"
     },
     "withr": {
       "Package": "withr",
