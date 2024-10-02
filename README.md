@@ -33,7 +33,7 @@ git clone https://github.com/MoseleyBioinformaticsLab/manuscript.ICIKendallTau.g
 
 ```
 # download from zenodo
-wget https://zenodo.org/records/13881956/files/MoseleyBioinformaticsLab/manuscript.ICIKendallTau-draft_v5.zip?download=1 --output-document=manuscript.ICIKendallTau.zip
+wget 'https://zenodo.org/records/13881956/files/MoseleyBioinformaticsLab/manuscript.ICIKendallTau-draft_v5.zip?download=1' --output-document=manuscript.ICIKendallTau.zip
 unzip manuscript.ICIKendallTau.zip
 ```
 
@@ -47,7 +47,7 @@ renv::restore()
 The {ICIKendallTau} package on GitHub is now different than the one used for this manuscript, you should install the one archived on Zenodo (v 0.3.20).
 
 ```
-wget https://zenodo.org/records/10580528/files/ICIKendallTau_0.3.20.tar.gz?download=1 --output-document=ICIKendallTau_0.3.20.tar.gz
+wget 'https://zenodo.org/records/10580528/files/ICIKendallTau_0.3.20.tar.gz?download=1' --output-document=ICIKendallTau_0.3.20.tar.gz
 tar -xzvf ICIKendallTau_0.3.20.tar.gz
 cd ICIKendallTau
 ```
