@@ -112,14 +112,14 @@ These missing data are not missing at random, but represent some information by 
 
 Therefore, to better handle missingness due to left-censorship, we propose the information-content-informed Kendall-tau (ICI-Kt) correlation coefficient that allows left-censored missing values to carry explicit information in the determination of concordant and discordant pairs.
 With both simulated and real data sets from RNA-seq, metabolomics, and lipidomics experiments, we demonstrate that the ICI-Kt allows for the inclusion of left-censored missing data values as interpretable information, enabling both improved determination of outlier samples and improved feature-feature network construction, without explicitly using imputation.
-Moreover, our implementation of ICI-Kt uses a mergesort-like algorithm that provides O(nlog(n)) computational performance, a significant improvement over the Kendall-tau correlation available in base R. 
+Moreover, our implementation of ICI-Kt uses the mergesort-like algorithm that provides O(nlog(n)) computational performance, a significant improvement over the Kendall-tau correlation available in base R.
 
 ### Conclusions:
 
 The ICI-Kt correlation calculation is available in an R package and Python module on GitHub at https://github.com/moseleyBioinformaticsLab/ICIKendallTau and https://github.com/moseleyBioinformaticsLab/icikt, respectively.
 
 
-## Introduction
+## Background
 
 Correlation as a measure of the relatedness or similarity of two or more sets of data has a long history, with the mathematical technique being used (and abused) in various scientific fields since its introduction [@pearson_notes_1920; @rodgers_13_1988].
 More recently, correlation calculations have become a cornerstone statistical method in the analysis and integration of varied omics' datasets, especially the big five omics: genomics, transcriptomics, proteomics, metabolomics, and epigenomics [@gu_complexheatmap_2016].
@@ -178,7 +178,7 @@ Finally, we examine how feature-feature networks derived from various feature-fe
 
 All of the code used for this manuscript is available on zenodo [@flightManuscriptICIKendallTau2024].
 
-## Methods
+## Implementation
 
 ### Additional Definitions of Concordant and Discordant Pairs to Include Missingness
 
@@ -799,6 +799,23 @@ Many factors affect this, especially correlation linearity and the modality of m
 We would humbly suggest that for most omics datasets, the application of several correlation-related metrics simultaneously would be the best approach for outlier detection in quality control and quality assessment steps.
 Where one metric lacks outlier detection sensitivity, another metric will prove sensitive.
 Therefore, ICI-Kt and composite metrics derived from it should be considered as useful additions to the omics data analysis toolkit.
+
+## Availability and Requirements
+
+**Project name:** ICIKendallTau
+\
+**Project home page:** https://github.com/moseleybioinformaticslab/ICIKendallTau/
+\
+**Operating systems:** Platform independent
+\
+**Programming language:** R and Python
+\
+**Other requirements:** R $\geq$ 3.5, Python $\geq$ 3.8
+\
+**License:** MIT
+\
+**Any restrictions to use by non-academics:** None
+
 
 ## Declarations:
 
