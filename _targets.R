@@ -1,5 +1,5 @@
 ## Load your packages, e.g. library(targets). -----
-tar_source("./packages.R")
+targets::tar_source("./packages.R")
 
 ## Load your R files -------
 tar_source(files = "R")
