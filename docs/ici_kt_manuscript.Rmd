@@ -103,20 +103,22 @@ table_count$increment(c("datasets",
 
 Almost all correlation measures currently available are unable to directly handle missing values.
 Typically, missing values are either ignored completely by removing them or are imputed and used in the calculation of the correlation coefficient.
-In both cases, the correlation value will be impacted based on a perspective that missing data represents no useful information.
+In either case, the correlation value will be impacted based on a perspective that the missing data represents no useful information.
 However, missing values occur in real data sets for a variety of reasons. 
-In omics data sets that are derived from analytical measurements, a major reason for missing values is that a specific measurable phenomenon falls below the detection limits of the analytical instrumentation (left-censorsed values).
-These missing data are not missing at random, but represent some information by virtue of their "missingness" at one end of the data distribution.
+In omics data sets that are derived from analytical measurements, a major reason for missing values is that a specific measurable phenomenon falls below the detection limits of the analytical instrumentation (left-censored values).
+These missing data are not missing at random, but represent useful information by virtue of their "missingness" at one end of the data distribution.
 
 ### Results:
 
-Therefore, to better handle missingness due to left-censorship, we propose the information-content-informed Kendall-tau (ICI-Kt) correlation coefficient that allows left-censored missing values to carry explicit information in the determination of concordant and discordant pairs.
-With both simulated and real data sets from RNA-seq, metabolomics, and lipidomics experiments, we demonstrate that the ICI-Kt allows for the inclusion of left-censored missing data values as interpretable information, enabling both improved determination of outlier samples and improved feature-feature network construction, without explicitly using imputation.
-Moreover, our implementation of ICI-Kt uses the mergesort-like algorithm that provides O(nlog(n)) computational performance, a significant improvement over the Kendall-tau correlation available in base R.
+To include this information due to left-censorship missingness, we propose the information-content-informed Kendall-tau (ICI-Kt) method.
+We show how left-censored missing values can be included in the definition of the Kendall-tau correlation coefficient, and how that inclusion leads to an interpretation of information being added to the correlation.
+We also implement calculations for additional measures of theoretical maxima and pairwise completeness that add further layers of information in the ICI-Kt method.
+Using both simulated and real data sets from RNA-seq, metabolomics, and lipidomics experiments, we demonstrate that the ICI-Kt method allows for the inclusion of left-censored missing data values as interpretable information, enabling both improved determination of outlier samples and improved feature-feature network construction.
+We provide explicitly parallel implementations in both R and Python that allow fast calculations of all the variables used when applying the ICI-Kt method on large numbers of samples.
 
 ### Conclusions:
 
-The ICI-Kt correlation calculation is available in an R package and Python module on GitHub at https://github.com/moseleyBioinformaticsLab/ICIKendallTau and https://github.com/moseleyBioinformaticsLab/icikt, respectively.
+The ICI-Kt method is available as an R package and Python module on GitHub at https://github.com/moseleyBioinformaticsLab/ICIKendallTau and https://github.com/moseleyBioinformaticsLab/icikt, respectively.
 
 
 ## Background
@@ -171,9 +173,11 @@ Modifying Pearson would either involve imputing new values, or finding a way to 
 While Spearman uses ranks, many of the modifications for handling identical ranks and ties do not seem amenable to working with missing values.
 In contrast, Kendall-tau's use of concordant and discordant pair counts seems most amenable to the creation of new definitions that incorporate missingness while still working within the original definition of the correlation coefficient, as shown below.
 
-In this work, we propose new definitions of concordant and discordant rank pairs that include missing values, as well as methods for incorporating missing values into the number of tied values for the equivalent of the modified Kendall-tau coefficient, information-content-informed Kendall-tau (ICI-Kt).
-We examine the effect of missing values on various simulated and real data-sets, comparing ICI-Kt with other simpler methods of handling the missing values, namely removing them or imputing them to zero.
-Given the detrimental effects of including outlier samples in differential analyses, we also evaluate the ability of ICI-Kt to capture sample-sample pairwise similarities and the determination of outlier samples prior to differential analyses.
+In this work, we propose new definitions of concordant and discordant rank pairs that include missing values, as well as methods for incorporating missing values into the number of tied values for the equivalent of the modified Kendall-tau coefficient, the information-content-informed Kendall-tau (ICI-Kt) method.
+The implementation of the basic calculation of ICI-Kt involves the replacement of missing values with a value lower than the observed values, with subsequent calculation of the Kendall-tau-b statistic, as a majority of missing values are the result of left-censorship, they still provide an interpretation from an information-content perspective.
+We derive a test for determining if the cause for missingness is likely left-censorship and show that this is a real phenomenon in four different experimental data sets.
+We examine the effect of missing values on various simulated and real data-sets, comparing the ICI-Kt method with other simpler methods of handling the missing values, namely removing them or imputing them to zero.
+Given the detrimental effects of including outlier samples in differential analyses, we also evaluate the ability of the ICI-Kt method to capture sample-sample pairwise similarities and the determination of outlier samples prior to differential analyses.
 Finally, we examine how feature-feature networks derived from various feature-feature correlations change within annotations depending on the correlation method used.
 
 All of the code used for this manuscript is available on zenodo [@flightManuscriptICIKendallTau2024].
@@ -269,26 +273,12 @@ where for any two samples *i* and *j*, $n_{feat}$ is the total number of feature
 ### Implementation Details
 
 We produced an initial reference implementation in *R* [@rcoreteam_rlanguage_2020] where the various concordant and discordant pair definitions were written as simple logical tests to allow further exploration and validation of faster implementations.
-In practice, it is possible to **replace the missing values with a value that is smaller than all of the values in the two sets of values under consideration**, and then do tests of signs to define concordant and discordant pairs (see the definitions of concordant and discordant pairs above).
-We note here that we **do not** consider this imputation of missing values.
+During exploration and validation a early implementation, we discovered that an equivalent calculation was to replace the missing values with a value smaller than all of the values in the two sets being compared.
+This simplification does not change the interpretation of the effect of left-censored missing values, but it does allow for the direct use of the very fast mergesort based algorithm for calculating $\tau_b$ [@knight_mergesortkendall_1966].
 
-After this initial implementation, we used the *SciPy* [@virtanen_scipy_2020] *kendalltau* code as a model to create a mergesort based implementation in *Rcpp* that has a complexity of O(nlog(n)), in comparison to the pairwise testing that has a complexity of O(n^2) [@knight_mergesortkendall_1966].
-This provides a 460X speedup of the runtime to compare two feature vectors with lengths of 40,000.
-In comparison to directly counting the concordant and discordant pairs, some of the values in the mergesort implementation can reach the 32-bit default limit in C++.
-Therefore, we used 64-bit integers and floats where necessary in the *Rcpp* code.
-
-C++ (via *Rcpp* [@eddelbuettel_rcppseamless_2011; @eddelbuettel_seamlessbook_2013; @eddelbuettel_extendingrcpp_2018]) and R code implementations are in the src/kendallc.cpp and R/kendalltau.R files of the ICIKendallTau R package, hosted at https://github.com/MoseleyBioinformaticsLab/ICIKendallTau.
-The version of the package used in this manuscript is available on zenodo [@flightICIKendallTau2023].
-
-When a large number of samples need to be compared, it may be useful to split the comparisons across compute instances (across hyperthreaded cores, physical cores, or physical compute nodes).
-The *furrr* R package makes the definition of compute clusters trivial [@vaughanFurrrApplyMapping2021].
-For a large correlation matrix computation, we first define the sample-sample comparisons to be performed, then check how many instances of compute are available (defined by a previous call to *furrr*), and finally split the comparisons into a list that can be easily distributed using the *furrr::future_map* function.
-
-We also implemented a package in Python 3 with the same functionality and similar interface to the R package, hosted on GitHub (https://github.com/MoseleyBioinformaticsLab/icikt) and Python Package Index (https://pypi.org/project/icikt).
-Appropriate portions of the package were *cythonized* to achieve similar execution performance to the R package [@behnelCythonBestBoth2011].
-We used the *multiprocessing* Python package to distribute the sample-sample comparisons calculations across cores with very little overhead.
-This package includes both an application programming interface (API) with equivalent parameter options to the R package implementation and a command line interface (CLI) for generating straight-forward correlation matrix analyses without the need to write Python scripts.
-
+We re-implemented the mergesort implementation from the *SciPy* *kendalltau* code [@virtanen_scipy_2020] in both R (via *Rcpp*) and Python (via cython) to enable fast, easy parallel computations in both languages (using *furrr* and *multiprocessing*, respectively), as well as inclusion of the calculation of $tau_{max}$, which is derived from the same values needed for the calculation of $\tau_b$ (see above).
+The version of the R package used in this manuscript is available on zenodo [@flightICIKendallTau2023].
+In addition to use as an imported Python module, the Python *icikt* module provides a command line interface (CLI) for the ICI-Kt method.
 
 ### Simulated Data Sets
 
@@ -808,11 +798,25 @@ Therefore, ICI-Kt and composite metrics derived from it should be considered as 
 \
 **Operating systems:** Platform independent
 \
-**Programming language:** R and Python
+**Programming language:** R
 \
-**Other requirements:** R $\geq$ 3.5, Python $\geq$ 3.8
+**Other requirements:** R $\geq$ 3.5
 \
 **License:** MIT
+\
+**Any restrictions to use by non-academics:** None
+
+**Project name:** icikt
+\
+**Project home page:** https://github.com/moseleybioinformaticslab/icikt/
+\
+**Operating systems:** Platform independent
+\
+**Programming language:** Python
+\
+**Other requirements:** Python $\geq$ 3.8
+\
+**License:** Modified BSD
 \
 **Any restrictions to use by non-academics:** None
 
