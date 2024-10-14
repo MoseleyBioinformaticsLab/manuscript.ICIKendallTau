@@ -1,4 +1,4 @@
-title: 'Information-Content-Informed Kendall-tau Correlation: Utilizing Missing Values'
+title: 'Information-Content-Informed Kendall-tau Correlation Methodology: Interpreting Missing Values as Useful Information'
 author: "Robert M Flight, Praneeth S Bhatt, Hunter NB Moseley"
 output: 
   rmarkdown::html_document:

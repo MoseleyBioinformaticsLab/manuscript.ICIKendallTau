@@ -5,7 +5,7 @@
 
 All the code for generating the manuscript:
 
-Information-Content-Informed Kendall-tau Correlation: Utilizing Missing Values, Robert M Flight, Praneeth S Bhatt, Hunter NB Moseley [biorxiv](https://doi.org/10.1101/2022.02.24.481854) is contained within this repository.
+Information-Content-Informed Kendall-tau Correlation Methodology: Interpreting Missing Values as Useful Information, Robert M Flight, Praneeth S Bhatt, Hunter NB Moseley [biorxiv](https://doi.org/10.1101/2022.02.24.481854) is contained within this repository.
 
 The current versions can be obtained directly from this repository:
 
@@ -74,7 +74,7 @@ targets::tar_make()
 
 To make it easier to at least generate the manuscript, there is a copy of the {targets} cache on Zenodo, in two parts [here](https://zenodo.org/doi/10.5281/zenodo.10570285) and [here](https://zenodo.org/doi/10.5281/zenodo.10570255).
 Make sure you have lots of room, there are 68 GB worth of files (and those are already compressed R data files).
-This is in three parts, and can be downloaded using `wget`.
+This is in four parts, and can be downloaded using `wget`.
 
 Having this cache, you have the state of the computations when we submitted the manuscript, and can examine almost any of the outputs you want by loading them using `tar_load(object)`.
 
